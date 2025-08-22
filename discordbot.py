@@ -207,7 +207,8 @@ async def on_message(message):
                 # 아로나 톤 경고 메시지 생성
                 warning_prompt = """
                 메시지에 위험한 링크가 있어서 삭제했어.
-                간단하고 단호하게 스팸 경고 메시지를 만들어줘. 1문장 정도로 작성.
+                간단하고 단호하게 경고 메시지를 만들어줘. 1문장 정도로 작성.
+                '부적절한 URL은 삭제하겠습니다!'처럼
                 """
                 warning_resp = client_ai.responses.create(
                     model="gpt-5-nano",
