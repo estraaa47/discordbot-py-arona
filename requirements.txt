@@ -9,8 +9,6 @@ multidict==6.0.2
 python-dotenv==0.20.0
 typing_extensions>=4.11,<5
 yarl==1.7.2
-py-cord==2.4.1
-pycord-components==1.0.2
 openai==1.100.2
 httpcore==1.0.9
 httpx==0.28.1
