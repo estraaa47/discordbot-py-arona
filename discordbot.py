@@ -208,10 +208,10 @@ async def on_message(message):
                 warning_prompt = """
                 메시지에 위험한 링크가 있어서 삭제했어.
                 친근하고 귀엽게, 선생님이 실수한 것처럼 말하지 말고
-                간단하게 경고 메시지를 만들어줘. 3~4문장 정도로 작성.
+                간단하게 경고 메시지를 만들어줘. 1문장 정도로 작성.
                 """
                 warning_resp = client_ai.responses.create(
-                    model="gpt-5-mini",
+                    model="gpt-5-nano",
                     input=system_prompt + "\n" + warning_prompt
                 )
                 await message.channel.send(f"{message.author.mention} {warning_resp.output_text.strip()}")
