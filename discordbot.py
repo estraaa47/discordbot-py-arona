@@ -29,7 +29,7 @@ semiadmin_id = 888817303188287519
 semisemiadmin_id =1032632104367947866
 
 # OpenAI 클라이언트
-client_ai = OpenAI(api_key="GPT")
+client_ai = OpenAI(OPENAI_API_KEY="GPT")
 
 # 캐릭터 성격 (시스템 프롬프트)
 system_prompt = """
