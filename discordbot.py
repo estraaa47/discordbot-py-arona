@@ -133,7 +133,7 @@ async def arona(interaction: discord.Interaction, message: str):
         await interaction.followup.send("지금은 아로나가 바빠요. 잠시 뒤에 다시 시도해주세요.")
 
 # 메시지 링크 패턴
-url_pattern = r"(https?://[^\s]+|www\.[^\s]+|\b[^\s]+\.[^\s]{2,}(?:/[^\s]*)?\b)"
+url_pattern = r"(https?://[^\s]+|www\.[^\s]+|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:/[^\s]*)?)"
 
 @app.event
 async def on_message(message):
