@@ -160,7 +160,7 @@ async def on_message(message):
             반드시 "Yes" 또는 "No" 중 하나로만 대답해야 해. 절대 다른 설명이나 텍스트는 출력하지 마.  
 
             "Yes" (스팸/위험) 조건:
-            - 단축 링크 사용 (예: bit.ly, t.co, buly.kr, me2.kr, goo.gl 등, 단 공식적으로 안전한 단축 링크(youtu.be 등)는 제외)
+            - 단축 링크 사용 (예: bit.ly, t.co, buly.kr, me2.kr, goo.gl 등, 단 공식적으로 안전한 단축 링크(youtu.be, naver.me, yahoo.jp, 등)는 제외)
             - 이벤트/경품/쿠폰/홍보성 페이지 (예: "event", "gift", "coupon", "free", "join" 등 포함)
             - 공식 사이트처럼 위장했지만 신뢰하기 어려운 도메인
             - 피싱, 악성코드, 성인, 도박, 사기 관련 사이트
