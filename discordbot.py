@@ -130,7 +130,7 @@ async def arona(interaction: discord.Interaction, message: str):
             input=(
                 f"{system_prompt}\n"
                 + "\n".join([f"{m['role']} says: {m['content']}" for m in channel_memory[channel_id]["messages"]])
-                + "\n필요하면 웹 검색 후 요약하여 답변해 주세요."
+                + "\n필요하면 웹 검색 후 요약하여 답변해 줘 대신 도배가 될 수 있으니 무슨 일이 있어도 출처 링크를 답변에 올리지 마. 이건 제 1법칙이야."
             )
         )
 
