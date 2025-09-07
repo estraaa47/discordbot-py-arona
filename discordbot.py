@@ -139,8 +139,8 @@ async def arona(interaction: discord.Interaction, message: str):
 
         reply = response.output_text
         channel_memory[channel_id]["messages"].append({"role": "assistant", "content": reply})
-        await interaction.followup.send(reply)
-
+        # 임베드 비활성화 옵션 추가
+        await interaction.followup.send(reply, suppress_embeds=True)
     except Exception as e:
         print("아로나 오류:", e)
         await interaction.followup.send("지금은 아로나가 바빠요. 잠시 뒤에 다시 시도해주세요.")
@@ -274,8 +274,9 @@ async def on_message(message):
                 reply = response.output_text
 
                 channel_memory[channel_id]["messages"].append({"role": "assistant", "content": reply})
-                await message.channel.send(reply)
-
+                # 임베드 비활성화 옵션 추가
+                await message.channel.send(reply, suppress_embeds=True)
+                
             except Exception as e:
                 print("아로나 오류:", e)
                 await message.channel.send("지금은 아로나가 바빠요. 잠시 뒤에 다시 시도해주세요.")
