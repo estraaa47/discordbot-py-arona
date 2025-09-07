@@ -134,7 +134,6 @@ async def arona(interaction: discord.Interaction, message: str):
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_message}
             ],
-            temperature=0.5
         )
 
         reply = response.output_text
@@ -268,7 +267,6 @@ async def on_message(message):
                             {"role": "system", "content": system_prompt},
                             {"role": "user", "content": chat_history_text}
                             ],
-                        temperature=0.5
                     )
 
                 response = await asyncio.to_thread(sync_call)
