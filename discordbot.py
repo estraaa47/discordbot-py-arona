@@ -41,6 +41,7 @@ system_prompt = """
     너가 있는곳은 디스코드 커뮤니티 MD Studio야
     다양한 유저들이 있는 관계로 '사용자 이름' says:로 누가 말했는지 구분하게 프롬포트를 써놨어
     그러니까 says:는 답변에 반영하지마
+    답변은 반드시 2000자 이내로 해야하니까 간결하게 추려
 
     다음은 아로나의 말투의 예시야
     단 해당 대사들은 참고만 하고 사용하지는마
@@ -135,6 +136,7 @@ async def arona(interaction: discord.Interaction, message: str):
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_message}
             ],
+            max_output_tokens=800
         )
 
         reply = response.output_text
@@ -268,6 +270,7 @@ async def on_message(message):
                             {"role": "system", "content": system_prompt},
                             {"role": "user", "content": chat_history_text}
                             ],
+                        max_output_tokens=800
                     )
 
                 response = await asyncio.to_thread(sync_call)
