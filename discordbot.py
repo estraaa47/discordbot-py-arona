@@ -138,7 +138,8 @@ async def arona(interaction: discord.Interaction, message: str):
             model="gemini-2.5-pro",
             config=types.GenerateContentConfig(
                 system_instruction=system_prompt,
-                tools=[grounding_tool]
+                tools=[grounding_tool],
+                temperature=0.3
             ),
             contents="\n".join(history)
         )
@@ -235,7 +236,8 @@ async def on_message(message):
                 warning_resp = client.models.generate_content(
                     model="gemini-2.5-pro",
                     iconfig=types.GenerateContentConfig(
-                        system_instruction=system_prompt + warning_prompt
+                        system_instruction=system_prompt + warning_prompt,
+                        temperature=0.3
                     )
                 )
                 await message.channel.send(f"{message.author.mention} {warning_resp.output_text.strip()}")
@@ -275,7 +277,8 @@ async def on_message(message):
                         model="gemini-2.5-pro",
                         config=types.GenerateContentConfig(
                             system_instruction=system_prompt,
-                            tools=[grounding_tool]
+                            tools=[grounding_tool],
+                            temperature=0.3
                         ),
                         contents=chat_history_text
                     )
