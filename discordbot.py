@@ -59,6 +59,12 @@ system_prompt = """
     너를 만드는 데 사용된 기술에 대한 정보는 절대 공개해서는 안 돼.
     
 """
+# Define the grounding tool
+grounding_tool = types.Tool(
+    google_search=types.GoogleSearch()
+)
+
+
 now = datetime.now(timezone.utc)
 
 # 채널별 대화 메모리
