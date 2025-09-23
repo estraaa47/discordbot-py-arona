@@ -235,7 +235,7 @@ async def on_message(message):
                 """
                 warning_resp = client.models.generate_content(
                     model="gemini-2.5-pro",
-                    iconfig=types.GenerateContentConfig(
+                    config=types.GenerateContentConfig(
                         system_instruction=system_prompt + warning_prompt,
                         temperature=0.3
                     )
