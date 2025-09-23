@@ -242,7 +242,7 @@ async def on_message(message):
                     contents=warning_prompt
                 )
 
-                await message.channel.send(f"{message.author.mention} {warning_resp.output_text.strip()}")
+                await message.channel.send(f"{message.author.mention} {warning_resp.text.strip()}")
             else:
                 # 정상 링크면 체크 표시
                 await message.add_reaction("✅")
