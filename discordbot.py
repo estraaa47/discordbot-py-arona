@@ -235,13 +235,11 @@ async def on_message(message):
                 """
                 warning_resp = client.models.generate_content(
                     model="gemini-2.5-pro",
-                    config=types.GenerateContentConfig(
-                        system_instruction=system_prompt + warning_prompt,
-                        temperature=0.3
-                    )
+                    system_instruction=system_prompt + warning_prompt,
+                    temperature=0.3
                 )
-                await message.channel.send(f"{message.author.mention} {warning_resp.output_text.strip()}")
 
+                await message.channel.send(f"{message.author.mention} {warning_resp.output_text.strip()}")
             else:
                 # 정상 링크면 체크 표시
                 await message.add_reaction("✅")
