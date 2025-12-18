@@ -21,7 +21,7 @@ import re
 PREFIX = os.environ['PREFIX']
 TOKEN = os.environ['TOKEN']
 OPENAI_API_KEY = os.environ['GPT']
-Gemini_API_KEY = os.environ['GEMINI']
+Gemini_API_KEY = os.environ['GEMINI2']
 
 intents = discord.Intents.all()
 intents.members = True
