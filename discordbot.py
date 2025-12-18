@@ -15,7 +15,7 @@ from google import genai
 from google.genai import types
 from dotenv import load_dotenv
 import requests
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, time
 import asyncio
 import re
 import io
