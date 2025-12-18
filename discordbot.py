@@ -50,7 +50,7 @@ KST = timezone(timedelta(hours=9))
 WEATHER_CHANNEL_ID = 1087606309387509760 
 
 # 날씨 알림 시간 설정 (오후 8시 4분) - 원하시는 시간으로 수정 가능
-WEATHER_SCHEDULE_TIME = time(hour=20, minute=28, second=0, tzinfo=KST)
+WEATHER_SCHEDULE_TIME = time(hour=20, minute=41, second=0, tzinfo=KST)
 
 # 날씨 검색 대상 도시
 TARGET_CITY = "Seoul"
