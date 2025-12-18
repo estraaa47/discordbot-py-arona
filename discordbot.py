@@ -50,7 +50,7 @@ KST = timezone(timedelta(hours=9))
 WEATHER_CHANNEL_ID = 1087606309387509760 
 
 # 날씨 알림 시간 설정 (오후 8시 4분) - 원하시는 시간으로 수정 가능
-WEATHER_SCHEDULE_TIME = time(hour=20, minute=51, second=0, tzinfo=KST)
+WEATHER_SCHEDULE_TIME = time(hour=20, minute=57, second=0, tzinfo=KST)
 
 # 날씨 검색 대상 도시
 TARGET_CITY = "Seoul"
@@ -188,7 +188,9 @@ async def generate_weather_image():
         그림체는 공식 팬아트처럼 그려줘,
         아로나는 해당 풍경에 녹아들어서 자연스럽게 행동하고 있어야 해,
         아로나는 지상에 있어야 해,
-        아로나는 날씨,계절,기온,배경에 맞춰서 다양한 활동을 하고 있어야 해 창의적으로,
+        아로나는 날씨,계절,기온,배경에 맞춰서 다양한 활동(ex.눈싸움,물놀이,피크닉,추위에 떨기,부채질,선풍기 앞에 있기 등등)을 하고 있어야 해 창의적으로,
+        예시에 매몰되지 말고 너가 생각한 다양한 활동을 적극적으로 그려줘,
+        다양한 카메라 구도와 포즈를 사용해,
         **[Background & Environment Logic]**
         - Location: Visualize the specific location vibe.
         - Weather Reality: Strictly follow the temperature and weather condition.
