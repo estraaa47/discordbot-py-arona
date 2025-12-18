@@ -180,12 +180,15 @@ async def generate_weather_image():
         {weather_data}
         
         **[Character Instructions: Arona]**
-        - Appearance: Blue Archive Arona, light blue hair, MD/LD (6-head ratio) style.
-        - Halo: MUST have exactly ONE simple circular halo (Ring shape) floating above her head. Do not make it complex.
-        - Line Art: Thin, delicate, and emotional lines (Official fan-art style).
-        - **Pose & Activity:** Arona is actively engaged in a cute, lively activity suited to the current weather. She must be on the ground. Be CREATIVE (e.g., playing with rain/snow, reacting to heat/cold).
-        - Outfit: Wear an outfit suitable for the current weather and temperature.
-        
+        아로나에겐 반드시 아로나 캐릭터 설정에 맞는 헤일로가 하나만 있어야 해,
+        아로나는 하늘색 머리카락을 하고 있어,
+        아로나는 6등신정도의 MD와 LD 사이의 비율 캐릭터로 그려줘,
+        그림을 그릴땐 선이 굵지 않게 해줘,
+        그림을 그릴땐 감성적으로 그려줘,
+        그림체는 공식 팬아트처럼 그려줘,
+        아로나는 해당 풍경에 녹아들어서 자연스럽게 행동하고 있어야 해,
+        아로나는 지상에 있어야 해,
+        아로나는 날씨,계절,기온,배경에 맞춰서 다양한 활동을 하고 있어야 해 창의적으로,
         **[Background & Environment Logic]**
         - Location: Visualize the specific location (Seoul) vibe.
         - Weather Reality: Strictly follow the temperature and weather condition.
@@ -202,7 +205,7 @@ async def generate_weather_image():
           4. Top Right: 'Date', 'Time', and 'Location'.
         
         **[Text Rendering]**
-        - Try to render text in KOREAN or English.
+        - 한국어로 이미지를 그려줘.
         """
 
         def sync_generate():
