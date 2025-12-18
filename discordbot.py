@@ -14,9 +14,11 @@ from openai import OpenAI
 from google import genai
 from google.genai import types
 from dotenv import load_dotenv
+import requests
 from datetime import datetime, timedelta, timezone
 import asyncio
 import re
+import io
 
 PREFIX = os.environ['PREFIX']
 TOKEN = os.environ['TOKEN']
@@ -35,6 +37,14 @@ semisemiadmin_id =1032632104367947866
 client_ai = OpenAI(api_key=OPENAI_API_KEY)
 # Gemini 클라이언트
 client = genai.Client(api_key=Gemini_API_KEY)
+
+# 👇 [추가] 날씨 이미지를 보낼 채널 ID (여기에 실제 채널 ID 숫자를 넣으세요)
+WEATHER_CHANNEL_ID = 1087606309387509760 
+
+# 👇 [추가] 한국 시간 기준 매일 오전 7시 설정
+KST = timezone(timedelta(hours=9))
+WEATHER_SCHEDULE_TIME = time(hour=19, minute=42, second=0, tzinfo=KST)
+
 # 캐릭터 성격 (시스템 프롬프트)
 system_prompt = """
     너는 블루아카이브의 아로나야
@@ -70,6 +80,84 @@ now = datetime.now(timezone.utc)
 # 채널별 대화 메모리
 channel_memory: dict[int, dict] = {}
 
+TARGET_CITY = "Seoul"
+
+def get_dynamic_weather():
+    """
+    날짜(YYYY-MM-DD), 위치, 3시간 간격 예보를 모두 포함
+    """
+    try:
+        # 1. 오늘 날짜 구하기 (YYYY-MM-DD 형식)
+        from datetime import datetime
+        now = datetime.now()
+        today_date = now.strftime("%Y-%m-%d") # 예: 2025-12-18
+
+        # 2. 좌표 찾기
+        geo_url = f"https://geocoding-api.open-meteo.com/v1/search?name={TARGET_CITY}&count=1&language=en&format=json"
+        geo_res = requests.get(geo_url)
+        
+        if geo_res.status_code != 200 or not geo_res.json().get("results"):
+            return f"Error: Cannot find city '{TARGET_CITY}'"
+
+        location_data = geo_res.json()["results"][0]
+        lat = location_data["latitude"]
+        lon = location_data["longitude"]
+        real_name = location_data["name"]
+        country = location_data.get("country")
+
+        print(f"📍 위치: {real_name}, {country} / 날짜: {today_date}")
+
+        # 3. 날씨 가져오기
+        weather_url = (
+            f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}"
+            "&hourly=temperature_2m,weather_code,is_day"
+            "&timezone=auto&forecast_days=2"
+        )
+        
+        w_res = requests.get(weather_url)
+        if w_res.status_code != 200:
+            return "Error: Weather API failed"
+
+        data = w_res.json()
+        hourly = data.get("hourly", {})
+        times = hourly.get("time", [])
+        temps = hourly.get("temperature_2m", [])
+        codes = hourly.get("weather_code", [])
+        is_days = hourly.get("is_day", [])
+
+        current_hour_idx = datetime.now().hour 
+        
+        def code_to_text(c):
+            if c == 0: return "Clear Sky"
+            if c in [1, 2, 3]: return "Cloudy"
+            if c in [45, 48]: return "Foggy"
+            if c in [51, 53, 55, 61, 63, 65, 80, 81, 82]: return "Rainy"
+            if c in [71, 73, 75, 77, 85, 86]: return "Snowy"
+            if c in [95, 96, 99]: return "Thunderstorm"
+            return "Unknown"
+
+        forecast_list = []
+        
+        for i in range(0, 10, 3):
+            idx = current_hour_idx + i
+            if idx < len(times):
+                raw_t = times[idx].split("T")[1]
+                t_temp = temps[idx]
+                t_weather = code_to_text(codes[idx])
+                t_day = "Day" if is_days[idx] == 1 else "Night"
+                forecast_list.append(f"[{raw_t}({t_day}): {t_weather}, {t_temp}°C]")
+
+        timeline = " -> ".join(forecast_list)
+        
+        # [핵심 변경] 맨 앞에 'Date: 2025-12-18' 추가 됨 👇
+        final_result = f"Date: {today_date} | Location: {real_name}, {country} | Timeline: {timeline}"
+        
+        print(f"📊 최종 데이터: {final_result}")
+        return final_result
+
+    except Exception as e:
+        print(f"API Error: {e}")
+        return "Error: Unknown"
 
 
 # 5분마다 채널 메모리 초기화
@@ -84,6 +172,105 @@ async def reset_memory():
     for cid in to_delete:
         del channel_memory[cid]
 
+async def generate_weather_image():
+    """Gemini 3 Pro를 사용하여 검색과 이미지 생성을 원본 규격대로 한 번에 수행"""
+    try:
+        # 1. 여기서 weather_data를 선언하고 값을 받아옵니다! 👈
+        # (아까 만든 get_tokyo_weather_string 함수를 실행해서 결과를 넣음)
+        weather_data = await asyncio.to_thread(get_dynamic_weather)
+        
+        print(f"🌡️ 확보된 날씨 데이터: {weather_data}")
+
+        # 만약 API가 고장나서 데이터를 못 가져오면 기본값 설정
+        if not weather_data or "Unknown" in weather_data:
+             # 실패 시 기본값이라도 넣어야 에러가 안 납니다.
+            weather_data = "Location: Tokyo | Timeline: Sunny, 15°C (API Error)"
+
+        Weather_prompt = f"""
+        **Role & Objective:**
+        You are 'Arona', the AI character from the game 'Blue Archive'. 
+        Generate a high-quality weather infographic image based on the provided REAL-TIME WEATHER DATA.
+        
+        **[Real-Time Weather Data]**
+        {weather_data}
+        
+        **[Character Instructions: Arona]**
+        - Appearance: Blue Archive Arona, light blue hair, MD/LD (6-head ratio) style.
+        - Halo: MUST have exactly ONE simple circular halo (Ring shape) floating above her head. Do not make it complex.
+        - Line Art: Thin, delicate, and emotional lines (Official fan-art style).
+        - **Pose & Dynamic Activity: Arona is actively engaged in a cute, lively activity perfectly suited to the current weather data. She must be positioned firmly on the ground, interacting dynamically with the varied environmental elements around her (not just standing in empty space). Be HIGHLY CREATIVE with her action. Do not limit her poses to standard tropes; her behavior should tell a unique mini-story about experiencing the specific temperature and weather conditions at that location. (Examples for inspiration only, do not copy exactly: playing with rain/snow, reacting physically to intense heat/cold, exploring local objects, trying to stay dry/cool/warm).**
+        - Outfit: Wear an outfit suitable for the current weather and temperature in the data.
+        
+        **[Background & Environment Logic]**
+        - Location: Visualize the specific location mentioned in the data (e.g., landmarks, city vibe).
+        - Weather Reality: Strictly follow the temperature and weather condition in the data.
+          * CRITICAL: Only depict snow or a snow-covered landscape IF AND ONLY IF the weather condition in the data explicitly says "Snow" or "Snowy". Do not add snow otherwise, regardless of the season or temperature.
+        - Day/Night: Strictly follow the 'Day' or 'Night' status in the data.
+        
+        **[UI & Layout Design]**
+        - Aspect Ratio: 16:9
+        - Style: Modern, stylish, game UI asset, Blue Archive theme (clean, blue & white scheme).
+        - Layout:
+          1. Left Side: Negative space for Arona character placement.
+          2. Bottom: A large, semi-transparent frosted glass panel displaying the 'Timeline' (3-hour intervals) from the data using cute icons.
+          3. Middle Right: Large typography of the Current Temperature & a 3D Weather Icon.
+          4. Top Right: Display the 'Date' and 'Location'.
+        - Effects: Glassmorphism, soft drop shadows.
+        
+        **[Text Rendering]**
+        - Try to render the location name and weather status in KOREAN if possible, or standard English.
+        """
+
+        # 1. 선생님이 원하시는 원본 규격 그대로 함수 정의
+        def sync_generate():
+            return client.models.generate_content(
+                model="gemini-3-pro-image-preview",
+                contents=Weather_prompt,
+                config=types.GenerateContentConfig(
+                    tools=[{"google_search": {}}],  # 검색 툴 사용
+                    image_config=types.ImageConfig( # 이미지 설정
+                        aspect_ratio="16:9",
+                        image_size="1K"
+                    )
+                )
+            )
+
+        # 2. 봇이 멈추지 않도록 스레드에서 실행 (Heartbeat blocked 방지용)
+        response = await asyncio.to_thread(sync_generate)
+
+        # 3. 이미지 데이터 추출
+        image_parts = [part for part in response.parts if part.inline_data]
+        
+        if image_parts:
+            # [수정] 오류가 나는 as_image().save() 과정을 삭제하고
+            # 들어있는 원본 이미지 데이터(byte)를 바로 꺼내서 씁니다.
+            raw_data = image_parts[0].inline_data.data
+            
+            # 바로 디스코드 전송용 바이너리로 변환
+            image_binary = io.BytesIO(raw_data)
+            image_binary.seek(0)
+            
+            print("이미지 생성 성공!")
+            return image_binary
+            
+        return None
+
+    except Exception as e:
+        print(f"[Weather Error] 오류 발생: {e}")
+        return None
+
+@tasks.loop(time=WEATHER_SCHEDULE_TIME)
+async def scheduled_weather_task():
+    """매일 정해진 시간에 날씨 이미지 전송"""
+    channel = app.get_channel(WEATHER_CHANNEL_ID)
+    if channel:
+        image_data = await generate_weather_image()
+        
+        if image_data:
+            file = discord.File(fp=image_data, filename="weather.png")
+            # 멘트 없이 이미지만 전송
+            await channel.send(file=file)
+            
 @app.event
 async def on_ready():
     print(f"✅ 로그인: {app.user} (ID: {app.user.id})")
@@ -94,7 +281,13 @@ async def on_ready():
     print("슬래시 커맨드 등록 완료 (길드 전용)")
 
     # 3️⃣ 5분 메모리 초기화 태스크 시작
-    reset_memory.start()
+    if not reset_memory.is_running():
+        reset_memory.start()
+
+    # 👇 [추가] 날씨 스케줄러 시작
+    if not scheduled_weather_task.is_running():
+        scheduled_weather_task.start()
+
 
     channel = app.get_channel(1032650685180813312)
     message_id = 1087701328928706570
