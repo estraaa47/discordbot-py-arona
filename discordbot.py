@@ -50,7 +50,7 @@ KST = timezone(timedelta(hours=9))
 WEATHER_CHANNEL_ID = 1087606309387509760 
 
 # 날씨 알림 시간 설정 (오후 8시 4분) - 원하시는 시간으로 수정 가능
-WEATHER_SCHEDULE_TIME = time(hour=20, minute=41, second=0, tzinfo=KST)
+WEATHER_SCHEDULE_TIME = time(hour=20, minute=51, second=0, tzinfo=KST)
 
 # 날씨 검색 대상 도시
 TARGET_CITY = "Seoul"
@@ -190,19 +190,18 @@ async def generate_weather_image():
         아로나는 지상에 있어야 해,
         아로나는 날씨,계절,기온,배경에 맞춰서 다양한 활동을 하고 있어야 해 창의적으로,
         **[Background & Environment Logic]**
-        - Location: Visualize the specific location (Seoul) vibe.
+        - Location: Visualize the specific location vibe.
         - Weather Reality: Strictly follow the temperature and weather condition.
           * CRITICAL: Only depict snow IF the data explicitly says "Snow" or "Snowy". Do not draw snow otherwise.
         - Day/Night: Strictly follow the 'Current Time' and 'Day/Night' status in the data.
         
         **[UI & Layout Design]**
         - Aspect Ratio: 16:9
-        - Style: Modern game UI, Blue Archive theme.
+        - Style: Modern Glassmorphism Style UI,
         - Layout:
-          1. Left: Arona placement.
-          2. Bottom: Glass panel with 'Timeline' (3-hour intervals).
-          3. Middle Right: Current Temperature & 3D Weather Icon.
-          4. Top Right: 'Date', 'Time', and 'Location'.
+          1. Left: 아로나가 위치.
+          2. Bottom Right: Current Temperature & 3D Weather Icon and Glass panel with 'Timeline' (3-hour intervals,간단하게 표기).
+          3. Top Right: 'Date', 'Time', and 'Location'.
         
         **[Text Rendering]**
         - 한국어로 이미지를 그려줘.
