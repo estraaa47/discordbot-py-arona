@@ -50,7 +50,7 @@ KST = timezone(timedelta(hours=9))
 WEATHER_CHANNEL_ID = 1087606309387509760 
 
 # 날씨 알림 시간 설정 (오후 8시 4분) - 원하시는 시간으로 수정 가능
-WEATHER_SCHEDULE_TIME = time(hour=20, minute=57, second=0, tzinfo=KST)
+WEATHER_SCHEDULE_TIME = time(hour=21, minute=3, second=0, tzinfo=KST)
 
 # 날씨 검색 대상 도시
 TARGET_CITY = "Seoul"
@@ -202,7 +202,7 @@ async def generate_weather_image():
         - Style: Modern Glassmorphism Style UI,
         - Layout:
           1. Left: 아로나가 위치.
-          2. Bottom Right: Current Temperature & 3D Weather Icon and Glass panel with 'Timeline' (3-hour intervals,간단하게 표기).
+          2. Bottom Right: Current Temperature & Weather Icon and Glass panel with 'Timeline' (3-hour intervals,간단하게 표기).
           3. Top Right: 'Date', 'Time', and 'Location'.
         
         **[Text Rendering]**
