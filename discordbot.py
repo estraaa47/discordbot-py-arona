@@ -43,7 +43,7 @@ WEATHER_CHANNEL_ID = 1087606309387509760
 
 # 👇 [추가] 한국 시간 기준 매일 오전 7시 설정
 KST = timezone(timedelta(hours=9))
-WEATHER_SCHEDULE_TIME = time(hour=19, minute=48, second=0, tzinfo=KST)
+WEATHER_SCHEDULE_TIME = time(hour=20, minute=4, second=0, tzinfo=KST)
 
 # 캐릭터 성격 (시스템 프롬프트)
 system_prompt = """
@@ -75,7 +75,7 @@ grounding_tool = types.Tool(
 )
 
 
-now = datetime.now(timezone.utc)
+now = datetime.now(KST)
 
 # 채널별 대화 메모리
 channel_memory: dict[int, dict] = {}
@@ -125,7 +125,7 @@ def get_dynamic_weather():
         codes = hourly.get("weather_code", [])
         is_days = hourly.get("is_day", [])
 
-        current_hour_idx = datetime.now().hour 
+        current_hour_idx = now.hour 
         
         def code_to_text(c):
             if c == 0: return "Clear Sky"
@@ -163,7 +163,7 @@ def get_dynamic_weather():
 # 5분마다 채널 메모리 초기화
 @tasks.loop(minutes=5)
 async def reset_memory():
-    now = datetime.now(timezone.utc)
+    now = datetime.now(KST)
     to_delete = []
     for channel_id, data in channel_memory.items():
         # 마지막 활동으로부터 5분 이상 지난 채널 삭제
@@ -318,7 +318,7 @@ async def arona(interaction: discord.Interaction, message: str):
 
     user_message = f"{interaction.user.display_name} says: {message}"
     channel_memory[channel_id]["messages"].append({"role": "user", "content": user_message})
-    channel_memory[channel_id]["last_active"] = datetime.now(timezone.utc)
+    channel_memory[channel_id]["last_active"] = datetime.now(KST)
 
     try:
         # 대화 히스토리 구성
@@ -453,11 +453,11 @@ async def on_message(message):
         # 채널 메모리 초기화
         channel_id = str(message.channel.id)
         if channel_id not in channel_memory:
-            channel_memory[channel_id] = {"messages": [], "last_active": datetime.now(timezone.utc)}
+            channel_memory[channel_id] = {"messages": [], "last_active": datetime.now(KST)}
 
         # 메시지 기록
         channel_memory[channel_id]["messages"].append({"role": "user", "content": f"{user_nickname}: {user_input}"})
-        channel_memory[channel_id]["last_active"] = datetime.now(timezone.utc)
+        channel_memory[channel_id]["last_active"] = datetime.now(KST)
 
         async with message.channel.typing():
             try:
