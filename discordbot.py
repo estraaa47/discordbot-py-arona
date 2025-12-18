@@ -47,7 +47,7 @@ client = genai.Client(api_key=Gemini_API_KEY)
 KST = timezone(timedelta(hours=9))
 
 # 날씨 이미지를 보낼 채널 ID
-WEATHER_CHANNEL_ID = 1087606309387509760 
+WEATHER_CHANNEL_ID = 888816297784262739 
 
 # 날씨 알림 시간 설정 (오전 4시 30분) - 원하시는 시간으로 수정 가능
 WEATHER_SCHEDULE_TIME = time(hour=4, minute=00, second=0, tzinfo=KST)
