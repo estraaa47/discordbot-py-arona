@@ -139,7 +139,7 @@ async def arona(interaction: discord.Interaction, message: str):
             config=types.GenerateContentConfig(
                 system_instruction=system_prompt,
                 tools=[grounding_tool],
-                thinking_config=types.ThinkingConfig(thinking_level="medium")
+                thinking_config=types.ThinkingConfig(thinking_level="medium"),
                 temperature=1.0
             ),
             contents="\n".join(history)
@@ -280,7 +280,7 @@ async def on_message(message):
                         config=types.GenerateContentConfig(
                             system_instruction=system_prompt,
                             tools=[grounding_tool],
-                            thinking_config=types.ThinkingConfig(thinking_level="medium")
+                            thinking_config=types.ThinkingConfig(thinking_level="medium"),
                             temperature=1.0
                         ),
                         contents=chat_history_text
