@@ -254,7 +254,7 @@ async def reset_memory():
     for cid in to_delete:
         del channel_memory[cid]
 
-@tasks.loop(time=WEATHER_SCHEDULE_TIME)
+@tasks.loop(time=[WEATHER_SCHEDULE_TIME,WEATHER_SCHEDULE_TIME_2])
 async def scheduled_weather_task():
     """매일 정해진 시간에 날씨 이미지 전송"""
     print("⏰ 날씨 스케줄러 작동 시작")
@@ -356,7 +356,7 @@ async def on_message(message):
             링크 목록: {urls}
             """
             response = client_ai.responses.create(
-                model="gpt-4o-mini", # 모델명 확인 필요 (gpt-5-mini는 아직 없을 수 있음)
+                model="gpt-5-mini", # 모델명 확인 필요 (gpt-5-mini는 아직 없을 수 있음)
                 input=prompt
             )
             # (GPT 결과 처리 로직 생략 없이 그대로 유지한다고 가정)
