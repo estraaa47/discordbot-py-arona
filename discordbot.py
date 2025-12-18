@@ -43,7 +43,7 @@ WEATHER_CHANNEL_ID = 1087606309387509760
 
 # 👇 [추가] 한국 시간 기준 매일 오전 7시 설정
 KST = timezone(timedelta(hours=9))
-WEATHER_SCHEDULE_TIME = time(hour=19, minute=45, second=0, tzinfo=KST)
+WEATHER_SCHEDULE_TIME = time(hour=19, minute=48, second=0, tzinfo=KST)
 
 # 캐릭터 성격 (시스템 프롬프트)
 system_prompt = """
