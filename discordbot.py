@@ -186,13 +186,13 @@ async def generate_weather_image():
         아로나는 하늘색 머리카락을 하고 있어,
         아로나는 6등신정도의 MD와 LD 사이의 비율 캐릭터로 그려줘,
         그림을 그릴땐 선이 굵지 않게 해줘,
-        그림을 그릴땐 감성적으로 그려줘,
+        그림을 그릴땐 밝은 분위기의 활동적으로 그려줘,
         그림체는 공식 팬아트처럼 그려줘,
         아로나는 해당 풍경에 녹아들어서 자연스럽게 행동하고 있어야 해,
         아로나는 지상에 있어야 해,
-        아로나는 날씨,계절,기온,배경에 맞춰서 다양한 활동(ex.눈싸움,물놀이,피크닉,추위에 떨기,부채질,선풍기 앞에 있기 등등)을 하고 있어야 해 창의적으로,
+        아로나는 날씨,계절,기온,배경에 맞춰서 다양한 활동(ex.눈싸움,물놀이,피크닉,입김 불기,부채질,선풍기 앞에 있기 등등)을 하고 있어야 해 창의적으로,
         예시에 매몰되지 말고 너가 생각한 다양한 활동을 적극적으로 그려줘,
-        다양한 카메라 구도와 포즈를 사용해,
+        동적인 카메라 구도와 다이나믹한 포즈를 사용해,
         **[Background & Environment Logic]**
         - Location: Visualize the specific location vibe.
         - Weather Reality: Strictly follow the temperature and weather condition.
@@ -206,6 +206,7 @@ async def generate_weather_image():
           1. Left: 아로나가 위치.
           2. Bottom Right: Current Temperature & Weather Icon and Glass panel with 'Timeline' (3-hour intervals,간단하게 표기).
           3. Top Right: 'Date', 'Time', and 'Location'.
+          4.가시성을 위해 글씨 크기 살짝 크게
         
         **[Text Rendering]**
         - 한국어로 이미지를 그려줘.
