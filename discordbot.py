@@ -135,7 +135,7 @@ async def arona(interaction: discord.Interaction, message: str):
 
         # Gemini 호출
         response = client.models.generate_content(
-            model="gemini-2.5-pro",
+            model="gemini-3-flash-preview",
             config=types.GenerateContentConfig(
                 system_instruction=system_prompt,
                 tools=[grounding_tool],
@@ -234,7 +234,7 @@ async def on_message(message):
                 간단하고 단호하게 스팸 경고 메시지를 만들어줘. 1문장 정도로 작성.
                 """
                 warning_resp = client.models.generate_content(
-                    model="gemini-2.5-flash",
+                    model="gemini-3-flash-preview",
                     config=types.GenerateContentConfig(
                         system_instruction=system_prompt,
                         temperature=0.3
@@ -275,7 +275,7 @@ async def on_message(message):
                 # Gemini 호출 (스레드에서 실행)
                 def sync_call():
                     return client.models.generate_content(
-                        model="gemini-2.5-pro",
+                        model="gemini-3-flash-preview",
                         config=types.GenerateContentConfig(
                             system_instruction=system_prompt,
                             tools=[grounding_tool],
