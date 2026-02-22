@@ -86,7 +86,7 @@ class Point(commands.Cog):
                 points = result[0] if result else 0
                 
                 await interaction.response.send_message(
-                    f"💰 {interaction.user.mention}님의 현재 포인트는 **{points}P**입니다."
+                    f"💰 {interaction.user.mention}선생님의 현재 포인트는 **{points}P**에요!."
                 )
 
 async def setup(bot):
