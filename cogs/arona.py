@@ -38,6 +38,8 @@ class AronaChat(commands.Cog):
         [
         /arona - 아로나와 대화
         /point - 포인트 확인
+        /gatcha - 120P를 소모하여 가챠를 뽑습니다!
+        /collection - 등급별 수집 현황을 확인합니다.
         ]
         """
         self.grounding_tool = types.Tool(google_search=types.GoogleSearch())

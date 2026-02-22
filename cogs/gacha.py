@@ -15,7 +15,7 @@ class Gacha(commands.Cog):
         # ✅ 아주 짠 환급 비율 (절반 하향 버전)
         self.REFUND_RATES = {"Normal": 0.05, "Rare": 0.1, "Super Rare": 0.25, "Ultra Rare": 0.4}
 
-    @app_commands.command(name="가챠", description="120P를 소모하여 가챠를 뽑습니다!")
+    @app_commands.command(name="gacha", description="120P를 소모하여 가챠를 뽑습니다!")
     async def pull_gacha(self, interaction: discord.Interaction):
         if interaction.channel.id != self.ALLOWED_CHANNEL_ID:
             return await interaction.response.send_message(f"❌ 가챠는 <#{self.ALLOWED_CHANNEL_ID}>에서만 가능합니다.", ephemeral=True)
@@ -58,7 +58,7 @@ class Gacha(commands.Cog):
         colors = {"Ultra Rare": 0xa335ee, "Super Rare": 0xff8000, "Rare": 0x0070dd}
         return discord.Color(colors.get(rarity, 0x9d9d9d))
 
-    @app_commands.command(name="도감", description="등급별 수집 현황을 확인합니다.")
+    @app_commands.command(name="collection", description="등급별 수집 현황을 확인합니다.")
     async def collection(self, interaction: discord.Interaction):
         user_id = interaction.user.id
         pool = self.bot.get_cog('Point').pool
