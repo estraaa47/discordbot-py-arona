@@ -46,7 +46,7 @@ class AronaChat(commands.Cog):
         for cid in to_delete:
             del self.channel_memory[cid]
 
-    @app_commands.command(name="Arona", description="Chat with Arona")
+    @app_commands.command(name="arona", description="Chat with Arona")
     async def arona_slash(self, interaction: discord.Interaction, message: str):
         await interaction.response.defer()
         reply = await self.get_arona_reply(interaction.channel.id, interaction.user.display_name, message)
