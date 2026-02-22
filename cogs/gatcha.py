@@ -10,7 +10,7 @@ class Gacha(commands.Cog):
         self.rarities = ["Normal", "Rare", "Super Rare", "Ultra Rare"]
         self.weights = [70, 20, 8, 2]
         self.image_base_path = "./images"
-        self.ALLOWED_CHANNEL_ID = 1087606309387509760
+        self.ALLOWED_CHANNEL_ID = 1475278313416163358
         
         # ✅ 아주 짠 환급 비율 (절반 하향 버전)
         self.REFUND_RATES = {"Normal": 0.05, "Rare": 0.1, "Super Rare": 0.25, "Ultra Rare": 0.4}
