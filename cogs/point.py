@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from discord import app_commands # 슬래시 커맨드를 위해 추가
 import aiomysql
 import os
 import random
@@ -30,7 +31,6 @@ class Point(commands.Cog):
         """DB에 포인트를 추가하거나 유저가 없으면 새로 생성합니다."""
         async with self.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                # 'ON DUPLICATE KEY UPDATE'를 써서 유저가 있으면 더하고, 없으면 새로 만듭니다.
                 sql = """
                 INSERT INTO users (user_id, points) VALUES (%s, %s)
                 ON DUPLICATE KEY UPDATE points = points + %s
@@ -39,25 +39,29 @@ class Point(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        # 봇이 쓴 글이나 명령어(!로 시작)는 무시합니다.
+        """채팅 적립 로직 (이건 기존처럼 메시지를 감지해야 하므로 유지합니다)"""
         if message.author.bot or message.content.startswith('!'):
             return
 
-        # 1~5점 사이의 랜덤 포인트 지급
         earned = random.randint(1, 5)
         await self.add_points(message.author.id, earned)
 
-    @commands.command(name="포인트")
-    async def check_point(self, ctx):
-        """현재 내 포인트를 확인합니다."""
+    # ✨ 슬래시 커맨드 (/Point)
+    @app_commands.command(name="point", description="현재 보유한 포인트를 확인합니다.")
+    async def check_point(self, interaction: discord.Interaction):
+        """슬래시 커맨드 전용 포인트 확인 함수"""
         async with self.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute("SELECT points FROM users WHERE user_id = %s", (ctx.author.id,))
+                # interaction.user.id를 사용합니다.
+                await cur.execute("SELECT points FROM users WHERE user_id = %s", (interaction.user.id,))
                 result = await cur.fetchone()
                 
                 points = result[0] if result else 0
-                await ctx.send(f"💰 {ctx.author.mention}님의 현재 포인트는 **{points}P**입니다.")
-
+                
+                # 대답은 interaction.response.send_message를 사용합니다.
+                await interaction.response.send_message(
+                    f"💰 {interaction.user.mention}님의 현재 포인트는 **{points}P**입니다."
+                )
 
 async def setup(bot):
     await bot.add_cog(Point(bot))

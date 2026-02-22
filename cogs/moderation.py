@@ -58,8 +58,8 @@ class Moderation(commands.Cog):
                 """
                 
                 # OpenAI 호출 (변수명 self.client_ai 사용)
-                response = self.client_ai.chat.completions.create( # 최신 SDK 기준: chat.completions.create
-                    model="gpt-5-mini", # 모델명 확인 필요 (gpt-5-mini는 아직 정식 출시 전일 수 있음)
+                response = self.client_ai.chat.completions.create( 
+                    model="gpt-5-mini", 
                     messages=[{"role": "user", "content": prompt}]
                 )
                 result = response.choices[0].message.content.strip().upper()
