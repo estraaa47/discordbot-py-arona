@@ -4,6 +4,8 @@ from discord import app_commands
 import os
 import random
 
+INVENTORY_URL = "https://port-0-discordbot-py-arona-6g2llfjm6s1m.sel3.cloudtype.app/"
+
 class Gacha(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -102,7 +104,10 @@ class Gacha(commands.Cog):
         
         embed = discord.Embed(
             title=f"🗃️ {interaction.user.display_name}님의 수집 현황",
-            description=f"**전체 수집률: {rate:.1f}% ({total_owned}/{total_all})**",
+            description=(
+                f"**전체 수집률: {rate:.1f}% ({total_owned}/{total_all})**\n\n"
+                f"🌐 [웹에서 상세 도감 보기]({INVENTORY_URL})" # 👈 [표시할문구](링크) 형식입니다.
+            ),
             color=discord.Color.blue()
         )
 
