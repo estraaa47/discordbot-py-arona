@@ -160,6 +160,40 @@
             color: rgba(255, 255, 255, 0.2);
             letter-spacing: 1px;
         }
+
+        /* [MOBILE OPTIMIZATION] */
+        @media (max-width: 480px) {
+            body {
+                /* 모바일에서 배경 애니메이션이 끊긴다면 flow 시간을 조금 늘려주는 게 좋습니다. */
+                overflow: hidden;
+            }
+
+            .login-container {
+                width: 85%;
+                /* 좌우 여백 확보 */
+                padding: 45px 25px;
+                /* 내부 패딩 최적화 */
+                border-radius: 28px;
+                /* 상자 곡률 살짝 조정 */
+            }
+
+            .logo-main {
+                font-size: 1.3rem;
+                /* 로고 크기 살짝 축소 */
+                letter-spacing: 2px;
+            }
+
+            .welcome-text {
+                font-size: 0.85rem;
+                margin-bottom: 35px;
+            }
+
+            .login-btn {
+                padding: 14px;
+                font-size: 0.9rem;
+                /* 버튼 텍스트 최적화 */
+            }
+        }
     </style>
 </head>
 
