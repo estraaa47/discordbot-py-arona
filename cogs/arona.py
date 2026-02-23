@@ -38,7 +38,7 @@ class AronaChat(commands.Cog):
         [
         /arona - 아로나와 대화
         /point - 포인트 확인
-        /gatcha - 120P를 소모하여 가챠를 뽑습니다!
+        /gacha - 120P를 소모하여 가챠를 뽑습니다. 노말 70% 레어 20% 슈퍼레어 8% 울트라레어 2%
         /collection - 등급별 수집 현황을 확인합니다.
         ]
         """
