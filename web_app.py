@@ -55,6 +55,8 @@ def get_all_card_files():
                     "name": card_name,
                     "path": relative_path.replace("\\", "/") 
                 })
+    image_list.sort(key=lambda x: x['name'])
+    
     return image_list
 
 @app.route("/")
