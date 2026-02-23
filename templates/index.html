@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARONA ARCHIVE | ACCESS</title>
+    <style>
+        /* [PREMIUM DARK & PEARL THEME] */
+        :root {
+            --bg-deep: #0a0a0c;
+            --accent-blue: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.4);
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* 🛠️ 정중앙 배치를 위한 바디 설정 강화 */
+        * {
+            box-sizing: border-box;
+        }
+
+        /* 패딩이 박스 크기에 영향을 주지 않도록 설정 */
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-primary);
+            font-family: 'Inter', 'Pretendard', -apple-system, sans-serif;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh;
+            /* 화면 전체 높이 사용 */
+            display: flex;
+            align-items: center;
+            /* 수직 중앙 정렬 */
+            justify-content: center;
+            /* 수평 중앙 정렬 */
+            overflow: hidden;
+            /* 스크롤바 제거로 밀림 방지 */
+            position: relative;
+        }
+
+        /* [BACKGROUND] - 배경은 뒤에 고정 */
+        .pearl-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .swoosh {
+            position: absolute;
+            filter: blur(120px);
+            border-radius: 50%;
+            opacity: 0.18;
+        }
+
+        .swoosh-1 {
+            width: 130vw;
+            height: 70vh;
+            top: -20%;
+            right: -25%;
+            background: radial-gradient(ellipse, var(--accent-blue), transparent 70%);
+            transform: rotate(-15deg);
+            animation: flow 25s infinite alternate ease-in-out;
+        }
+
+        .swoosh-2 {
+            width: 110vw;
+            height: 90vh;
+            bottom: -30%;
+            left: -20%;
+            background: radial-gradient(ellipse, #7c3aed, transparent 70%);
+            transform: rotate(10deg);
+            animation: flow 30s infinite alternate-reverse ease-in-out;
+        }
+
+        @keyframes flow {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            100% {
+                transform: translate(-3%, 3%);
+            }
+        }
+
+        /* [LOGIN CARD] - 실제 로그인 상자 */
+        .login-container {
+            position: relative;
+            z-index: 10;
+            /* 배경보다 위로 */
+            width: 90%;
+            max-width: 440px;
+            padding: 60px 40px;
+            background: rgba(15, 15, 18, 0.7);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border-radius: 36px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+            box-shadow: 0 50px 100px rgba(0, 0, 0, 0.6);
+            /* 🛠️ 박스 자체가 밀리지 않도록 마진 초기화 */
+            margin: auto;
+        }
+
+        .logo-main {
+            font-size: 1.6rem;
+            font-weight: 900;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+
+        .logo-main span {
+            color: var(--accent-blue);
+            text-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .welcome-text {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin-bottom: 45px;
+            line-height: 1.7;
+            font-weight: 400;
+        }
+
+        /* [DISCORD BUTTON] */
+        .login-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #5865F2 0%, #4752c4 100%);
+            color: white;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 0.95rem;
+            border-radius: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(88, 101, 242, 0.4);
+            filter: brightness(1.1);
+        }
+
+        .footer-note {
+            margin-top: 40px;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.2);
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="pearl-background">
+        <div class="swoosh swoosh-1"></div>
+        <div class="swoosh swoosh-2"></div>
+    </div>
+
+    <div class="login-container">
+        <div class="logo-main">ARONA <span>ARCHIVE</span></div>
+        <p class="welcome-text">
+            로그인이 필요한 기능입니다.
+        </p>
+
+        <a href="/login" class="login-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                    d="M19.27 4.57c-1.41-.65-2.93-1.12-4.52-1.37a.06.06 0 0 0-.06.03c-.2.35-.42.81-.57 1.18a16.2 16.2 0 0 0-4.24 0c-.15-.37-.37-.83-.57-1.18a.06.06 0 0 0-.06-.03c-1.58.25-3.11.72-4.52 1.37a.06.06 0 0 0-.03.02C1.9 8.94 1.13 13.18 1.44 17.34a.07.07 0 0 0 .03.05c2.06 1.52 4.04 2.45 5.99 3.05a.07.07 0 0 0 .07-.02c.46-.63.87-1.29 1.22-1.99a.06.06 0 0 0-.03-.09c-.65-.25-1.26-.54-1.84-.89a.06.06 0 0 1-.01-.1c.12-.09.24-.18.36-.28a.06.06 0 0 1 .06-.01c3.92 1.79 8.16 1.79 12.01 0a.06.06 0 0 1 .06.01c.12.1.24.19.36.28a.06.06 0 0 1-.01.1c-.58.35-1.19.64-1.84.89a.06.06 0 0 0-.03.09c.35.7.76 1.36 1.22 1.99a.07.07 0 0 0 .07.02c1.95-.6 3.94-1.53 6-3.05a.07.07 0 0 0 .03-.05c.37-4.73-.62-8.91-2.82-12.75a.06.06 0 0 0-.03-.02zM8.52 14.91c-1.14 0-2.07-1.05-2.07-2.33s.9-2.33 2.07-2.33c1.18 0 2.1 1.05 2.07 2.33s-.89 2.33-2.07 2.33zm6.96 0c-1.14 0-2.07-1.05-2.07-2.33s.9-2.33 2.07-2.33c1.18 0 2.1 1.05 2.07 2.33s-.89 2.33-2.07 2.33z" />
+            </svg>
+            DISCORD LOGIN
+        </a>
+
+        <div class="footer-note">Arona Archive v1.0</div>
+    </div>
+</body>
+
+</html>

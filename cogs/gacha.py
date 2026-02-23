@@ -12,7 +12,7 @@ class Gacha(commands.Cog):
         self.image_base_path = "./images"
         self.ALLOWED_CHANNEL_ID = 1475278313416163358
         
-        # ✅ 아주 짠 환급 비율 (절반 하향 버전)
+        # ✅ 아주 짠 환급 비율
         self.REFUND_RATES = {"Normal": 0.05, "Rare": 0.1, "Super Rare": 0.25, "Ultra Rare": 0.4}
 
     @app_commands.command(name="gacha", description="120P를 소모하여 가챠를 뽑습니다!")
@@ -34,7 +34,16 @@ class Gacha(commands.Cog):
                 rarity = random.choices(self.rarities, weights=self.weights, k=1)[0]
                 folder_name = rarity.lower().replace(" ", "_")
                 path = f"{self.image_base_path}/{folder_name}"
-                files = os.listdir(path)
+
+                # 🛠️ [수정] 이미지 확장자만 허용하고, hidden.jpg는 절대 뽑히지 않게 필터링!
+                if not os.path.exists(path):
+                    return await interaction.response.send_message(f"❌ {rarity} 폴더를 찾을 수 없어요.", ephemeral=True)
+
+                files = [f for f in os.listdir(path) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')) and f != 'hidden.jpg']
+                
+                if not files:
+                    return await interaction.response.send_message(f"❌ {rarity} 등급에 뽑을 수 있는 카드가 없어요!", ephemeral=True)
+
                 selected_file = random.choice(files)
                 card_name = os.path.splitext(selected_file)[0]
 
@@ -72,7 +81,8 @@ class Gacha(commands.Cog):
             path = f"{self.image_base_path}/{folder}"
             
             if os.path.exists(path):
-                all_files = os.listdir(path)
+                # 🛠️ [수정] 통계 계산 시에도 이미지 파일만, hidden.jpg 제외!
+                all_files = [f for f in os.listdir(path) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')) and f != 'hidden.jpg']
                 total_in_rarity = len(all_files)
             else:
                 total_in_rarity = 0
