@@ -11,11 +11,11 @@ app = Flask(__name__,
             static_folder='images', 
             static_url_path='/images', 
             template_folder='templates')
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
-app = Flask(__name__, ...)
-app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
 
 app.config["DISCORD_CLIENT_ID"] = os.getenv("DISCORD_CLIENT_ID")
 app.config["DISCORD_CLIENT_SECRET"] = os.getenv("DISCORD_CLIENT_SECRET")
