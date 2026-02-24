@@ -19,6 +19,7 @@
     --border-radius-md: 0.875rem;
 }
 
+/* [FONTS] */
 @font-face {
     font-family: 'NexonLv2';
     src: url('../fonts/NEXON%20Lv2%20Gothic%20Light.ttf') format('truetype');
@@ -43,6 +44,7 @@
     font-weight: 700;
 }
 
+/* [BASE] */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -64,10 +66,7 @@ body {
 
 .pearl-background {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     z-index: -1;
     background: var(--bg-deep);
 }
@@ -98,21 +97,22 @@ body {
     }
 }
 
-/* ✨ 맥동하는 방사형 에너지 애니메이션 */
-@keyframes pulse-radial {
+/* ✨ 광채 애니메이션 (농도 및 스케일 강화) */
+@keyframes pulse-energy {
 
     0%,
     100% {
         transform: scale(1);
-        opacity: 0.4;
+        opacity: 0.6;
     }
 
     50% {
         transform: scale(1.15);
-        opacity: 0.8;
+        opacity: 1;
     }
 }
 
+/* [HEADER] */
 .header {
     display: flex;
     justify-content: space-between;
@@ -238,6 +238,7 @@ body {
     }
 }
 
+/* [MAIN CONTENT] */
 .title-section {
     padding: 4.375rem var(--section-padding) 1.25rem;
 }
@@ -286,6 +287,7 @@ h1 {
     box-shadow: 0 0 0.9375rem var(--accent-glow);
 }
 
+/* [DECK] */
 #deck {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(var(--card-min-width), 1fr));
@@ -294,59 +296,54 @@ h1 {
 }
 
 .card {
+    position: relative;
+    z-index: 1;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* ✨ 모서리 해결사: 여기서 모든 내용물을 가두고 깎음 */
+.card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
     background: var(--bg-surface);
     border-radius: var(--border-radius-lg);
     border: 1px solid var(--border-color);
-    position: relative;
-    transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-    user-select: none;
-    z-index: 1;
-    /* 광채보다 위로 */
+    overflow: hidden;
+    /* 이게 사각형을 방지함 */
+    z-index: 2;
 }
 
 .card:not(.is-hidden):hover {
     transform: translateY(-0.75rem);
-    border-color: rgba(255, 255, 255, 0.3);
 }
 
-/* ✨ 등급별 방사형 에너지 효과 (Grade Energy) */
-.card[data-grade="ultra_rare"]:not(.is-hidden)::before {
-    content: "";
-    position: absolute;
-    inset: -1.5rem;
-    z-index: -1;
-    background: radial-gradient(circle, rgba(251, 191, 36, 0.5) 0%, rgba(251, 191, 36, 0.2) 40%, transparent 70%);
-    filter: blur(15px);
-    border-radius: inherit;
-    animation: pulse-radial 2s infinite ease-in-out;
-}
-
-.card[data-grade="ultra_rare"]:not(.is-hidden) {
-    border-color: var(--accent-gold);
-}
-
+/* ✨ UR/SR 초강력 에너지 방사 */
+.card[data-grade="ultra_rare"]:not(.is-hidden)::before,
 .card[data-grade="super_rare"]:not(.is-hidden)::before {
     content: "";
     position: absolute;
-    inset: -1.2rem;
+    inset: -1.25rem;
+    /* 범위 확장 */
     z-index: -1;
-    background: radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, rgba(168, 85, 247, 0.1) 45%, transparent 75%);
-    filter: blur(12px);
-    border-radius: inherit;
-    animation: pulse-radial 3s infinite ease-in-out;
+    filter: blur(25px);
+    animation: pulse-energy 2s infinite ease-in-out;
 }
 
-.card[data-grade="super_rare"]:not(.is-hidden) {
-    border-color: var(--accent-purple);
+.card[data-grade="ultra_rare"]:not(.is-hidden)::before {
+    background: radial-gradient(circle, rgba(251, 191, 36, 0.9) 0%, rgba(251, 191, 36, 0.4) 50%, transparent 80%);
 }
 
-/* 이미지와 텍스트 영역에 둥근 모서리 직접 적용 (카드 overflow 방지) */
+.card[data-grade="super_rare"]:not(.is-hidden)::before {
+    background: radial-gradient(circle, rgba(168, 85, 247, 0.8) 0%, rgba(168, 85, 247, 0.3) 50%, transparent 80%);
+}
+
+/* 이미지 및 텍스트 구역 */
 .card-img-wrapper {
     width: 100%;
     aspect-ratio: 3/4;
     overflow: hidden;
     background: #000;
-    border-radius: calc(var(--border-radius-lg) - 1px) calc(var(--border-radius-lg) - 1px) 0 0;
 }
 
 .card img {
@@ -354,33 +351,28 @@ h1 {
     height: 100%;
     object-fit: cover;
     opacity: 0.85;
-    transition: 0.7s;
+    transition: 0.5s;
 }
 
 .is-hidden {
-    opacity: 0.5;
-    filter: saturate(0.5);
-}
-
-.is-hidden img {
-    opacity: 0.25;
-    filter: blur(2px);
+    opacity: 0.4;
+    filter: grayscale(1);
 }
 
 .card-info {
     padding: 1.5625rem 1.25rem 1.25rem;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+    background: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 50%, transparent 100%);
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    border-radius: 0 0 calc(var(--border-radius-lg) - 1px) calc(var(--border-radius-lg) - 1px);
 }
 
 .card-name {
     font-size: 1.05rem;
     font-weight: 500;
     color: #fff;
+    margin-bottom: 4px;
 }
 
 .card-status {
@@ -398,14 +390,14 @@ h1 {
     color: var(--text-secondary);
 }
 
-/* Modal & Others ... */
+/* [MODAL] */
 #cardModal {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.95);
     z-index: 2000;
-    backdrop-filter: blur(1.25rem);
+    backdrop-filter: blur(1.5rem);
     align-items: center;
     justify-content: center;
     opacity: 0;
@@ -432,8 +424,19 @@ h1 {
 .modal-img {
     width: 100%;
     border-radius: 2rem;
-    border: 2px solid var(--accent-blue);
-    box-shadow: 0 0 3.75rem var(--accent-glow);
+    border: 2px solid transparent;
+    transition: all 0.3s;
+}
+
+/* ✨ 모달 이미지 광채 보강 */
+.modal-img[data-grade="ultra_rare"] {
+    border-color: var(--accent-gold);
+    box-shadow: 0 0 60px rgba(251, 191, 36, 0.7);
+}
+
+.modal-img[data-grade="super_rare"] {
+    border-color: var(--accent-purple);
+    box-shadow: 0 0 50px rgba(168, 85, 247, 0.6);
 }
 
 .modal-info {
@@ -458,6 +461,7 @@ h1 {
     opacity: 0.6;
 }
 
+/* [RESPONSIVE] */
 @media (max-width: 48rem) {
     :root {
         --section-padding: 1.5rem;
@@ -481,15 +485,4 @@ h1 {
     .logo {
         font-size: 0.9rem;
     }
-}
-
-/* ✨ 모달 이미지 등급별 방사형 광채 */
-.modal-img[data-grade="ultra_rare"] {
-    border: 2px solid var(--accent-gold);
-    box-shadow: 0 0 50px rgba(251, 191, 36, 0.6);
-}
-
-.modal-img[data-grade="super_rare"] {
-    border: 2px solid var(--accent-purple);
-    box-shadow: 0 0 40px rgba(168, 85, 247, 0.5);
 }
