@@ -1,5 +1,30 @@
 const modal = document.getElementById('cardModal');
 
+/**
+ *  프로필 드롭다운 토글
+ * preventDefault: 텍스트가 파랗게 선택되는 현상 방지
+ * stopPropagation: 부모(window)의 클릭 이벤트가 실행되어 메뉴가 바로 닫히는 것 방지
+ */
+function toggleDropdown(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    document.getElementById('dropdownMenu').classList.toggle('active');
+}
+
+/**
+ *  전역 클릭 이벤트
+ * 드롭다운이 열려있을 때 화면 어디든 클릭하면 닫히게 함
+ */
+window.onclick = function (event) {
+    const dropdown = document.getElementById('dropdownMenu');
+    if (dropdown && dropdown.classList.contains('active')) {
+        dropdown.classList.remove('active');
+    }
+};
+
+/**
+ *  카드 필터링 기능
+ */
 function filterCards(grade, btnElement) {
     const btns = document.querySelectorAll('.filter-btn');
     btns.forEach(btn => btn.classList.remove('active'));
@@ -16,45 +41,35 @@ function filterCards(grade, btnElement) {
     });
 }
 
+/**
+ *  모달 열기
+ */
 function openModal(cardElement) {
     const isOwned = cardElement.dataset.owned === 'true';
     document.getElementById('modalImg').src = cardElement.dataset.img;
     document.getElementById('modalName').innerText = cardElement.dataset.name;
     const modalStatus = document.getElementById('modalStatus');
+
     modalStatus.innerText = isOwned ? "● OWNED" : "○ LOCKED";
     modalStatus.className = isOwned ? "card-status status-owned" : "card-status status-locked";
+
     modal.style.display = 'flex';
     setTimeout(() => { modal.classList.add('active'); }, 10);
     document.body.style.overflow = 'hidden';
 }
 
+/**
+ * 모달 닫기
+ */
 function closeModal() {
     modal.classList.remove('active');
     setTimeout(() => { modal.style.display = 'none'; }, 300);
     document.body.style.overflow = 'auto';
 }
 
+/**
+ * ESC 키로 모달 닫기
+ */
 window.onkeydown = function (event) {
     if (event.keyCode === 27) closeModal();
 };
-
-function toggleDropdown(event) {
-    const dropdown = document.getElementById('dropdownMenu');
-    // 클릭된 요소가 드롭다운이 아니거나 드롭다운 내부 요소가 아니면 토글
-    if (!dropdown.contains(event.target) && event.target !== document.getElementById('profile')) {
-        dropdown.classList.toggle('active');
-    }
-}
-
-// 다른 곳 클릭 시 드롭다운 닫기
-document.addEventListener('click', function (event) {
-    const dropdown = document.getElementById('dropdownMenu');
-    const profile = document.querySelector('.profile');
-
-    // 드롭다운이 열려있고, 클릭된 곳이 프로필도 아니고 드롭다운 내부도 아니면 닫음
-    if (dropdown.classList.contains('active') &&
-        !profile.contains(event.target) &&
-        !dropdown.contains(event.target)) {
-        dropdown.classList.remove('active');
-    }
-});
