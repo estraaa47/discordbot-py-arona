@@ -98,6 +98,21 @@ body {
     }
 }
 
+/* ✨ 맥동하는 방사형 에너지 애니메이션 */
+@keyframes pulse-radial {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.4;
+    }
+
+    50% {
+        transform: scale(1.15);
+        opacity: 0.8;
+    }
+}
+
 .header {
     display: flex;
     justify-content: space-between;
@@ -281,11 +296,12 @@ h1 {
 .card {
     background: var(--bg-surface);
     border-radius: var(--border-radius-lg);
-    overflow: hidden;
     border: 1px solid var(--border-color);
     position: relative;
     transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
     user-select: none;
+    z-index: 1;
+    /* 광채보다 위로 */
 }
 
 .card:not(.is-hidden):hover {
@@ -293,29 +309,44 @@ h1 {
     border-color: rgba(255, 255, 255, 0.3);
 }
 
-/* ✨ 등급별 광원 효과 (Grade Glow Effects) */
-.card[data-grade="ultra_rare"]:not(.is-hidden) {
-    border-color: var(--accent-gold);
-    box-shadow: 0 0 20px rgba(251, 191, 36, 0.2), 0 0 40px rgba(251, 191, 36, 0.1);
+/* ✨ 등급별 방사형 에너지 효과 (Grade Energy) */
+.card[data-grade="ultra_rare"]:not(.is-hidden)::before {
+    content: "";
+    position: absolute;
+    inset: -1.5rem;
+    z-index: -1;
+    background: radial-gradient(circle, rgba(251, 191, 36, 0.5) 0%, rgba(251, 191, 36, 0.2) 40%, transparent 70%);
+    filter: blur(15px);
+    border-radius: inherit;
+    animation: pulse-radial 2s infinite ease-in-out;
 }
 
-.card[data-grade="ultra_rare"]:not(.is-hidden):hover {
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(251, 191, 36, 0.4);
+.card[data-grade="ultra_rare"]:not(.is-hidden) {
+    border-color: var(--accent-gold);
+}
+
+.card[data-grade="super_rare"]:not(.is-hidden)::before {
+    content: "";
+    position: absolute;
+    inset: -1.2rem;
+    z-index: -1;
+    background: radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, rgba(168, 85, 247, 0.1) 45%, transparent 75%);
+    filter: blur(12px);
+    border-radius: inherit;
+    animation: pulse-radial 3s infinite ease-in-out;
 }
 
 .card[data-grade="super_rare"]:not(.is-hidden) {
     border-color: var(--accent-purple);
 }
 
-.card[data-grade="super_rare"]:not(.is-hidden):hover {
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 25px rgba(168, 85, 247, 0.3);
-}
-
+/* 이미지와 텍스트 영역에 둥근 모서리 직접 적용 (카드 overflow 방지) */
 .card-img-wrapper {
     width: 100%;
     aspect-ratio: 3/4;
     overflow: hidden;
     background: #000;
+    border-radius: calc(var(--border-radius-lg) - 1px) calc(var(--border-radius-lg) - 1px) 0 0;
 }
 
 .card img {
@@ -343,6 +374,7 @@ h1 {
     bottom: 0;
     left: 0;
     right: 0;
+    border-radius: 0 0 calc(var(--border-radius-lg) - 1px) calc(var(--border-radius-lg) - 1px);
 }
 
 .card-name {
@@ -366,6 +398,7 @@ h1 {
     color: var(--text-secondary);
 }
 
+/* Modal & Others ... */
 #cardModal {
     display: none;
     position: fixed;
@@ -448,4 +481,15 @@ h1 {
     .logo {
         font-size: 0.9rem;
     }
+}
+
+/* ✨ 모달 이미지 등급별 방사형 광채 */
+.modal-img[data-grade="ultra_rare"] {
+    border: 2px solid var(--accent-gold);
+    box-shadow: 0 0 50px rgba(251, 191, 36, 0.6);
+}
+
+.modal-img[data-grade="super_rare"] {
+    border: 2px solid var(--accent-purple);
+    box-shadow: 0 0 40px rgba(168, 85, 247, 0.5);
 }

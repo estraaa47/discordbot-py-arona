@@ -1,7 +1,7 @@
 const modal = document.getElementById('cardModal');
 
 /**
- *  프로필 드롭다운 토글
+ * ✨ 프로필 드롭다운 토글
  * preventDefault: 텍스트가 파랗게 선택되는 현상 방지
  * stopPropagation: 부모(window)의 클릭 이벤트가 실행되어 메뉴가 바로 닫히는 것 방지
  */
@@ -12,7 +12,7 @@ function toggleDropdown(event) {
 }
 
 /**
- *  전역 클릭 이벤트
+ * ✨ 전역 클릭 이벤트
  * 드롭다운이 열려있을 때 화면 어디든 클릭하면 닫히게 함
  */
 window.onclick = function (event) {
@@ -23,7 +23,7 @@ window.onclick = function (event) {
 };
 
 /**
- *  카드 필터링 기능
+ * ✨ 카드 필터링 기능
  */
 function filterCards(grade, btnElement) {
     const btns = document.querySelectorAll('.filter-btn');
@@ -42,11 +42,18 @@ function filterCards(grade, btnElement) {
 }
 
 /**
- *  모달 열기
+ * ✨ 모달 열기 (등급 광채 데이터 전달 추가)
  */
 function openModal(cardElement) {
     const isOwned = cardElement.dataset.owned === 'true';
-    document.getElementById('modalImg').src = cardElement.dataset.img;
+    const grade = cardElement.dataset.grade; // ✨ 클릭한 카드의 등급 가져오기
+
+    const modalImg = document.getElementById('modalImg');
+    modalImg.src = cardElement.dataset.img;
+
+    // ✨ 모달 이미지에도 data-grade를 박아줌 (CSS에서 이걸 보고 광채를 냄)
+    modalImg.setAttribute('data-grade', grade);
+
     document.getElementById('modalName').innerText = cardElement.dataset.name;
     const modalStatus = document.getElementById('modalStatus');
 
@@ -59,7 +66,7 @@ function openModal(cardElement) {
 }
 
 /**
- * 모달 닫기
+ * ✨ 모달 닫기
  */
 function closeModal() {
     modal.classList.remove('active');
@@ -68,7 +75,7 @@ function closeModal() {
 }
 
 /**
- * ESC 키로 모달 닫기
+ * ✨ ESC 키로 모달 닫기
  */
 window.onkeydown = function (event) {
     if (event.keyCode === 27) closeModal();
