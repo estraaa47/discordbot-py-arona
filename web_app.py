@@ -47,14 +47,20 @@ def get_all_card_files():
     
     for root, dirs, files in os.walk(base_path):
         for file in files:
+
             if file.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')) and file.lower() != 'hidden.jpg':
                 relative_path = os.path.relpath(os.path.join(root, file), base_path)
                 card_name = os.path.splitext(file)[0]
                 
+                parts = file.rsplit('_', 1)
+                grade = parts[0] if len(parts) > 1 else "normal"
+                
                 image_list.append({
                     "name": card_name,
-                    "path": relative_path.replace("\\", "/") 
+                    "path": relative_path.replace("\\", "/"),
+                    "grade": grade 
                 })
+
     image_list.sort(key=lambda x: x['name'])
     
     return image_list

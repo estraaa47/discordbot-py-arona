@@ -508,17 +508,17 @@
             {% set is_owned = card.name in owned_names %}
             <div class="card {% if not is_owned %}is-hidden{% endif %}"
                 data-img="{{ ('/images/' ~ card.path) if is_owned else '/images/hidden.jpg' }}"
-                data-name="{{ card.name if is_owned else 'Encrypted Data' }}" data-grade="{{ card.grade }}"
+                data-name="{{ card.name if is_owned else 'Locked' }}" data-grade="{{ card.grade }}"
                 data-owned="{{ 'true' if is_owned else 'false' }}" onclick="openModal(this)">
                 <div class="card-img-wrapper">
                     <img src="{% if is_owned %}/images/{{ card.path }}{% else %}/images/hidden.jpg{% endif %}"
                         alt="{{ card.name }}">
                 </div>
                 <div class="card-info">
-                    <div class="card-name">{% if is_owned %}{{ card.name }}{% else %}Encrypted Data{% endif %}</div>
+                    <div class="card-name">{% if is_owned %}{{ card.name }}{% else %}Locked{% endif %}</div>
                     <div class="card-status">
-                        {% if is_owned %}<span class="status-owned">● Decrypted</span>{% else %}<span
-                            class="status-locked">○ Encrypted</span>{% endif %}
+                        {% if is_owned %}<span class="status-owned">● Owned</span>{% else %}<span
+                            class="status-locked">○ Not Owned</span>{% endif %}
                     </div>
                 </div>
             </div>
