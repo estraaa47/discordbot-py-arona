@@ -318,16 +318,25 @@ h1 {
     transform: translateY(-0.75rem);
 }
 
-/* ✨ UR/SR 초강력 에너지 방사 */
+
 .card[data-grade="ultra_rare"]:not(.is-hidden)::before,
 .card[data-grade="super_rare"]:not(.is-hidden)::before {
     content: "";
     position: absolute;
     inset: -1.25rem;
-    /* 범위 확장 */
     z-index: -1;
     filter: blur(25px);
-    animation: pulse-energy 2s infinite ease-in-out;
+
+}
+
+
+.card[data-grade="ultra_rare"]:not(.is-hidden)::before {
+    animation: pulse-energy 5s infinite ease-in-out;
+}
+
+
+.card[data-grade="super_rare"]:not(.is-hidden)::before {
+    animation: pulse-energy 7s infinite ease-in-out;
 }
 
 .card[data-grade="ultra_rare"]:not(.is-hidden)::before {
