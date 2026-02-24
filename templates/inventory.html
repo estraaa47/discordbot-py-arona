@@ -17,14 +17,16 @@
     <header class="header">
         <div class="header-left">
             <a href="/" class="logo">ARONA <span>ARCHIVE</span></a>
-            <div class="nav-links">
-                <a href="/logout" class="nav-btn logout">LOGOUT</a>
-            </div>
         </div>
         <div class="header-right">
-            <div class="profile">
-                <span>{{ user.username }}</span>
-                <img src="{{ user.avatar_url }}" alt="profile">
+            <div class="profile-container">
+                <div class="profile" onclick="toggleDropdown(event)">
+                    <span>{{ user.username }}</span>
+                    <img src="{{ user.avatar_url }}" alt="profile">
+                </div>
+                <div id="dropdownMenu" class="dropdown-menu">
+                    <a href="/logout" class="dropdown-item logout">LOGOUT</a>
+                </div>
             </div>
         </div>
     </header>

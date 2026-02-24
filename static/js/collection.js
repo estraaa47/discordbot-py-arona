@@ -37,3 +37,24 @@ function closeModal() {
 window.onkeydown = function (event) {
     if (event.keyCode === 27) closeModal();
 };
+
+function toggleDropdown(event) {
+    const dropdown = document.getElementById('dropdownMenu');
+    // 클릭된 요소가 드롭다운이 아니거나 드롭다운 내부 요소가 아니면 토글
+    if (!dropdown.contains(event.target) && event.target !== document.getElementById('profile')) {
+        dropdown.classList.toggle('active');
+    }
+}
+
+// 다른 곳 클릭 시 드롭다운 닫기
+document.addEventListener('click', function (event) {
+    const dropdown = document.getElementById('dropdownMenu');
+    const profile = document.querySelector('.profile');
+
+    // 드롭다운이 열려있고, 클릭된 곳이 프로필도 아니고 드롭다운 내부도 아니면 닫음
+    if (dropdown.classList.contains('active') &&
+        !profile.contains(event.target) &&
+        !dropdown.contains(event.target)) {
+        dropdown.classList.remove('active');
+    }
+});
