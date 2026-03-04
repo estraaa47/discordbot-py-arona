@@ -33,8 +33,8 @@ class F1(commands.Cog):
             
             days_until = (race_date - now).days
             
-            # 5일 전일 때만 DB 체크 시작
-            if days_until == 5:
+            # 6일 전일 때만 DB 체크 시작
+            if days_until == 6:
                 point_cog = self.bot.get_cog('Point')
                 if not point_cog: return
                 
