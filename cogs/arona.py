@@ -86,7 +86,7 @@ class AronaChat(commands.Cog):
             # 동기 함수인 genai 호출을 별도 스레드에서 실행
             response = await asyncio.to_thread(
                 self.client.models.generate_content,
-                model="gemini-2.5-flash",
+                model="gemini-3-flash-preview",
                 config=types.GenerateContentConfig(
                     system_instruction=self.system_prompt,
                     tools=[self.grounding_tool],

@@ -89,7 +89,7 @@ class Moderation(commands.Cog):
 
                     # 아로나 경고 (Gemini 호출)
                     warning_resp = self.client_gemini.models.generate_content(
-                        model="gemini-2.5-flash", # 모델명 확인
+                        model="gemini-3-flash-preview", # 모델명 확인
                         config=types.GenerateContentConfig(
                             system_instruction=self.system_prompt,
                             temperature=0.3
