@@ -56,7 +56,7 @@
                 <div class="card-inner">
                     <div class="card-img-wrapper">
                         <img src="{% if is_owned %}/images/{{ card.path }}{% else %}/images/hidden.jpg{% endif %}"
-                            alt="{{ card.name }}">
+                            alt="{{ card.name }}" loading="lazy">
                     </div>
 
                     <div class="card-info">
