@@ -488,27 +488,47 @@ h1 {
     width: 2.2rem;
     height: 2.2rem;
     border-radius: 50%;
-    background: var(--header-glass);
+    /* 💡 배경은 다시 어두운 유리 느낌으로 복구 */
+    background: rgba(10, 10, 12, 0.7);
+    backdrop-filter: blur(4px);
     border: 1px solid var(--border-color);
     cursor: pointer;
     transition: all 0.2s ease;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 💡 아이콘 이미지만 따로 처리 (가상 요소) */
+.lock-btn::before {
+    content: "";
+    width: 60%;
+    height: 60%;
     background-image: url('../icons/unlock.png');
-    background-size: 55%;
+    background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    /* 💡 아이콘을 흰색으로 반전 */
+    /* 💡 아이콘 이미지만 흰색으로 반전! 배경 원에는 영향 안 줌 */
     filter: brightness(0) invert(1);
+    transition: all 0.2s ease;
 }
 
 .lock-btn:hover {
     border-color: var(--accent-red);
-    transform: scale(1.1);
+    background: rgba(255, 255, 255, 0.1);
 }
 
+/* 🔒 잠긴 상태일 때 */
 .lock-btn.locked {
-    background-image: url('../icons/lock.png');
     border-color: var(--accent-red);
-    box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+}
+
+.lock-btn.locked::before {
+    background-image: url('../icons/lock.png');
+    /* 잠겼을 때 아이콘도 흰색 유지 (혹은 원하는 색으로 조절 가능) */
+    filter: brightness(0) invert(1);
 }
 
 /* 🏆 강화 배지 등급별 스타일 */
