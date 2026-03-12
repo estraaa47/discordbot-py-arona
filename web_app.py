@@ -5,6 +5,9 @@ import pymysql
 from dotenv import load_dotenv
 from werkzeug.middleware.proxy_fix import ProxyFix
 
+# ✨ Waitress 임포트 추가 (프로 서빙팀 고용!)
+from waitress import serve 
+
 load_dotenv()
 
 # ✨ 절대 경로 설정
@@ -203,9 +206,13 @@ def toggle_inventory_lock():
     return jsonify({"success": False, "message": "DB Connection Error"}), 500
 
 
+# ==========================================
+# 🚀 서버 실행 (Waitress 적용)
+# ==========================================
 def run_flask():
     port = int(os.environ.get("PORT", 8080))
-    app.run(host='0.0.0.0', port=port, debug=False)
+    print(f"🚀 Waitress 웹 서버가 포트 {port}에서 8개의 스레드로 가동됩니다!")
+    serve(app, host='0.0.0.0', port=port, threads=8)
 
 if __name__ == "__main__":
     run_flask()
