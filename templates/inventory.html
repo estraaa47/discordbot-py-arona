@@ -6,87 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ARONA ARCHIVE | INVENTORY</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <style>
-        /* [INVENTORY SPECIFIC STYLES] */
-        .tab-container {
-            display: flex;
-            gap: 1rem;
-            padding: 0 var(--section-padding) 1rem;
-            margin-top: -1rem;
-        }
-
-        .tab-link {
-            text-decoration: none;
-            cursor: pointer;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-            padding: 0.7rem 1.5rem;
-            border-radius: var(--border-radius-md);
-            font-size: 0.85rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            letter-spacing: 0.05rem;
-        }
-
-        .tab-link:hover {
-            background: rgba(255, 255, 255, 0.08);
-            color: var(--text-primary);
-        }
-
-        .tab-link.active {
-            background: var(--bg-surface);
-            border-color: var(--accent-blue);
-            color: var(--accent-blue);
-            box-shadow: 0 0 1rem var(--accent-glow);
-        }
-
-        .upgrade-badge {
-            position: absolute;
-            top: 1rem;
-            left: 1rem;
-            z-index: 10;
-            background: var(--header-glass);
-            backdrop-filter: blur(5px);
-            border: 1px solid var(--accent-blue);
-            color: var(--accent-blue);
-            padding: 0.2rem 0.6rem;
-            border-radius: 0.5rem;
-            font-size: 0.75rem;
-            font-weight: 800;
-            text-shadow: 0 0 5px var(--accent-glow);
-            pointer-events: none;
-        }
-
-        .lock-btn {
-            position: absolute;
-            top: 0.8rem;
-            right: 0.8rem;
-            z-index: 10;
-            width: 2.2rem;
-            height: 2.2rem;
-            border-radius: 50%;
-            background: var(--header-glass);
-            border: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 1rem;
-        }
-
-        .lock-btn:hover {
-            border-color: var(--accent-red);
-            transform: scale(1.1);
-        }
-
-        .lock-btn.locked {
-            color: var(--accent-red);
-            border-color: var(--accent-red);
-            box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
-        }
-    </style>
 </head>
 
 <body>
@@ -137,11 +56,15 @@
                 data-name="{{ item.item_name.split('.')[0] }}" onclick="openModal(this)">
 
                 <div class="card-inner">
-                    <div class="upgrade-badge">+{{ item.upgrade_level }}</div>
+                    <div class="upgrade-badge 
+                        {% if item.upgrade_level >= 8 %}tier-rainbow
+                        {% elif item.upgrade_level >= 5 %}tier-gold
+                        {% else %}tier-white{% endif %}">
+                        +{{ item.upgrade_level }}
+                    </div>
 
                     <div class="lock-btn {% if item.is_locked %}locked{% endif %}" data-id="{{ item.id }}"
                         onclick="toggleLock(event, this)">
-                        {% if item.is_locked %}🔒{% else %}🔓{% endif %}
                     </div>
 
                     <div class="card-img-wrapper">
@@ -172,7 +95,7 @@
             <div class="modal-info">
                 <div id="modalName" class="modal-name"></div>
                 <div id="modalStatus" class="card-status status-owned"></div>
-                <div id="modalUpgrade" style="margin-top: 10px; font-weight: bold; color: var(--accent-blue);"></div>
+                <div id="modalUpgrade" class="modal-upgrade-text"></div>
             </div>
         </div>
     </div>

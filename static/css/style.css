@@ -167,19 +167,6 @@ body {
     border-color: var(--accent-blue);
 }
 
-.profile:active {
-    transform: scale(0.97);
-}
-
-.profile img {
-    width: var(--avatar-size);
-    height: var(--avatar-size);
-    border-radius: 50%;
-    border: 1.5px solid var(--accent-blue);
-    object-fit: cover;
-    flex-shrink: 0;
-}
-
 .dropdown-menu {
     position: absolute;
     top: calc(100% + 0.625rem);
@@ -209,7 +196,6 @@ body {
     text-align: center;
     transition: all 0.2s ease;
     cursor: pointer;
-    user-select: none;
 }
 
 .dropdown-item.logout {
@@ -268,16 +254,6 @@ h1 {
     font-size: 0.8rem;
     font-weight: 500;
     transition: all 0.2s ease;
-    font-family: 'NexonLv2', sans-serif;
-    user-select: none;
-}
-
-.filter-btn:hover {
-    background: rgba(255, 255, 255, 0.08);
-}
-
-.filter-btn:active {
-    transform: scale(0.95);
 }
 
 .filter-btn.active {
@@ -324,7 +300,6 @@ h1 {
     filter: blur(25px);
 }
 
-/* ✨ UR (Ultra Rare) -> 보라색으로 변경 */
 .card[data-grade="ultra_rare"]:not(.is-hidden)::before {
     animation: pulse-energy 5s infinite ease-in-out;
     background: radial-gradient(circle, rgba(168, 85, 247, 0.9) 0%, rgba(168, 85, 247, 0.4) 50%, transparent 80%);
@@ -334,7 +309,6 @@ h1 {
     border-color: var(--accent-purple);
 }
 
-/* ✨ SR (Super Rare) -> 노란색으로 변경 */
 .card[data-grade="super_rare"]:not(.is-hidden)::before {
     animation: pulse-energy 7s infinite ease-in-out;
     background: radial-gradient(circle, rgba(251, 191, 36, 0.8) 0%, rgba(251, 191, 36, 0.3) 50%, transparent 80%);
@@ -344,7 +318,6 @@ h1 {
     border-color: var(--accent-gold);
 }
 
-/* 이미지 및 텍스트 구역 */
 .card-img-wrapper {
     width: 100%;
     aspect-ratio: 3/4;
@@ -434,7 +407,6 @@ h1 {
     transition: all 0.3s;
 }
 
-/* ✨ 모달 이미지 광채도 스왑 */
 .modal-img[data-grade="ultra_rare"] {
     border-color: var(--accent-purple);
     box-shadow: 0 0 60px rgba(168, 85, 247, 0.7);
@@ -467,33 +439,7 @@ h1 {
     opacity: 0.6;
 }
 
-/* [RESPONSIVE] */
-@media (max-width: 48rem) {
-    :root {
-        --section-padding: 1.5rem;
-    }
-
-    h1 {
-        font-size: 2rem;
-    }
-
-    .header {
-        padding: 1.125rem 1.5rem;
-    }
-}
-
-@media (max-width: 30rem) {
-    #deck {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.75rem;
-    }
-
-    .logo {
-        font-size: 0.9rem;
-    }
-}
-
-/* [TABS] - 상단 탭 메뉴 */
+/* [TABS] */
 .tab-container {
     display: flex;
     gap: 1rem;
@@ -526,7 +472,11 @@ h1 {
     box-shadow: 0 0 1rem var(--accent-glow);
 }
 
-/* [INVENTORY EXTRA] - 강화 및 잠금 */
+/* --------------------------------------------------
+   [INVENTORY EXTRA - 수정됨]
+-------------------------------------------------- */
+
+/* ✨ 공통 강화 배지 스타일 */
 .upgrade-badge {
     position: absolute;
     top: 1rem;
@@ -534,15 +484,55 @@ h1 {
     z-index: 10;
     background: var(--header-glass);
     backdrop-filter: blur(5px);
-    border: 1px solid var(--accent-blue);
-    color: var(--accent-blue);
     padding: 0.2rem 0.6rem;
     border-radius: 0.5rem;
     font-size: 0.75rem;
     font-weight: 800;
-    text-shadow: 0 0 5px var(--accent-glow);
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
 }
 
+/* ⚪ 1~4강: 흰색 */
+.tier-white {
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.4);
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.4);
+}
+
+/* 🟡 5~7강: 금색 */
+.tier-gold {
+    color: var(--accent-gold);
+    border-color: var(--accent-gold);
+    text-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
+}
+
+/* 🌈 8강 이상: 무지개 (애니메이션) */
+.tier-rainbow {
+    background: linear-gradient(to right,
+            #ff2424, #ffad60, #fbff00, #43ff64,
+            #417aff, #b472ff, #ff72ff, #ff2424);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 900;
+    border-color: rgba(255, 255, 255, 0.5);
+    animation: rainbow-scroll 3s linear infinite;
+}
+
+@keyframes rainbow-scroll {
+    to {
+        background-position: 200% center;
+    }
+}
+
+/* 모달 내의 강화 텍스트 스타일 */
+.modal-upgrade-text {
+    font-size: 1.5rem;
+    margin-top: 10px;
+}
+
+/* ✨ 자물쇠 버튼 - 이미지 방식 유지 */
 .lock-btn {
     position: absolute;
     top: 0.8rem;
@@ -553,12 +543,12 @@ h1 {
     border-radius: 50%;
     background: var(--header-glass);
     border: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
     cursor: pointer;
     transition: all 0.2s ease;
-    font-size: 1rem;
+    background-image: url('../icons/unlock.png');
+    background-size: 55%;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 .lock-btn:hover {
@@ -567,7 +557,33 @@ h1 {
 }
 
 .lock-btn.locked {
-    color: var(--accent-red);
+    background-image: url('../icons/lock.png');
     border-color: var(--accent-red);
     box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+}
+
+/* [RESPONSIVE] */
+@media (max-width: 48rem) {
+    :root {
+        --section-padding: 1.5rem;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    .header {
+        padding: 1.125rem 1.5rem;
+    }
+}
+
+@media (max-width: 30rem) {
+    #deck {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    .logo {
+        font-size: 0.9rem;
+    }
 }
