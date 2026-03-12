@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARONA ARCHIVE | PREMIUM</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <div class="pearl-background">
+        <div class="swoosh swoosh-1"></div>
+        <div class="swoosh swoosh-2"></div>
+    </div>
+
+    <header class="header">
+        <div class="header-left">
+            <a href="/" class="logo">ARONA <span>ARCHIVE</span></a>
+        </div>
+        <div class="header-right">
+            <div class="profile-container">
+                <div class="profile" onclick="toggleDropdown(event)">
+                    <span>{{ user.username }}</span>
+                    <img src="{{ user.avatar_url }}" alt="profile">
+                </div>
+                <div id="dropdownMenu" class="dropdown-menu">
+                    <a href="/logout" class="dropdown-item logout">LOGOUT</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="title-section">
+            <h1>Collection</h1>
+            <p class="subtitle">선생님께서 수집하신 카드들이에요!</p>
+        </div>
+
+        <div class="filter-container">
+            <button class="filter-btn active" onclick="filterCards('all', this)">ALL</button>
+            <button class="filter-btn" onclick="filterCards('normal', this)">NORMAL</button>
+            <button class="filter-btn" onclick="filterCards('rare', this)">RARE</button>
+            <button class="filter-btn" onclick="filterCards('super_rare', this)">SR</button>
+            <button class="filter-btn" onclick="filterCards('ultra_rare', this)">UR</button>
+        </div>
+
+        <div id="deck">
+            {% for card in all_cards %}
+            {% set is_owned = card.name in owned_names %}
+            <div class="card {% if not is_owned %}is-hidden{% endif %}"
+                data-img="{{ ('/images/' ~ card.path) if is_owned else '/images/hidden.jpg' }}"
+                data-name="{{ card.name if is_owned else 'Locked' }}" data-grade="{{ card.grade }}"
+                data-owned="{{ 'true' if is_owned else 'false' }}" onclick="openModal(this)">
+
+                <div class="card-inner">
+                    <div class="card-img-wrapper">
+                        <img src="{% if is_owned %}/images/{{ card.path }}{% else %}/images/hidden.jpg{% endif %}"
+                            alt="{{ card.name }}" loading="lazy">
+                    </div>
+
+                    <div class="card-info">
+                        <div class="card-name">{% if is_owned %}{{ card.name }}{% else %}Locked{% endif %}</div>
+                        <div class="card-status">
+                            {% if is_owned %}
+                            <span class="status-owned">● Owned</span>
+                            {% else %}
+                            <span class="status-locked">○ Not Owned</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+
+    <div id="cardModal" onclick="closeModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <img id="modalImg" class="modal-img" src="">
+            <div class="modal-info">
+                <div id="modalName" class="modal-name"></div>
+                <div id="modalStatus" class="card-status status-owned"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/collection.js') }}"></script>
+</body>
+
+</html>

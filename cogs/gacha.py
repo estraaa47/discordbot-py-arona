@@ -4,7 +4,7 @@ from discord import app_commands
 import os
 import random
 
-INVENTORY_URL = "https://port-0-discordbot-py-arona-6g2llfjm6s1m.sel3.cloudtype.app/"
+COLLECTION_URL = "https://port-0-discordbot-py-arona-6g2llfjm6s1m.sel3.cloudtype.app/"
 
 class Gacha(commands.Cog):
     def __init__(self, bot):
@@ -66,11 +66,10 @@ class Gacha(commands.Cog):
                 file = discord.File(f"{path}/{selected_file}", filename=selected_file)
                 
                 if is_duplicate:
-                    embed = discord.Embed(title="🎴 중복 획득!", description=f"**[{rarity}]** {card_name}", color=discord.Color.light_gray())
-                    embed.set_footer(text="획득한 카드는 인벤토리에 보관되며 강화/합성 재료로 쓰입니다.")
+                    embed = discord.Embed(title="🎴 중복 획득", description=f"**[{rarity}]** {card_name}", color=discord.Color.light_gray())
                 else:
-                    embed = discord.Embed(title="✨ 🌟 신규 도감 등록! 🌟 ✨", description=f"**[{rarity}]** {card_name}!", color=self.get_color(rarity))
-                    embed.set_footer(text="새로운 카드를 도감에 등록했습니다!")
+                    embed = discord.Embed(title="✨ 🌟 신규 🌟 ✨", description=f"**[{rarity}]** {card_name}!", color=self.get_color(rarity))
+
                 
                 embed.set_image(url=f"attachment://{selected_file}")
                 await interaction.response.send_message(file=file, embed=embed)
@@ -117,7 +116,7 @@ class Gacha(commands.Cog):
             title=f"🗃️ {interaction.user.display_name}님의 수집 현황",
             description=(
                 f"**전체 수집률: {rate:.1f}% ({total_owned}/{total_all})**\n\n"
-                f"🌐 [웹에서 상세 도감 보기]({INVENTORY_URL})"
+                f"🌐 [웹에서 상세 도감 보기]({COLLECTION_URL})"
             ),
             color=discord.Color.blue()
         )

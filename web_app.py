@@ -1,5 +1,6 @@
 import os
-from flask import Flask, redirect, url_for, render_template, session, send_from_directory # send_from_directory 추가
+# 💡 request, jsonify 추가됨
+from flask import Flask, redirect, url_for, render_template, session, send_from_directory, request, jsonify 
 from flask_discord import DiscordOAuth2Session
 import pymysql
 from dotenv import load_dotenv
@@ -11,7 +12,7 @@ load_dotenv()
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
 app = Flask(__name__, 
-            static_folder='static',          # CSS, JS, Fonts가 들어있는 폴더를 기본으로 설정
+            static_folder='static',          
             template_folder='templates')
 
 # ✨ 프록시 설정 (클라우드타입 호스팅 필수)
@@ -49,7 +50,6 @@ def get_db_connection():
 
 def get_all_card_files():
     image_list = []
-    # 이미지는 서버의 images 폴더에서 읽어옴
     card_base_path = os.path.join(base_dir, 'images')
     
     if not os.path.exists(card_base_path):
@@ -76,7 +76,7 @@ def get_all_card_files():
 @app.route("/")
 def index():
     if discord.authorized:
-        return redirect(url_for("inventory"))
+        return redirect(url_for("collection"))
     return render_template("index.html")
 
 @app.route("/login")
@@ -91,10 +91,13 @@ def logout():
 @app.route("/callback")
 def callback():
     discord.callback() 
-    return redirect(url_for("inventory"))
+    return redirect(url_for("collection"))
 
-@app.route("/inventory")
-def inventory():
+# ==========================================
+# 📖 1. 도감 페이지
+# ==========================================
+@app.route("/collection")
+def collection():
     if not discord.authorized:
         return redirect(url_for("login"))
     
@@ -106,7 +109,7 @@ def inventory():
     if conn:
         try:
             with conn.cursor() as cursor:
-                sql = "SELECT item_name FROM inventory WHERE user_id = %s"
+                sql = "SELECT item_name FROM collection WHERE user_id = %s"
                 cursor.execute(sql, (user.id,))
                 owned_data = cursor.fetchall()
                 owned_names = [os.path.splitext(item['item_name'])[0] for item in owned_data]
@@ -115,10 +118,73 @@ def inventory():
         finally:
             conn.close()
 
-    return render_template("inventory.html", 
+    return render_template("collection.html", 
                            user=user, 
                            all_cards=all_cards, 
                            owned_names=owned_names)
+
+# ==========================================
+# 🎒 2. 진짜 인벤토리 페이지
+# ==========================================
+@app.route("/inventory")
+def inventory():
+    if not discord.authorized:
+        return redirect(url_for("login"))
+    
+    user = discord.fetch_user()
+    
+    inventory_items = []
+    conn = get_db_connection()
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                sql = """
+                    SELECT id, item_name, rarity, upgrade_level, is_locked 
+                    FROM inventory 
+                    WHERE user_id = %s 
+                    ORDER BY rarity DESC, item_name ASC
+                """
+                cursor.execute(sql, (user.id,))
+                inventory_items = cursor.fetchall()
+        except Exception as e:
+            print(f"❌ 데이터베이스 오류: {e}")
+        finally:
+            conn.close()
+
+    return render_template("inventory.html", 
+                           user=user, 
+                           inventory_items=inventory_items)
+
+# ==========================================
+# 🔒 3. 자물쇠 잠금 API (추가됨)
+# ==========================================
+@app.route("/api/inventory/lock", methods=["POST"])
+def toggle_inventory_lock():
+    if not discord.authorized:
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+    
+    data = request.json
+    card_id = data.get("card_id")
+    new_lock_status = data.get("lock")  # True/False
+    user = discord.fetch_user()
+
+    conn = get_db_connection()
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                # 보안: 본인 소유의 카드만 수정 가능하도록 user_id 체크
+                sql = "UPDATE inventory SET is_locked = %s WHERE id = %s AND user_id = %s"
+                cursor.execute(sql, (new_lock_status, card_id, user.id))
+                conn.commit()
+                return jsonify({"success": True})
+        except Exception as e:
+            print(f"❌ 잠금 API 오류: {e}")
+            return jsonify({"success": False, "error": str(e)}), 500
+        finally:
+            conn.close()
+    
+    return jsonify({"success": False, "message": "DB Connection Error"}), 500
+
 
 def run_flask():
     port = int(os.environ.get("PORT", 8080))
