@@ -111,7 +111,7 @@ body {
     }
 }
 
-/* [HEADER & PROFILE REPAIR] */
+/* [HEADER & PROFILE] */
 .header {
     display: flex;
     justify-content: space-between;
@@ -156,7 +156,6 @@ body {
     padding: 4px 4px 4px 16px;
     background: rgba(255, 255, 255, 0.07);
     border-radius: 100px;
-    /* 알약 모양 고정 */
     border: 1px solid var(--border-color);
     cursor: pointer;
     transition: all 0.2s ease;
@@ -172,7 +171,6 @@ body {
     width: 34px;
     height: 34px;
     border-radius: 50% !important;
-    /* 이미지 원형 고정 */
     border: 2px solid var(--accent-blue);
     object-fit: cover;
     flex-shrink: 0;
@@ -323,12 +321,14 @@ h1 {
     z-index: 2;
 }
 
-.card:not(.is-hidden):hover {
+/* 💡 수집한 카드에만 호버 효과 적용 */
+.card:not(.not-owned):hover {
     transform: translateY(-0.75rem);
 }
 
-.card[data-grade="ultra_rare"]:not(.is-hidden)::before,
-.card[data-grade="super_rare"]:not(.is-hidden)::before {
+/* 💡 [아우라 버그 수정] 수집한 카드(:not(.not-owned))에만 아우라가 나오게 설정 */
+.card:not(.not-owned)[data-grade="ultra_rare"]::before,
+.card:not(.not-owned)[data-grade="super_rare"]::before {
     content: "";
     position: absolute;
     inset: -1.25rem;
@@ -336,32 +336,41 @@ h1 {
     filter: blur(25px);
 }
 
-.card[data-grade="ultra_rare"]:not(.is-hidden)::before {
+.card:not(.not-owned)[data-grade="ultra_rare"]::before {
     animation: pulse-energy 5s infinite ease-in-out;
     background: radial-gradient(circle, rgba(168, 85, 247, 0.9) 0%, rgba(168, 85, 247, 0.4) 50%, transparent 80%);
 }
 
-.card[data-grade="ultra_rare"]:not(.is-hidden) {
+.card:not(.not-owned)[data-grade="ultra_rare"] {
     border-color: var(--accent-purple);
 }
 
-.card[data-grade="super_rare"]:not(.is-hidden)::before {
+.card:not(.not-owned)[data-grade="super_rare"]::before {
     animation: pulse-energy 7s infinite ease-in-out;
     background: radial-gradient(circle, rgba(251, 191, 36, 0.8) 0%, rgba(251, 191, 36, 0.3) 50%, transparent 80%);
 }
 
-.card[data-grade="super_rare"]:not(.is-hidden) {
+.card:not(.not-owned)[data-grade="super_rare"] {
     border-color: var(--accent-gold);
+}
+
+/* 💡 미수집 카드 상태 디자인 (아우라 제거 및 어둡게) */
+.card.not-owned {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.card.not-owned .card-inner {
+    filter: grayscale(1) brightness(0.6);
+    border: 1px dashed rgba(255, 255, 255, 0.15);
 }
 
 .card-img-wrapper {
     width: 100%;
-    aspect-ratio: 3/4;
-    overflow: hidden;
-    background: #000;
     aspect-ratio: 3 / 4;
+    overflow: hidden;
+    background: #111;
     min-height: 250px;
-    background-color: #111;
 }
 
 .card img {
@@ -370,11 +379,6 @@ h1 {
     object-fit: cover;
     opacity: 0.85;
     transition: 0.5s;
-}
-
-.is-hidden {
-    opacity: 0.4;
-    filter: grayscale(1);
 }
 
 .card-info {
@@ -404,8 +408,9 @@ h1 {
     color: var(--accent-blue);
 }
 
-.status-locked {
+.status-missing {
     color: var(--text-secondary);
+    opacity: 0.7;
 }
 
 /* [MODAL] */
@@ -446,6 +451,7 @@ h1 {
     transition: all 0.3s;
 }
 
+/* 모달에서도 등급별 아우라 적용 */
 .modal-img[data-grade="ultra_rare"] {
     border-color: var(--accent-purple);
     box-shadow: 0 0 60px rgba(168, 85, 247, 0.7);
@@ -478,11 +484,7 @@ h1 {
     opacity: 0.6;
 }
 
-/* --------------------------------------------------
-   [INVENTORY ELEMENTS - LOCK & BADGE]
--------------------------------------------------- */
-
-/* ✨ 자물쇠 버튼 - 흰색 필터 적용 */
+/* [LOCK & BADGE] */
 .lock-btn {
     position: absolute;
     top: 0.8rem;
@@ -491,19 +493,16 @@ h1 {
     width: 2.2rem;
     height: 2.2rem;
     border-radius: 50%;
-    /* 💡 배경은 다시 어두운 유리 느낌으로 복구 */
     background: rgba(10, 10, 12, 0.7);
     backdrop-filter: blur(4px);
     border: 1px solid var(--border-color);
     cursor: pointer;
     transition: all 0.2s ease;
-    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-/* 💡 아이콘 이미지만 따로 처리 (가상 요소) */
 .lock-btn::before {
     content: "";
     width: 60%;
@@ -512,7 +511,6 @@ h1 {
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    /* 💡 아이콘 이미지만 흰색으로 반전! 배경 원에는 영향 안 줌 */
     filter: brightness(0) invert(1);
     transition: all 0.2s ease;
 }
@@ -522,7 +520,6 @@ h1 {
     background: rgba(255, 255, 255, 0.1);
 }
 
-/* 🔒 잠긴 상태일 때 */
 .lock-btn.locked {
     border-color: var(--accent-red);
     box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
@@ -530,11 +527,9 @@ h1 {
 
 .lock-btn.locked::before {
     background-image: url('../icons/lock.png');
-    /* 잠겼을 때 아이콘도 흰색 유지 (혹은 원하는 색으로 조절 가능) */
     filter: brightness(0) invert(1);
 }
 
-/* 🏆 강화 배지 등급별 스타일 */
 .upgrade-badge {
     position: absolute;
     top: 1rem;
