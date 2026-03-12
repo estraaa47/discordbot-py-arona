@@ -11,12 +11,13 @@
     --text-secondary: #9ca3af;
     --border-color: rgba(255, 255, 255, 0.08);
     --base-unit: 1rem;
-    --header-padding: 1.125rem 3.125rem;
-    --section-padding: 3.125rem;
-    --avatar-size: 2.125rem;
-    --card-min-width: 13.75rem;
+
+    /* 💡 여백 통합 관리 변수 */
+    --side-space: 3.125rem;
+    --header-padding-v: 1.125rem;
     --border-radius-lg: 1.75rem;
     --border-radius-md: 0.875rem;
+    --card-min-width: 13.75rem;
 }
 
 /* [FONTS] */
@@ -49,10 +50,14 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    -webkit-tap-highlight-color: transparent;
 }
 
-html {
-    font-size: 16px;
+html,
+body {
+    width: 100%;
+    overflow-x: hidden;
+    /* 가로 스크롤 방지 */
 }
 
 body {
@@ -60,7 +65,6 @@ body {
     color: var(--text-primary);
     font-family: 'NexonLv2', sans-serif;
     line-height: 1.6;
-    overflow-x: hidden;
     padding-bottom: 5rem;
 }
 
@@ -111,13 +115,15 @@ body {
     }
 }
 
-/* [HEADER & PROFILE] */
+/* [HEADER] */
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--header-padding);
+    /* 💡 노치 대응 패딩 및 좌우 여백 통일 */
+    padding: calc(var(--header-padding-v) + env(safe-area-inset-top)) var(--side-space) var(--header-padding-v);
     background: var(--header-glass);
+    -webkit-backdrop-filter: blur(1.5rem);
     backdrop-filter: blur(1.5rem);
     position: sticky;
     top: 0;
@@ -145,10 +151,6 @@ body {
     text-shadow: 0 0 0.9375rem var(--accent-glow);
 }
 
-.profile-container {
-    position: relative;
-}
-
 .profile {
     display: flex;
     align-items: center;
@@ -170,10 +172,9 @@ body {
 .profile img {
     width: 34px;
     height: 34px;
-    border-radius: 50% !important;
+    border-radius: 50%;
     border: 2px solid var(--accent-blue);
     object-fit: cover;
-    flex-shrink: 0;
 }
 
 .dropdown-menu {
@@ -190,50 +191,16 @@ body {
     z-index: 1001;
     backdrop-filter: blur(1.25rem);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    animation: fadeIn 0.2s ease-out;
 }
 
 .dropdown-menu.active {
     display: flex;
+    animation: fadeIn 0.2s ease-out;
 }
 
-.dropdown-item {
-    text-decoration: none;
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-    font-size: 0.8rem;
-    text-align: center;
-    transition: all 0.2s ease;
-}
-
-.dropdown-item.logout {
-    color: #ff4848;
-    background: rgba(239, 68, 68, 0.05);
-    border: 1px solid rgba(239, 68, 68, 0.2);
-    font-weight: 700;
-}
-
-.dropdown-item.logout:hover {
-    background: var(--accent-red);
-    color: white;
-    box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* [MAIN CONTENT & TABS] */
+/* [MAIN CONTENT] */
 .title-section {
-    padding: 4.375rem var(--section-padding) 1.25rem;
+    padding: 4.375rem var(--side-space) 1.25rem;
 }
 
 h1 {
@@ -248,7 +215,7 @@ h1 {
 .tab-container {
     display: flex;
     gap: 1rem;
-    padding: 0 var(--section-padding) 2rem;
+    padding: 0 var(--side-space) 2rem;
 }
 
 .tab-link {
@@ -272,7 +239,7 @@ h1 {
 }
 
 .filter-container {
-    padding: 0 var(--section-padding) 1.875rem;
+    padding: 0 var(--side-space) 1.875rem;
     display: flex;
     gap: 0.75rem;
     flex-wrap: wrap;
@@ -301,7 +268,7 @@ h1 {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(var(--card-min-width), 1fr));
     gap: 2.1875rem;
-    padding: 2.5rem var(--section-padding);
+    padding: 2.5rem var(--side-space);
 }
 
 .card {
@@ -313,7 +280,6 @@ h1 {
 .card-inner {
     position: relative;
     width: 100%;
-    height: 100%;
     background: var(--bg-surface);
     border-radius: var(--border-radius-lg);
     border: 1px solid var(--border-color);
@@ -321,12 +287,11 @@ h1 {
     z-index: 2;
 }
 
-/* 💡 수집한 카드에만 호버 효과 적용 */
 .card:not(.not-owned):hover {
     transform: translateY(-0.75rem);
 }
 
-/* 💡 [아우라 버그 수정] 수집한 카드(:not(.not-owned))에만 아우라가 나오게 설정 */
+/* 아우라 효과 (수집 카드만) */
 .card:not(.not-owned)[data-grade="ultra_rare"]::before,
 .card:not(.not-owned)[data-grade="super_rare"]::before {
     content: "";
@@ -354,10 +319,8 @@ h1 {
     border-color: var(--accent-gold);
 }
 
-/* 💡 미수집 카드 상태 디자인 (아우라 제거 및 어둡게) */
 .card.not-owned {
     opacity: 0.6;
-    cursor: default;
 }
 
 .card.not-owned .card-inner {
@@ -365,15 +328,20 @@ h1 {
     border: 1px dashed rgba(255, 255, 255, 0.15);
 }
 
+/* 💡 이미지 비율 고정 호환성 기법 */
 .card-img-wrapper {
     width: 100%;
-    aspect-ratio: 3 / 4;
-    overflow: hidden;
+    position: relative;
+    padding-top: 133.33%;
+    /* 3:4 비율 */
     background: #111;
-    min-height: 250px;
+    overflow: hidden;
 }
 
 .card img {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -420,6 +388,7 @@ h1 {
     inset: 0;
     background: rgba(0, 0, 0, 0.95);
     z-index: 2000;
+    -webkit-backdrop-filter: blur(1.5rem);
     backdrop-filter: blur(1.5rem);
     align-items: center;
     justify-content: center;
@@ -448,10 +417,8 @@ h1 {
     width: 100%;
     border-radius: 2rem;
     border: 2px solid transparent;
-    transition: all 0.3s;
 }
 
-/* 모달에서도 등급별 아우라 적용 */
 .modal-img[data-grade="ultra_rare"] {
     border-color: var(--accent-purple);
     box-shadow: 0 0 60px rgba(168, 85, 247, 0.7);
@@ -484,7 +451,7 @@ h1 {
     opacity: 0.6;
 }
 
-/* [LOCK & BADGE] */
+/* [BADGE & LOCK] */
 .lock-btn {
     position: absolute;
     top: 0.8rem;
@@ -494,13 +461,13 @@ h1 {
     height: 2.2rem;
     border-radius: 50%;
     background: rgba(10, 10, 12, 0.7);
+    -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
     border: 1px solid var(--border-color);
-    cursor: pointer;
-    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
 }
 
 .lock-btn::before {
@@ -512,22 +479,10 @@ h1 {
     background-position: center;
     background-repeat: no-repeat;
     filter: brightness(0) invert(1);
-    transition: all 0.2s ease;
-}
-
-.lock-btn:hover {
-    border-color: var(--accent-red);
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.lock-btn.locked {
-    border-color: var(--accent-red);
-    box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
 }
 
 .lock-btn.locked::before {
     background-image: url('../icons/lock.png');
-    filter: brightness(0) invert(1);
 }
 
 .upgrade-badge {
@@ -536,12 +491,13 @@ h1 {
     left: 1rem;
     z-index: 10;
     background: var(--header-glass);
+    -webkit-backdrop-filter: blur(5px);
     backdrop-filter: blur(5px);
     padding: 0.2rem 0.6rem;
     border-radius: 0.5rem;
     font-size: 0.75rem;
     font-weight: 800;
-    border: 1px solid transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .tier-white {
@@ -563,7 +519,6 @@ h1 {
     background-clip: text;
     color: transparent;
     font-weight: 900;
-    border-color: rgba(255, 255, 255, 0.5);
     animation: rainbow-scroll 3s linear infinite;
 }
 
@@ -573,34 +528,60 @@ h1 {
     }
 }
 
-.modal-upgrade-text {
-    font-size: 1.5rem;
-    margin-top: 10px;
-    font-weight: 700;
-}
-
 /* [RESPONSIVE] */
 @media (max-width: 48rem) {
     :root {
-        --section-padding: 1.5rem;
+        --side-space: 1.5rem;
     }
 
     h1 {
-        font-size: 2rem;
-    }
-
-    .header {
-        padding: 1.125rem 1.5rem;
+        font-size: 2.2rem;
     }
 }
 
 @media (max-width: 30rem) {
-    #deck {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.75rem;
+    :root {
+        --side-space: 1rem;
+        --header-padding-v: 0.8rem;
     }
 
-    .logo {
-        font-size: 0.9rem;
+    #deck {
+        /* 💡 카드 짤림 방지: 2열 강제 고정 및 최소 너비 해제 */
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.75rem;
+        padding: 1rem var(--side-space);
+    }
+
+    .card {
+        min-width: 0 !important;
+    }
+
+    .card-name {
+        font-size: 0.85rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .profile {
+        height: 38px;
+        gap: 0.5rem;
+    }
+
+    .profile span {
+        font-size: 0.75rem;
+    }
+
+    .upgrade-badge {
+        top: 0.5rem;
+        left: 0.5rem;
+        font-size: 0.65rem;
+    }
+
+    .lock-btn {
+        top: 0.5rem;
+        right: 0.5rem;
+        width: 1.8rem;
+        height: 1.8rem;
     }
 }
