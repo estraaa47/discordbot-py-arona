@@ -99,7 +99,6 @@ class AronaChat(commands.Cog):
                     system_instruction=self.system_prompt,
                     tools=[self.grounding_tool],
                     temperature=0.7,         # 기계적인 답변을 막고 캐릭터성 부여
-                    max_output_tokens=700    # 최대 길이 제한 (응답 지연 방지)
                 ),
                 contents=self.channel_memory[cid]["messages"]
             )

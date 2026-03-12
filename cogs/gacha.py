@@ -13,9 +13,6 @@ class Gacha(commands.Cog):
         self.weights = [70, 20, 8, 2]
         self.image_base_path = "./images"
         self.ALLOWED_CHANNEL_ID = 1475278313416163358
-        
-        # ✅ 아주 짠 환급 비율
-        self.REFUND_RATES = {"Normal": 0.05, "Rare": 0.1, "Super Rare": 0.25, "Ultra Rare": 0.4}
 
     @app_commands.command(name="gacha", description="120P를 소모하여 가챠를 뽑습니다!")
     async def pull_gacha(self, interaction: discord.Interaction):
@@ -28,16 +25,17 @@ class Gacha(commands.Cog):
 
         async with pool.acquire() as conn:
             async with conn.cursor() as cur:
+                # 1. 포인트 확인
                 await cur.execute("SELECT points FROM users WHERE user_id = %s", (user_id,))
                 res = await cur.fetchone()
                 if not res or res[0] < cost:
                     return await interaction.response.send_message("포인트가 부족해요! (120P 필요)", ephemeral=True)
 
+                # 2. 카드 뽑기 로직
                 rarity = random.choices(self.rarities, weights=self.weights, k=1)[0]
                 folder_name = rarity.lower().replace(" ", "_")
                 path = f"{self.image_base_path}/{folder_name}"
 
-                # 🛠️ [수정] 이미지 확장자만 허용하고, hidden.jpg는 절대 뽑히지 않게 필터링!
                 if not os.path.exists(path):
                     return await interaction.response.send_message(f"❌ {rarity} 폴더를 찾을 수 없어요.", ephemeral=True)
 
@@ -49,19 +47,31 @@ class Gacha(commands.Cog):
                 selected_file = random.choice(files)
                 card_name = os.path.splitext(selected_file)[0]
 
-                # 중복 확인
-                await cur.execute("SELECT 1 FROM inventory WHERE user_id = %s AND item_name = %s", (user_id, selected_file))
-                if await cur.fetchone():
-                    refund = int(cost * self.REFUND_RATES[rarity])
-                    await cur.execute("UPDATE users SET points = points - %s WHERE user_id = %s", (cost - refund, user_id))
-                    return await interaction.response.send_message(f"🎴 **{card_name}** 중복! [{refund}P 반환됨]")
+                # 3. 💡 [핵심 변경] 도감(collection) 테이블에서 중복 여부 확인
+                await cur.execute("SELECT 1 FROM collection WHERE user_id = %s AND item_name = %s", (user_id, selected_file))
+                is_duplicate = await cur.fetchone()
 
-                # 신규 획득
+                # 4. 포인트 차감
                 await cur.execute("UPDATE users SET points = points - %s WHERE user_id = %s", (cost, user_id))
+                
+                # 5. 💡 도감에 없는 신규 카드라면 collection 테이블에 등록 (도감작)
+                if not is_duplicate:
+                    await cur.execute("INSERT INTO collection (user_id, item_name, rarity) VALUES (%s, %s, %s)", (user_id, selected_file, rarity))
+
+                # 6. 💡 중복이든 신규든 실물 카드는 무조건 inventory 테이블에 추가 (강화/합성 재료용)
+                # (방금 만든 새 inventory 테이블 구조에 맞춰 upgrade_level 등은 기본값(0)으로 자동 들어갑니다)
                 await cur.execute("INSERT INTO inventory (user_id, item_name, rarity) VALUES (%s, %s, %s)", (user_id, selected_file, rarity))
                 
+                # 7. UI 메시지 분기 처리 (신규 vs 중복)
                 file = discord.File(f"{path}/{selected_file}", filename=selected_file)
-                embed = discord.Embed(title="✨ 신규 획득!", description=f"**[{rarity}]** {card_name}!", color=self.get_color(rarity))
+                
+                if is_duplicate:
+                    embed = discord.Embed(title="🎴 중복 획득!", description=f"**[{rarity}]** {card_name}", color=discord.Color.light_gray())
+                    embed.set_footer(text="획득한 카드는 인벤토리에 보관되며 강화/합성 재료로 쓰입니다.")
+                else:
+                    embed = discord.Embed(title="✨ 🌟 신규 도감 등록! 🌟 ✨", description=f"**[{rarity}]** {card_name}!", color=self.get_color(rarity))
+                    embed.set_footer(text="새로운 카드를 도감에 등록했습니다!")
+                
                 embed.set_image(url=f"attachment://{selected_file}")
                 await interaction.response.send_message(file=file, embed=embed)
 
@@ -83,7 +93,6 @@ class Gacha(commands.Cog):
             path = f"{self.image_base_path}/{folder}"
             
             if os.path.exists(path):
-                # 🛠️ [수정] 통계 계산 시에도 이미지 파일만, hidden.jpg 제외!
                 all_files = [f for f in os.listdir(path) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')) and f != 'hidden.jpg']
                 total_in_rarity = len(all_files)
             else:
@@ -91,7 +100,9 @@ class Gacha(commands.Cog):
             
             async with pool.acquire() as conn:
                 async with conn.cursor() as cur:
-                    sql = "SELECT COUNT(DISTINCT item_name) FROM inventory WHERE user_id = %s AND rarity = %s"
+                    # 💡 [핵심 변경] 이제 도감 달성률은 inventory가 아닌 collection 테이블을 참조합니다!
+                    # collection 테이블에는 고유 카드만 1장씩 들어가므로 COUNT(*)로 세어도 됩니다.
+                    sql = "SELECT COUNT(*) FROM collection WHERE user_id = %s AND rarity = %s"
                     await cur.execute(sql, (user_id, rarity))
                     res = await cur.fetchone()
                     owned_in_rarity = res[0] if res else 0
@@ -106,7 +117,7 @@ class Gacha(commands.Cog):
             title=f"🗃️ {interaction.user.display_name}님의 수집 현황",
             description=(
                 f"**전체 수집률: {rate:.1f}% ({total_owned}/{total_all})**\n\n"
-                f"🌐 [웹에서 상세 도감 보기]({INVENTORY_URL})" # 👈 [표시할문구](링크) 형식입니다.
+                f"🌐 [웹에서 상세 도감 보기]({INVENTORY_URL})"
             ),
             color=discord.Color.blue()
         )
