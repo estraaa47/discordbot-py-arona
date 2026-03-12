@@ -69,8 +69,8 @@
                     </div>
 
                     <div class="card-img-wrapper">
-                        <img src="/images/thumbnails/{{ grade_key }}/{{ item.clean_name }}.webp"
-                            alt="{{ item.item_name }}" loading="lazy">
+                        <img data-src="/images/thumbnails/{{ grade_key }}/{{ item.clean_name }}.webp"
+                            alt="{{ item.item_name }}" class="lazy-load">
                     </div>
 
                     <div class="card-info">
@@ -103,6 +103,44 @@
 
     <script src="{{ url_for('static', filename='js/collection.js') }}"></script>
     <script src="{{ url_for('static', filename='js/inventory.js') }}"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const lazyImages = document.querySelectorAll('.lazy-load');
+            let imageQueue = [];
+            let isProcessing = false;
+
+            // 스크롤 시 화면에 보이려고 할 때 감지 (rootMargin으로 살짝 미리 감지)
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        imageQueue.push(entry.target);
+                        observer.unobserve(entry.target);
+                        processQueue(); // 줄 세우기 시작!
+                    }
+                });
+            }, { rootMargin: "100px 0px" });
+
+            lazyImages.forEach(img => observer.observe(img));
+
+            function processQueue() {
+                if (isProcessing || imageQueue.length === 0) return;
+                isProcessing = true; // "입장 중!"
+
+                const img = imageQueue.shift(); // 맨 앞사람 꺼냄
+
+                // 실제 이미지 로딩 시작
+                img.src = img.getAttribute('data-src');
+
+                // 로딩이 성공하든 에러가 나든 다음 이미지로 넘김
+                img.onload = img.onerror = () => {
+                    isProcessing = false;
+                    // 클라우드타입 방어막 회피를 위한 0.05초(50ms) 휴식 후 다음 이미지 처리
+                    setTimeout(processQueue, 50);
+                };
+            }
+        });
+    </script>
 </body>
 
 </html>
