@@ -212,7 +212,7 @@ def toggle_inventory_lock():
 def run_flask():
     port = int(os.environ.get("PORT", 8080))
     print(f"🚀 Waitress 웹 서버가 포트 {port}에서 8개의 스레드로 가동됩니다!")
-    serve(app, host='0.0.0.0', port=port, threads=8)
+    serve(app, host='0.0.0.0', port=port, threads=8, clear_untrusted_proxy_headers=False)
 
 if __name__ == "__main__":
     run_flask()
