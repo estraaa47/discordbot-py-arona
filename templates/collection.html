@@ -4,8 +4,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARONA ARCHIVE | PREMIUM</title>
+    <title>ARONA ARCHIVE | COLLECTION</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* 💡 탭 디자인 유지용 추가 스타일 */
+        .tab-container {
+            display: flex;
+            gap: 1rem;
+            padding: 0 var(--section-padding) 1rem;
+            margin-top: -1rem;
+        }
+
+        .tab-link {
+            text-decoration: none;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.7rem 1.5rem;
+            border-radius: var(--border-radius-md);
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            letter-spacing: 0.05rem;
+        }
+
+        .tab-link:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-primary);
+        }
+
+        .tab-link.active {
+            background: var(--bg-surface);
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+            box-shadow: 0 0 1rem var(--accent-glow);
+        }
+    </style>
 </head>
 
 <body>
@@ -35,6 +70,11 @@
         <div class="title-section">
             <h1>Collection</h1>
             <p class="subtitle">선생님께서 수집하신 카드들이에요!</p>
+        </div>
+
+        <div class="tab-container">
+            <a href="/collection" class="tab-link active">COLLECTION</a>
+            <a href="/inventory" class="tab-link">INVENTORY</a>
         </div>
 
         <div class="filter-container">
@@ -87,6 +127,16 @@
     </div>
 
     <script src="{{ url_for('static', filename='js/collection.js') }}"></script>
+    <script>
+        // 드롭다운 기능 유지
+        function toggleDropdown(event) {
+            event.stopPropagation();
+            document.getElementById('dropdownMenu').classList.toggle('active');
+        }
+        window.onclick = function () {
+            document.getElementById('dropdownMenu').classList.remove('active');
+        }
+    </script>
 </body>
 
 </html>
