@@ -1,5 +1,4 @@
 import os
-# 💡 request, jsonify 추가됨
 from flask import Flask, redirect, url_for, render_template, session, send_from_directory, request, jsonify 
 from flask_discord import DiscordOAuth2Session
 import pymysql
@@ -8,18 +7,29 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 load_dotenv()
 
-# ✨ 절대 경로 설정: 클라우드타입에서 파일 못 찾는 현상 방지
+# ✨ 절대 경로 설정
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
 app = Flask(__name__, 
-            static_folder='static',          
+            static_folder='static',           
             template_folder='templates')
 
 # ✨ 프록시 설정 (클라우드타입 호스팅 필수)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
-# ✨ 카드 이미지를 위한 전용 라우트 (images 폴더 서빙)
+# ==========================================
+# ⚡ [이미지 최적화 및 서빙]
+# ==========================================
+
+# 💡 이미지 캐싱: 로딩 속도 향상을 위해 브라우저에 30일간 저장 명령
+@app.after_request
+def add_header(response):
+    if request.path.startswith('/images/'):
+        response.cache_control.max_age = 2592000 
+    return response
+
+# 💡 카드 이미지 전용 라우트 (images 폴더 및thumbnails 폴더 서빙)
 @app.route('/images/<path:filename>')
 def serve_images(filename):
     return send_from_directory(os.path.join(base_dir, 'images'), filename)
@@ -56,8 +66,12 @@ def get_all_card_files():
         return image_list
 
     for root, dirs, files in os.walk(card_base_path):
+        # 썸네일 폴더는 목록 생성에서 제외
+        if 'thumbnails' in root: continue
+
         for file in files:
-            if file.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')) and file.lower() != 'hidden.jpg':
+            # WebP 포함 이미지 확장자 체크
+            if file.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')) and file.lower() != 'hidden.jpg':
                 relative_path = os.path.relpath(os.path.join(root, file), card_base_path)
                 card_name = os.path.splitext(file)[0]
                 
@@ -124,7 +138,7 @@ def collection():
                            owned_names=owned_names)
 
 # ==========================================
-# 🎒 2. 진짜 인벤토리 페이지
+# 🎒 2. 인벤토리 페이지 (WebP 최적화 적용)
 # ==========================================
 @app.route("/inventory")
 def inventory():
@@ -146,6 +160,10 @@ def inventory():
                 """
                 cursor.execute(sql, (user.id,))
                 inventory_items = cursor.fetchall()
+                
+                # 💡 HTML에서 .webp 확장자를 쉽게 붙여 쓰도록 이름 전처리
+                for item in inventory_items:
+                    item['clean_name'] = os.path.splitext(item['item_name'])[0]
         except Exception as e:
             print(f"❌ 데이터베이스 오류: {e}")
         finally:
@@ -156,7 +174,7 @@ def inventory():
                            inventory_items=inventory_items)
 
 # ==========================================
-# 🔒 3. 자물쇠 잠금 API (추가됨)
+# 🔒 3. 자물쇠 잠금 API
 # ==========================================
 @app.route("/api/inventory/lock", methods=["POST"])
 def toggle_inventory_lock():
@@ -165,14 +183,13 @@ def toggle_inventory_lock():
     
     data = request.json
     card_id = data.get("card_id")
-    new_lock_status = data.get("lock")  # True/False
+    new_lock_status = data.get("lock")
     user = discord.fetch_user()
 
     conn = get_db_connection()
     if conn:
         try:
             with conn.cursor() as cursor:
-                # 보안: 본인 소유의 카드만 수정 가능하도록 user_id 체크
                 sql = "UPDATE inventory SET is_locked = %s WHERE id = %s AND user_id = %s"
                 cursor.execute(sql, (new_lock_status, card_id, user.id))
                 conn.commit()

@@ -6,47 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ARONA ARCHIVE | COLLECTION</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <style>
-        /* 💡 탭 디자인 유지용 추가 스타일 */
-        .tab-container {
-            display: flex;
-            gap: 1rem;
-            padding: 0 var(--section-padding) 1rem;
-            margin-top: -1rem;
-        }
-
-        .tab-link {
-            text-decoration: none;
-            cursor: pointer;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-            padding: 0.7rem 1.5rem;
-            border-radius: var(--border-radius-md);
-            font-size: 0.85rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            letter-spacing: 0.05rem;
-        }
-
-        .tab-link:hover {
-            background: rgba(255, 255, 255, 0.08);
-            color: var(--text-primary);
-        }
-
-        .tab-link.active {
-            background: var(--bg-surface);
-            border-color: var(--accent-blue);
-            color: var(--accent-blue);
-            box-shadow: 0 0 1rem var(--accent-glow);
-        }
-    </style>
 </head>
 
 <body>
     <div class="pearl-background">
         <div class="swoosh swoosh-1"></div>
-        <div class="swoosh swoosh-2"></div>
     </div>
 
     <header class="header">
@@ -88,14 +52,19 @@
         <div id="deck">
             {% for card in all_cards %}
             {% set is_owned = card.name in owned_names %}
+
+            {# 💡 확장자를 .webp로 변경하는 로직 #}
+            {% set webp_path = card.path.rsplit('.', 1)[0] ~ '.webp' %}
+
             <div class="card {% if not is_owned %}is-hidden{% endif %}"
-                data-img="{{ ('/images/' ~ card.path) if is_owned else '/images/hidden.jpg' }}"
-                data-name="{{ card.name if is_owned else 'Locked' }}" data-grade="{{ card.grade }}"
+                data-img="{% if is_owned %}/images/{{ webp_path }}{% else %}/images/hidden.jpg{% endif %}"
+                data-name="{% if is_owned %}{{ card.name }}{% else %}Locked{% endif %}" data-grade="{{ card.grade }}"
                 data-owned="{{ 'true' if is_owned else 'false' }}" onclick="openModal(this)">
 
                 <div class="card-inner">
                     <div class="card-img-wrapper">
-                        <img src="{% if is_owned %}/images/{{ card.path }}{% else %}/images/hidden.jpg{% endif %}"
+                        {# 💡 목록에는 저용량 썸네일(thumbnails) WebP를 사용합니다 #}
+                        <img src="{% if is_owned %}/images/thumbnails/{{ webp_path }}{% else %}/images/hidden.jpg{% endif %}"
                             alt="{{ card.name }}" loading="lazy">
                     </div>
 
@@ -134,7 +103,8 @@
             document.getElementById('dropdownMenu').classList.toggle('active');
         }
         window.onclick = function () {
-            document.getElementById('dropdownMenu').classList.remove('active');
+            const menu = document.getElementById('dropdownMenu');
+            if (menu) menu.classList.remove('active');
         }
     </script>
 </body>

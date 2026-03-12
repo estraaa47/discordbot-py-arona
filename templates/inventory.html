@@ -52,8 +52,9 @@
         <div id="deck">
             {% for item in inventory_items %}
             {% set grade_key = item.rarity.lower().replace(' ', '_') %}
-            <div class="card" data-grade="{{ grade_key }}" data-img="/images/{{ grade_key }}/{{ item.item_name }}"
-                data-name="{{ item.item_name.split('.')[0] }}" onclick="openModal(this)">
+
+            <div class="card" data-grade="{{ grade_key }}" data-img="/images/{{ grade_key }}/{{ item.clean_name }}.webp"
+                data-name="{{ item.clean_name }}" onclick="openModal(this)">
 
                 <div class="card-inner">
                     <div class="upgrade-badge 
@@ -68,12 +69,12 @@
                     </div>
 
                     <div class="card-img-wrapper">
-                        <img src="/images/{{ grade_key }}/{{ item.item_name }}" alt="{{ item.item_name }}"
-                            loading="lazy">
+                        <img src="/images/thumbnails/{{ grade_key }}/{{ item.clean_name }}.webp"
+                            alt="{{ item.item_name }}" loading="lazy">
                     </div>
 
                     <div class="card-info">
-                        <div class="card-name">{{ item.item_name.split('.')[0] }}</div>
+                        <div class="card-name">{{ item.clean_name }}</div>
                         <div class="card-status">
                             <span class="status-owned">● {{ item.rarity }}</span>
                         </div>
