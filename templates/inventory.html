@@ -53,7 +53,7 @@
             {% for item in inventory_items %}
             {% set grade_key = item.rarity.lower().replace(' ', '_') %}
 
-            <div class="card" data-grade="{{ grade_key }}" data-img="/images/{{ grade_key }}/{{ item.clean_name }}.webp"
+            <div class="card" data-grade="{{ grade_key }}" data-img="/images/{{ grade_key }}/{{ item.clean_name }}"
                 data-name="{{ item.clean_name }}" onclick="openModal(this)">
 
                 <div class="card-inner">
