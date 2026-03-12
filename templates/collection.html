@@ -50,6 +50,15 @@
         </div>
 
         <div id="deck">
+            {% for card in all_cards %}
+            {% set is_owned = card.name in owned_names %}
+            {% if is_owned %}
+            {% set thumb_url = "/images/thumbnails/" ~ card.path.rsplit('.', 1)[0] ~ ".webp" %}
+            {% set full_url = "/images/" ~ card.path %}
+            {% else %}
+            {% set thumb_url = "/images/thumbnails/hidden.webp" %}
+            {% set full_url = "/images/hidden.jpg" %}
+            {% endif %}
 
             <div class="card {% if not is_owned %}not-owned{% endif %}" data-grade="{{ card.grade }}"
                 data-img="{{ full_url }}" data-name="{{ card.name }}" onclick="openModal(this)">
