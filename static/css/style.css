@@ -359,6 +359,9 @@ h1 {
     aspect-ratio: 3/4;
     overflow: hidden;
     background: #000;
+    aspect-ratio: 3 / 4;
+    min-height: 250px;
+    background-color: #111;
 }
 
 .card img {
