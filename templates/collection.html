@@ -50,14 +50,13 @@
         </div>
 
         <div id="deck">
-            {% for card in all_cards %}
-            {% set is_owned = card.name in owned_names %}
+
             <div class="card {% if not is_owned %}not-owned{% endif %}" data-grade="{{ card.grade }}"
-                data-img="/images/{{ card.path }}" data-name="{{ card.name }}" onclick="openModal(this)">
+                data-img="{{ full_url }}" data-name="{{ card.name }}" onclick="openModal(this)">
 
                 <div class="card-inner">
                     <div class="card-img-wrapper">
-                        <img data-src="/images/thumbnails/{{ card.path }}" alt="{{ card.name }}" class="lazy-load">
+                        <img data-src="{{ thumb_url }}" alt="{{ card.name }}" class="lazy-load">
                     </div>
                     <div class="card-info">
                         <div class="card-name">{{ card.name }}</div>
@@ -81,7 +80,8 @@
             <img id="modalImg" class="modal-img" src="">
             <div class="modal-info">
                 <div id="modalName" class="modal-name"></div>
-                <div id="modalStatus" class="card-status"></div>
+                <div id="modalStatus" class="card-status status-owned"></div>
+                <div id="modalUpgrade" class="modal-upgrade-text"></div>
             </div>
         </div>
     </div>
@@ -103,7 +103,7 @@
                         processQueue();
                     }
                 });
-            }, { rootMargin: "150px 0px" }); // 도감은 좀 더 미리미리 불러오게 150px로 설정
+            }, { rootMargin: "100px 0px" });
 
             lazyImages.forEach(img => observer.observe(img));
 
@@ -116,7 +116,7 @@
 
                 img.onload = img.onerror = () => {
                     isProcessing = false;
-                    setTimeout(processQueue, 40); // 도감은 카드가 많으니 40ms로 살짝 더 빠르게 세팅
+                    setTimeout(processQueue, 50);
                 };
             }
         });
