@@ -135,8 +135,8 @@
     bottom: 0;
     left: 0;
     width: 100%;
-    padding: 30px 15px 15px;
-    background: linear-gradient(to top, rgba(10, 10, 12, 0.95) 0%, rgba(10, 10, 12, 0.7) 50%, transparent 100%);
+    padding: 35px 15px 15px;
+    background: linear-gradient(to top, rgba(10, 10, 12, 1) 0%, rgba(10, 10, 12, 0.85) 45%, transparent 100%);
     z-index: 2;
     pointer-events: none; /* 클릭을 이미지로 통과시킴 */
     display: flex;

@@ -250,6 +250,64 @@ p {
         opacity: 1;
         pointer-events: auto;
     }
+
+    .mobile-profile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .mobile-profile img {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        border: 3px solid var(--accent-blue);
+        object-fit: cover;
+        box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .mobile-profile span {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .mobile-link {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-secondary);
+        text-decoration: none;
+        letter-spacing: 2px;
+        transition: 0.2s;
+    }
+
+    .mobile-link:hover, .mobile-link:active {
+        color: var(--accent-blue);
+        transform: scale(1.1);
+    }
+
+    .mobile-link.logout-link {
+        margin-top: 2rem;
+        color: var(--accent-red);
+        font-size: 1.2rem;
+    }
+
+    /* 햄버거 메뉴 애니메이션 (열렸을 때 X 모양) */
+    .mobile-nav.open span:nth-child(1) {
+        transform: translateY(6.5px) rotate(45deg);
+    }
+    .mobile-nav.open span:nth-child(2) {
+        opacity: 0;
+    }
+    .mobile-nav.open span:nth-child(3) {
+        transform: translateY(-6.5px) rotate(-45deg);
+    }
+    
+    .mobile-nav span {
+        transition: all 0.3s ease;
+    }
 }
 
 @media (max-width: 30rem) {
@@ -468,61 +526,57 @@ p {
     text-shadow: 0 2px 5px rgba(0,0,0,0.9);
 }
 
-/* Upgrade Badges (Text Stroke Effects) */
+/* Upgrade Badges (Block Border Effects) */
 .upgrade-level {
-    font-size: 1.1rem;
-    font-weight: 900;
+    font-size: 0.9rem;
+    font-weight: 800;
     color: var(--text-primary);
     position: absolute;
-    top: 10px;
-    left: 10px;
+    top: 8px;
+    left: 8px;
     z-index: 10;
-    font-family: 'Arial', sans-serif !important;
+    font-family: 'NexonLv2', sans-serif !important;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 2px 8px;
+    border-radius: 8px;
+    background: rgba(10, 10, 12, 0.8);
+    backdrop-filter: blur(4px);
+    border: 2px solid transparent;
 }
 
-/* 0 ~ 4: White stroke */
+/* 0 ~ 4: White border */
 .upgrade-white {
-    text-shadow: 
-        -1px -1px 0 #fff,  
-         1px -1px 0 #fff,
-        -1px  1px 0 #fff,
-         1px  1px 0 #fff,
-         0 0 8px rgba(255,255,255,0.5);
-    color: #333;
-}
-
-/* 5 ~ 7: Gold stroke */
-.upgrade-gold {
-    text-shadow: 
-        -1px -1px 0 #ffd700,  
-         1px -1px 0 #ffd700,
-        -1px  1px 0 #ffd700,
-         1px  1px 0 #ffd700,
-         0 0 10px rgba(255, 215, 0, 0.8);
+    border-color: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
     color: #fff;
+    text-shadow: none;
 }
 
-/* 8+: Rainbow / Animated Gradient stroke illusion */
-/* We use background-clip to simulate a colorful inside, or colorful shadow */
+/* 5 ~ 7: Gold border */
+.upgrade-gold {
+    border-color: #ffd700;
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
+    color: #ffd700;
+    text-shadow: 0 0 4px rgba(255, 215, 0, 0.4);
+}
+
+/* 8+: Rainbow / Animated Gradient border illusion */
 .upgrade-rainbow {
     color: #fff;
-    text-shadow: 
-        -1px -1px 0 #ff0000, 
-         1px -1px 0 #ff7f00, 
-        -1px  1px 0 #00ff00, 
-         1px  1px 0 #0000ff,
-         0 0 12px rgba(255, 0, 255, 0.8);
-    animation: rainbowGlow 2s infinite linear alternate;
+    text-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
+    background: linear-gradient(rgba(10, 10, 12, 0.85), rgba(10, 10, 12, 0.85)) padding-box,
+                linear-gradient(90deg, #ff0000, #ff7f00, #00ff00, #0000ff, #8b00ff) border-box;
+    border: 2px solid transparent;
+    animation: rainbowBox 2s infinite linear alternate;
 }
 
-@keyframes rainbowGlow {
-    0%   { text-shadow: -1px -1px 0 #ff0000, 1px -1px 0 #ff7f00, -1px 1px 0 #00ff00, 1px 1px 0 #0000ff, 0 0 15px #ff0000; }
-    33%  { text-shadow: -1px -1px 0 #0000ff, 1px -1px 0 #ff0000, -1px 1px 0 #ff7f00, 1px 1px 0 #00ff00, 0 0 15px #0000ff; }
-    66%  { text-shadow: -1px -1px 0 #00ff00, 1px -1px 0 #0000ff, -1px 1px 0 #ff0000, 1px 1px 0 #ff7f00, 0 0 15px #00ff00; }
-    100% { text-shadow: -1px -1px 0 #ff7f00, 1px -1px 0 #00ff00, -1px 1px 0 #0000ff, 1px 1px 0 #ff0000, 0 0 15px #ff7f00; }
+@keyframes rainbowBox {
+    0%   { box-shadow: 0 0 12px #ff0000; }
+    33%  { box-shadow: 0 0 12px #0000ff; }
+    66%  { box-shadow: 0 0 12px #00ff00; }
+    100% { box-shadow: 0 0 12px #ff7f00; }
 }
 
 /* Modal for full image */
