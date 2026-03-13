@@ -58,6 +58,10 @@ function renderGacha(results) {
     let ownedNames = JSON.parse(ownedDataElement.dataset.owned || '[]');
 
     grid.innerHTML = '';
+    
+    // 레이아웃 잡히기 전까지 투명하게 숨김
+    grid.style.opacity = '0';
+    grid.style.pointerEvents = 'none';
 
     results.forEach((card, index) => {
         const pathWithoutExt = card.path.split('.').slice(0, -1).join('.');
@@ -68,48 +72,100 @@ function renderGacha(results) {
 
         const cardDiv = document.createElement('div');
         cardDiv.className = `card ${gradeKey}`;
-        cardDiv.style.animationDelay = `${index * 0.1}s`;
 
         if (isNew) {
-            // 💡 히든 카드 경로를 /images/thumbnails/hidden.webp로 정확히 수정!
+            // 히든 카드 경로 (새로운 카드)
             cardDiv.innerHTML = `
-                <div class="card-inner hidden-card" onclick="revealCard(this, '${gradeKey}', '${pathWithoutExt}', '${cardName}', '${Math.random()}', '${card.path}')">
+                <div class="card-inner hidden-card" onclick="revealCard(this, '${gradeKey}', '${pathWithoutExt}', '${cardName}', '${Math.random()}', '${card.path}', true)">
                     <div class="card-img-wrapper">
                         <img src="/images/thumbnails/hidden.webp" alt="Hidden Card">
                     </div>
-                    <div class="new-tag">NEW</div>
                 </div>
             `;
             ownedNames.push(cardName);
             ownedDataElement.dataset.owned = JSON.stringify(ownedNames);
         } else {
+            // 히든 카드 경로 (중복 카드)
             cardDiv.innerHTML = `
-                <div class="card-inner" style="cursor: pointer;" onclick="showModal('/images/${card.path}')">
+                <div class="card-inner hidden-card" onclick="revealCard(this, '${gradeKey}', '${pathWithoutExt}', '${cardName}', '${Math.random()}', '${card.path}', false)">
                     <div class="card-img-wrapper">
-                        <img src="/images/thumbnails/${pathWithoutExt}.webp" alt="${cardName}">
-                    </div>
-                    <div class="card-info">
-                        <div class="card-name">${cardName}</div>
-                        <div class="card-status"><span class="status-owned">● ${card.grade}</span></div>
+                        <img src="/images/thumbnails/hidden.webp" alt="Hidden Card">
                     </div>
                 </div>
             `;
         }
         grid.appendChild(cardDiv);
     });
+
+    // 중앙 스택 애니메이션 계산
+    setTimeout(() => {
+        const gridRect = grid.getBoundingClientRect();
+        const centerX = gridRect.left + gridRect.width / 2;
+        // 헤더 등을 고려하여 살짝 아래쪽(중앙)으로 스택 지정
+        const centerY = window.innerHeight / 2 + 50; 
+        
+        const cards = grid.querySelectorAll('.card');
+        cards.forEach((card, index) => {
+            card.style.transition = 'none'; // 초기 이동 트랜지션 무효화
+            
+            const rect = card.getBoundingClientRect();
+            const cardX = rect.left + rect.width / 2;
+            const cardY = rect.top + rect.height / 2;
+            
+            const dx = centerX - cardX;
+            const dy = centerY - cardY;
+            
+            // 중앙 위치로 이동값 할당
+            card.style.setProperty('--dx', `${dx}px`);
+            card.style.setProperty('--dy', `${dy}px`);
+            card.style.setProperty('--rot', `${Math.random() * 40 - 20}deg`); // 무작위 각도로 흩뿌려진 뭉치
+            card.style.zIndex = 100 + index;
+        });
+        
+        // 투명도 복원 및 클릭 이벤트 활성화
+        grid.style.opacity = '1';
+        grid.style.pointerEvents = 'auto';
+        grid.classList.add('deck-stacked');
+
+        grid.onclick = function(e) {
+            // 뭉치를 클릭하면 촤라락 펴지게 함
+            grid.onclick = null;
+            grid.classList.remove('deck-stacked');
+            
+            cards.forEach((card, index) => {
+                // 부드럽게 각자 제자리로 펴지는 애니메이션
+                card.style.transition = `transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) ${index * 0.05}s`;
+                card.style.setProperty('--dx', `0px`);
+                card.style.setProperty('--dy', `0px`);
+                card.style.setProperty('--rot', `0deg`);
+                
+                // 애니메이션 끝난 후 속성 정리
+                setTimeout(() => {
+                    card.style.zIndex = '';
+                    card.style.transition = ''; // JS 트랜지션 해제 (CSS 호버 속성 복구)
+                }, 600 + index * 50);
+            });
+        };
+    }, 50);
 }
 
-function revealCard(el, grade, pathNoExt, cardName, dumpId, fullPath) {
+function revealCard(el, grade, pathNoExt, cardName, dumpId, fullPath, isNew) {
     el.classList.remove('hidden-card');
     el.style.cursor = "pointer";
     el.onclick = function() { showModal('/images/' + fullPath); };
+
+    // isNew 플래그가 true면 NEW 뱃지, false면 중복 카드 효과
+    const duplicateClass = isNew ? '' : 'duplicated-card';
+    const newTagHtml = isNew ? '<div class="new-tag">NEW</div>' : '';
+
     el.innerHTML = `
-        <div class="card-img-wrapper">
+        <div class="card-img-wrapper ${duplicateClass}">
             <img src="/images/thumbnails/${pathNoExt}.webp" alt="${cardName}">
         </div>
         <div class="card-info">
             <div class="card-name">${cardName}</div>
             <div class="card-status"><span class="status-owned">● ${grade.toUpperCase().replace('_', ' ')}</span></div>
         </div>
+        ${newTagHtml}
     `;
 }

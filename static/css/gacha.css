@@ -63,9 +63,9 @@
 }
 
 .gacha-point-badge strong {
-    color: var(--accent-gold);
+    color: var(--accent-blue);
     font-size: 1.5rem;
-    text-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
+    text-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
 }
 
 .gacha-pull-btn {
@@ -133,11 +133,31 @@
     background: transparent;
     border-radius: 12px;
     overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    
+    /* 스택 애니메이션을 위한 커스텀 변수 */
+    --dx: 0px;
+    --dy: 0px;
+    --rot: 0deg;
+    transform: translate(var(--dx), var(--dy)) rotate(var(--rot));
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
 }
 
 .card:hover {
-    transform: translateY(-6px);
+    transform: translate(var(--dx), calc(var(--dy) - 6px)) rotate(var(--rot)) scale(1.02);
+}
+
+/* 카드 뭉치 스택 모드 제어 */
+.gacha-grid.deck-stacked {
+    cursor: pointer;
+    perspective: 1000px;
+}
+
+.gacha-grid.deck-stacked .card {
+    box-shadow: 0 15px 35px rgba(0,0,0,0.7);
+}
+
+.gacha-grid.deck-stacked .card-inner {
+    pointer-events: none; /* 펼쳐지기 전엔 카드 뒤집기 금지 */
 }
 
 .card-inner {
@@ -195,6 +215,11 @@
 /* 이미지 부드러운 줌 효과 */
 .card:hover .card-img-wrapper img {
     transform: scale(1.08); 
+}
+
+/* 🔄 중복 획득한 카드 (어두워지는 효과) */
+.card-img-wrapper.duplicated-card img {
+    filter: brightness(0.4) contrast(1.1);
 }
 
 /* 📋 하단 정보창 (오버레이) */
