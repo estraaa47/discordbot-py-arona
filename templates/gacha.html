@@ -44,17 +44,31 @@
         </div>
     </header>
 
-    <main>
-        <div class="point-display">
-            보유 포인트: <strong id="current-points">{{ user_points }}</strong> P
+    <main style="padding: 0; max-height: calc(100vh - 80px);">
+        <!-- Gacha Home (Video View) -->
+        <div id="gacha-home" class="gacha-video-container">
+            <video class="gacha-video-bg" autoplay loop muted playsinline>
+                <source src="/static/video.mp4" type="video/mp4">
+            </video>
+            
+            <div class="gacha-overlay-ui">
+                <div class="gacha-bottom-section">
+                    <div class="gacha-point-badge">
+                        보유 Point <strong id="current-points">{{ user_points }}</strong>
+                    </div>
+                    <button class="gold-btn gacha-pull-btn" onclick="startGacha(10)">
+                        10차
+                    </button>
+                </div>
+            </div>
         </div>
 
-        <div class="gacha-control">
-            <button class="gold-btn" onclick="performGacha(10)">10연차 (1,200P)</button>
-        </div>
-
-        <div id="gacha-deck" class="gacha-grid">
-            <div class="empty-state">버튼을 눌러 모집을 시작하세요!</div>
+        <!-- Gacha Results -->
+        <div id="gacha-result-view" style="display: none; height: calc(100vh - 80px); overflow-y: auto; padding-top: 2rem;">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <button class="filter-btn active" onclick="returnToHome()">◀ 돌아가기</button>
+            </div>
+            <div id="gacha-deck" class="gacha-grid" style="padding-bottom: 6rem;"></div>
         </div>
     </main>
 

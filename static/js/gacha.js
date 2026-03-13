@@ -1,5 +1,24 @@
 // static/js/gacha.js
 
+function startGacha(count) {
+    document.getElementById('gacha-home').style.display = 'none';
+    document.getElementById('gacha-result-view').style.display = 'block';
+    
+    // 모바일 등에서 버튼 누를 시 스크롤 위로 초기화
+    window.scrollTo(0, 0);
+
+    performGacha(count);
+}
+
+function returnToHome() {
+    document.getElementById('gacha-result-view').style.display = 'none';
+    document.getElementById('gacha-home').style.display = 'block';
+    
+    // 이전 결과 초기화
+    const grid = document.getElementById('gacha-deck');
+    if(grid) grid.innerHTML = '';
+}
+
 async function performGacha(count) {
     const grid = document.getElementById('gacha-deck');
     grid.innerHTML = '<div class="loading">아로나가 모집 공고를 확인 중입니다...</div>';
