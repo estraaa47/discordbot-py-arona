@@ -1,8 +1,54 @@
-</main>
+<!DOCTYPE html>
+<html lang="ko">
 
-<div id="owned-data" data-owned='{{ owned_names | tojson | safe }}' style="display:none;"></div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARONA ARCHIVE | GACHA</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/gacha.css') }}">
+</head>
 
-<script src="{{ url_for('static', filename='js/gacha.js') }}"></script>
+<body>
+    <div class="pearl-background">
+        <div class="swoosh swoosh-1"></div>
+    </div>
+
+    <header class="header">
+        <div class="header-left"><a href="/" class="logo">ARONA <span>ARCHIVE</span></a></div>
+        <div class="header-center"><a href="/gacha" class="gacha-nav-btn">GACHA</a></div>
+        <div class="header-right">
+            <div class="profile-container">
+                <div class="profile">
+                    <img src="{{ user.avatar_url }}" alt="profile">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="title-section">
+            <h1>Gacha</h1>
+            <p class="subtitle">선생님의 운을 시험해 보세요! (10연차 1,200P)</p>
+        </div>
+
+        <div class="tab-container">
+            <a href="/collection" class="tab-link">COLLECTION</a>
+            <a href="/inventory" class="tab-link">INVENTORY</a>
+        </div>
+
+        <div class="gacha-control">
+            <button class="filter-btn active gold-btn" onclick="performGacha(10)">10연차 (1,200P)</button>
+        </div>
+
+        <div id="gacha-deck" class="gacha-grid">
+            <div class="empty-state">버튼을 눌러 가챠를 시작하세요!</div>
+        </div>
+    </main>
+
+    <div id="owned-data" data-owned='{{ owned_names | tojson | safe }}' style="display:none;"></div>
+
+    <script src="{{ url_for('static', filename='js/gacha.js') }}"></script>
 </body>
 
 </html>
