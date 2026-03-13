@@ -65,7 +65,8 @@ def get_all_card_files():
         return image_list
 
     for root, dirs, files in os.walk(card_base_path):
-        if 'thumbnails' in root: continue
+        if 'thumbnails' in root: 
+            continue
 
         for file in files:
             if file.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')) and file.lower() != 'hidden.jpg':
