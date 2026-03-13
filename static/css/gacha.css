@@ -5,7 +5,8 @@
 /* 🎬 GACHA SCROLL FIX (바디의 기본 여백/스크롤 제거) */
 body.gacha-page {
     padding-bottom: 0 !important;
-    overflow: hidden !important; /* 바디 자체의 스크롤을 막고 내부 컨테이너만 스크롤 허용 */
+    overflow: hidden !important;
+    /* 바디 자체의 스크롤을 막고 내부 컨테이너만 스크롤 허용 */
 }
 
 /* ==========================================
@@ -41,7 +42,7 @@ body.gacha-page {
     flex-direction: column;
     justify-content: flex-end;
     padding: 2rem var(--side-space);
-    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent 40%);
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent 40%);
 }
 
 .gacha-bottom-section {
@@ -85,13 +86,16 @@ body.gacha-page {
         font-size: 1rem;
         padding: 10px 20px;
     }
+
     .gacha-point-badge strong {
         font-size: 1.2rem;
     }
+
     .gacha-pull-btn {
         font-size: 1.2rem !important;
         padding: 12px 30px !important;
     }
+
     .gacha-bottom-section {
         flex-direction: row;
         gap: 1rem;
@@ -122,7 +126,8 @@ body.gacha-page {
 }
 
 /* 🎰 2x5 그리드 시스템 (카드 크기 고정) */
-.gacha-grid, #deck {
+.gacha-grid,
+#deck {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 20px;
@@ -135,11 +140,11 @@ body.gacha-page {
 .card {
     position: relative;
     width: 100%;
-    aspect-ratio: 3/4;
+    aspect-ratio: 5/7;
     background: transparent;
     border-radius: 12px;
     overflow: hidden;
-    
+
     /* 스택 애니메이션을 위한 커스텀 변수 */
     --dx: 0px;
     --dy: 0px;
@@ -159,25 +164,29 @@ body.gacha-page {
 }
 
 .gacha-grid.deck-stacked .card {
-    box-shadow: 0 15px 35px rgba(0,0,0,0.7);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
 }
 
 /* 카드 뭉치 최고 등급 아우라 방출 (스택 상태일 때 맨 위 카드에만 효과를 주는 대신 뭉치 전체에 아우라 발산) */
 .gacha-grid.deck-stacked-ultra_rare .card:last-child {
     box-shadow: 0 15px 50px rgba(163, 53, 238, 0.8), inset 0 0 0 2px rgba(163, 53, 238, 0.8) !important;
 }
+
 .gacha-grid.deck-stacked-super_rare .card:last-child {
     box-shadow: 0 15px 40px rgba(255, 128, 0, 0.7), inset 0 0 0 2px rgba(255, 128, 0, 0.8) !important;
 }
+
 .gacha-grid.deck-stacked-rare .card:last-child {
     box-shadow: 0 15px 35px rgba(0, 112, 221, 0.7), inset 0 0 0 2px rgba(0, 112, 221, 0.8) !important;
 }
+
 .gacha-grid.deck-stacked-normal .card:last-child {
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.9), inset 0 0 0 2px rgba(255, 255, 255, 0.5) !important;
 }
 
 .gacha-grid.deck-stacked .card-inner {
-    pointer-events: none; /* 펼쳐지기 전엔 카드 뒤집기 금지 */
+    pointer-events: none;
+    /* 펼쳐지기 전엔 카드 뒤집기 금지 */
 }
 
 .card-inner {
@@ -187,30 +196,44 @@ body.gacha-page {
 }
 
 /* ✨ 등급별 아우라 - 미니멀 디자인 (테두리 대신 이너-보더 쉐도우 사용) */
-.card.ultra_rare, .card[data-grade="ultra_rare"] {
+.card.ultra_rare,
+.card[data-grade="ultra_rare"] {
     box-shadow: 0 10px 25px rgba(163, 53, 238, 0.3), inset 0 0 0 1.5px rgba(163, 53, 238, 0.6);
 }
-.card.super_rare, .card[data-grade="super_rare"] {
+
+.card.super_rare,
+.card[data-grade="super_rare"] {
     box-shadow: 0 10px 20px rgba(255, 128, 0, 0.2), inset 0 0 0 1.5px rgba(255, 128, 0, 0.5);
 }
-.card.rare, .card[data-grade="rare"] {
+
+.card.rare,
+.card[data-grade="rare"] {
     box-shadow: 0 8px 15px rgba(0, 112, 221, 0.2), inset 0 0 0 1px rgba(0, 112, 221, 0.4);
 }
-.card.normal, .card[data-grade="normal"] {
+
+.card.normal,
+.card[data-grade="normal"] {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.2);
 }
 
 /* 호버 시 아우라 강화 */
-.card:hover.ultra_rare, .card:hover[data-grade="ultra_rare"] {
+.card:hover.ultra_rare,
+.card:hover[data-grade="ultra_rare"] {
     box-shadow: 0 15px 35px rgba(163, 53, 238, 0.5), inset 0 0 0 2px rgba(163, 53, 238, 0.8);
 }
-.card:hover.super_rare, .card:hover[data-grade="super_rare"] {
+
+.card:hover.super_rare,
+.card:hover[data-grade="super_rare"] {
     box-shadow: 0 15px 30px rgba(255, 128, 0, 0.4), inset 0 0 0 2px rgba(255, 128, 0, 0.8);
 }
-.card:hover.rare, .card:hover[data-grade="rare"] {
+
+.card:hover.rare,
+.card:hover[data-grade="rare"] {
     box-shadow: 0 12px 25px rgba(0, 112, 221, 0.4), inset 0 0 0 2px rgba(0, 112, 221, 0.8);
 }
-.card:hover.normal, .card:hover[data-grade="normal"] {
+
+.card:hover.normal,
+.card:hover[data-grade="normal"] {
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6), inset 0 0 0 1.5px rgba(255, 255, 255, 0.5);
 }
 
@@ -234,7 +257,7 @@ body.gacha-page {
 
 /* 이미지 부드러운 줌 효과 */
 .card:hover .card-img-wrapper img {
-    transform: scale(1.08); 
+    transform: scale(1.08);
 }
 
 /* 🔄 중복 획득한 카드 (어두워지는 효과) */
@@ -251,7 +274,8 @@ body.gacha-page {
     padding: 35px 15px 15px;
     background: linear-gradient(to top, rgba(10, 10, 12, 1) 0%, rgba(10, 10, 12, 0.85) 45%, transparent 100%);
     z-index: 2;
-    pointer-events: none; /* 클릭을 이미지로 통과시킴 */
+    pointer-events: none;
+    /* 클릭을 이미지로 통과시킴 */
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
@@ -307,7 +331,9 @@ body.gacha-page {
 
 /* 📱 모바일 최적화 (2열) */
 @media (max-width: 1000px) {
-    .gacha-grid, #deck {
+
+    .gacha-grid,
+    #deck {
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
     }
