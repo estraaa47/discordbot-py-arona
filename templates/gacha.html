@@ -17,27 +17,31 @@
     <header class="header">
         <div class="header-left"><a href="/" class="logo">ARONA <span>ARCHIVE</span></a></div>
         <div class="header-center"><a href="/gacha" class="gacha-nav-btn">GACHA</a></div>
-        <div class="header-right">
+
+        <div class="header-right" style="align-items: center; gap: 1rem; display: flex;">
+            <a href="/collection" class="tab-link"
+                style="padding: 0.4rem 1rem; font-size: 0.8rem; margin: 0;">COLLECTION</a>
+            <a href="/inventory" class="tab-link"
+                style="padding: 0.4rem 1rem; font-size: 0.8rem; margin: 0;">INVENTORY</a>
+
             <div class="profile-container">
                 <div class="profile">
                     <img src="{{ user.avatar_url }}" alt="profile">
+                    <span>{{ user.username }}</span>
                 </div>
             </div>
         </div>
     </header>
 
     <main>
-        <div class="title-section">
-            <h1>Gacha</h1>
-            <p class="subtitle">선생님의 운을 시험해 보세요! (10연차 1,200P)</p>
+        <div class="title-section" style="text-align: center; padding-top: 3rem; padding-bottom: 0;">
+            <p style="font-size: 1.2rem; font-weight: bold; color: var(--text-primary);">
+                보유 포인트: <strong id="current-points" style="color: var(--accent-gold); font-size: 1.5rem;">{{ user_points
+                    }}</strong> P
+            </p>
         </div>
 
-        <div class="tab-container">
-            <a href="/collection" class="tab-link">COLLECTION</a>
-            <a href="/inventory" class="tab-link">INVENTORY</a>
-        </div>
-
-        <div class="gacha-control">
+        <div class="gacha-control" style="margin-top: 20px;">
             <button class="filter-btn active gold-btn" onclick="performGacha(10)">10연차 (1,200P)</button>
         </div>
 
