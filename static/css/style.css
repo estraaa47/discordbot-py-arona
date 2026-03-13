@@ -17,28 +17,16 @@
     --card-min-width: 13.75rem;
 }
 
-/* [FONTS] - 💡 공백 문제 해결을 위해 따옴표를 씌웠습니다. */
+/* [FONTS] - NEXON Warhaven */
 @font-face {
-    font-family: 'NexonLv2';
-    src: url("../fonts/NEXON Lv2 Gothic Light.ttf") format("truetype");
-    font-weight: 300;
-}
-
-@font-face {
-    font-family: 'NexonLv2';
-    src: url("../fonts/NEXON Lv2 Gothic.ttf") format("truetype");
+    font-family: 'Warhaven';
+    src: url("../fonts/NEXON_Warhaven_Regular.ttf") format("truetype");
     font-weight: 400;
 }
 
 @font-face {
-    font-family: 'NexonLv2';
-    src: url("../fonts/NEXON Lv2 Gothic Medium.ttf") format("truetype");
-    font-weight: 500;
-}
-
-@font-face {
-    font-family: 'NexonLv2';
-    src: url("../fonts/NEXON Lv2 Gothic Bold.ttf") format("truetype");
+    font-family: 'Warhaven';
+    src: url("../fonts/NEXON_Warhaven_Bold.ttf") format("truetype");
     font-weight: 700;
 }
 
@@ -59,7 +47,7 @@ body {
 body {
     background-color: var(--bg-deep);
     color: var(--text-primary);
-    font-family: 'NexonLv2', sans-serif;
+    font-family: 'Warhaven', sans-serif;
     line-height: 1.6;
     padding-bottom: 5rem;
 }
@@ -70,7 +58,7 @@ input,
 span,
 strong,
 p {
-    font-family: 'NexonLv2', sans-serif !important;
+    font-family: 'Warhaven', sans-serif !important;
 }
 
 .pearl-background {
@@ -384,7 +372,7 @@ p {
     cursor: pointer;
     font-weight: 700;
     transition: all 0.2s;
-    font-family: 'NexonLv2', sans-serif !important;
+    font-family: 'Warhaven', sans-serif !important;
 }
 .filter-btn:hover {
     background: rgba(255,255,255,0.1);
@@ -535,7 +523,7 @@ p {
     top: 8px;
     left: 8px;
     z-index: 10;
-    font-family: 'NexonLv2', sans-serif !important;
+    font-family: 'Warhaven', sans-serif !important;
     display: flex;
     align-items: center;
     justify-content: center;
