@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ARONA ARCHIVE | INVENTORY</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/gacha.css') }}">
 </head>
 
 <body>
@@ -23,128 +24,87 @@
         </div>
 
         <div class="header-right">
-            <div class="profile-container">
-                <div class="profile" onclick="toggleDropdown(event)">
-                    <span>{{ user.username }}</span>
-                    <img src="{{ user.avatar_url }}" alt="profile">
-                </div>
-                <div id="dropdownMenu" class="dropdown-menu">
-                    <a href="/logout" class="dropdown-item logout">LOGOUT</a>
+            <div class="pc-nav" style="align-items: center; gap: 1rem; display: flex;">
+                <a href="/collection" class="tab-link">COLLECTION</a>
+                <a href="/inventory" class="tab-link active">INVENTORY</a>
+
+                <div class="profile-container">
+                    <div class="profile" style="padding: 4px 16px 4px 6px;">
+                        <img src="{{ user.avatar_url }}" alt="profile">
+                        <span>{{ user.username }}</span>
+                    </div>
                 </div>
             </div>
+
+            <button class="hamburger-btn mobile-nav" onclick="toggleMobileMenu()">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+
+        <div id="mobile-menu" class="mobile-dropdown">
+            <div class="mobile-profile">
+                <img src="{{ user.avatar_url }}" alt="profile">
+                <span>{{ user.username }}</span>
+            </div>
+            <a href="/gacha" class="mobile-link gacha-link">GACHA</a>
+            <a href="/collection" class="mobile-link">COLLECTION</a>
+            <a href="/inventory" class="mobile-link">INVENTORY</a>
+            <a href="/logout" class="mobile-link logout-link">LOGOUT</a>
         </div>
     </header>
 
     <main>
-        <div class="title-section">
+        <div class="title-section" style="text-align: center;">
             <h1>Inventory</h1>
-            <p class="subtitle">선생님이 보유 중인 실물 카드들이에요!</p>
+            <p class="subtitle"><strong>{{ user.username }}</strong> 선생님이 수집한 소중한 기록들이에요!</p>
         </div>
 
-        <div class="tab-container">
+        <div class="tab-container" style="justify-content: center; margin-bottom: 2rem;">
             <a href="/collection" class="tab-link">COLLECTION</a>
             <a href="/inventory" class="tab-link active">INVENTORY</a>
         </div>
 
-        <div class="filter-container">
-            <button class="filter-btn active" onclick="filterCards('all', this)">ALL</button>
-            <button class="filter-btn" onclick="filterCards('normal', this)">NORMAL</button>
-            <button class="filter-btn" onclick="filterCards('rare', this)">RARE</button>
-            <button class="filter-btn" onclick="filterCards('super_rare', this)">SR</button>
-            <button class="filter-btn" onclick="filterCards('ultra_rare', this)">UR</button>
-        </div>
-
         <div id="deck">
-            {% for item in inventory_items %}
-            {% set grade_key = item.rarity.lower().replace(' ', '_') %}
-
-            <div class="card" data-grade="{{ grade_key }}" data-img="/images/{{ grade_key }}/{{ item.item_name }}"
-                data-name="{{ item.clean_name }}" onclick="openModal(this)">
-
+            {% for card in owned_cards %}
+            <div class="card" data-grade="{{ card.grade.lower().replace(' ', '_') }}">
                 <div class="card-inner">
-                    <div class="upgrade-badge 
-                        {% if item.upgrade_level >= 8 %}tier-rainbow
-                        {% elif item.upgrade_level >= 5 %}tier-gold
-                        {% else %}tier-white{% endif %}">
-                        +{{ item.upgrade_level }}
-                    </div>
-
-                    <div class="lock-btn {% if item.is_locked %}locked{% endif %}" data-id="{{ item.id }}"
-                        onclick="toggleLock(event, this)">
-                    </div>
-
                     <div class="card-img-wrapper">
-                        <img data-src="/images/thumbnails/{{ grade_key }}/{{ item.clean_name }}.webp"
-                            alt="{{ item.item_name }}" class="lazy-load">
+                        <img src="{{ url_for('static', filename='images/thumbnails/' + card.path.split('.')[0] + '.webp') }}"
+                            alt="{{ card.name }}" loading="lazy">
                     </div>
-
                     <div class="card-info">
-                        <div class="card-name">{{ item.clean_name }}</div>
+                        <div class="card-name">{{ card.name }}</div>
                         <div class="card-status">
-                            <span class="status-owned">● {{ item.rarity }}</span>
+                            <span class="status-owned" style="color: var(--accent-blue);">● OWNED</span>
                         </div>
                     </div>
                 </div>
             </div>
             {% else %}
-            <div style="grid-column: 1/-1; text-align: center; padding: 100px; color: var(--text-secondary);">
-                보유 중인 카드가 없습니다.
+            <div class="empty-state" style="grid-column: 1/-1; text-align: center; padding: 8rem 2rem;">
+                <p style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 1.5rem;">
+                    아직 획득한 카드가 한 장도 없네요...
+                </p>
+                <a href="/gacha" class="gacha-nav-btn" style="display: inline-block;">첫 모집 시작하기</a>
             </div>
             {% endfor %}
         </div>
     </main>
 
-    <div id="cardModal" onclick="closeModal()">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <span class="close-btn" onclick="closeModal()">&times;</span>
-            <img id="modalImg" class="modal-img" src="">
-            <div class="modal-info">
-                <div id="modalName" class="modal-name"></div>
-                <div id="modalStatus" class="card-status status-owned"></div>
-                <div id="modalUpgrade" class="modal-upgrade-text"></div>
-            </div>
-        </div>
-    </div>
-
-    <script src="{{ url_for('static', filename='js/collection.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/inventory.js') }}"></script>
-
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const lazyImages = document.querySelectorAll('.lazy-load');
-            let imageQueue = [];
-            let isProcessing = false;
+        // 모바일 메뉴 토글 및 배경 스크롤 제어
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            const btn = document.querySelector('.hamburger-btn');
+            menu.classList.toggle('active');
+            btn.classList.toggle('open');
 
-            // 스크롤 시 화면에 보이려고 할 때 감지 (rootMargin으로 살짝 미리 감지)
-            const observer = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        imageQueue.push(entry.target);
-                        observer.unobserve(entry.target);
-                        processQueue(); // 줄 세우기 시작!
-                    }
-                });
-            }, { rootMargin: "100px 0px" });
-
-            lazyImages.forEach(img => observer.observe(img));
-
-            function processQueue() {
-                if (isProcessing || imageQueue.length === 0) return;
-                isProcessing = true; // "입장 중!"
-
-                const img = imageQueue.shift(); // 맨 앞사람 꺼냄
-
-                // 실제 이미지 로딩 시작
-                img.src = img.getAttribute('data-src');
-
-                // 로딩이 성공하든 에러가 나든 다음 이미지로 넘김
-                img.onload = img.onerror = () => {
-                    isProcessing = false;
-                    // 클라우드타입 방어막 회피를 위한 0.05초(50ms) 휴식 후 다음 이미지 처리
-                    setTimeout(processQueue, 50);
-                };
+            if (menu.classList.contains('active')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = 'auto';
             }
-        });
+        }
     </script>
 </body>
 

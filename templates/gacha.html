@@ -15,21 +15,12 @@
     </div>
 
     <header class="header">
-        <div class="header-left">
-            <a href="/" class="logo">ARONA <span>ARCHIVE</span></a>
-        </div>
-
-        <div class="header-center">
-            <a href="/gacha" class="gacha-nav-btn">GACHA</a>
-        </div>
-
+        <div class="header-left"><a href="/" class="logo">ARONA <span>ARCHIVE</span></a></div>
+        <div class="header-center"><a href="/gacha" class="gacha-nav-btn">GACHA</a></div>
         <div class="header-right">
-            <div class="pc-nav" style="align-items: center; gap: 1rem; display: flex;">
-                <a href="/collection" class="tab-link"
-                    style="padding: 0.4rem 1rem; font-size: 0.8rem; margin: 0;">COLLECTION</a>
-                <a href="/inventory" class="tab-link"
-                    style="padding: 0.4rem 1rem; font-size: 0.8rem; margin: 0;">INVENTORY</a>
-
+            <div class="pc-nav" style="display: flex; align-items: center; gap: 1rem;">
+                <a href="/collection" class="tab-link">COLLECTION</a>
+                <a href="/inventory" class="tab-link">INVENTORY</a>
                 <div class="profile-container">
                     <div class="profile" style="padding: 4px 16px 4px 6px;">
                         <img src="{{ user.avatar_url }}" alt="profile">
@@ -37,17 +28,12 @@
                     </div>
                 </div>
             </div>
-
             <button class="hamburger-btn mobile-nav" onclick="toggleMobileMenu()">
                 <span></span><span></span><span></span>
             </button>
         </div>
-
         <div id="mobile-menu" class="mobile-dropdown">
-            <div class="mobile-profile">
-                <img src="{{ user.avatar_url }}" alt="profile">
-                <span>{{ user.username }}</span>
-            </div>
+            <div class="mobile-profile"><img src="{{ user.avatar_url }}"><span>{{ user.username }}</span></div>
             <a href="/gacha" class="mobile-link gacha-link">GACHA</a>
             <a href="/collection" class="mobile-link">COLLECTION</a>
             <a href="/inventory" class="mobile-link">INVENTORY</a>
@@ -56,40 +42,27 @@
     </header>
 
     <main>
-        <div class="title-section" style="text-align: center; padding-top: 3rem; padding-bottom: 0;">
-            <p style="font-size: 1.2rem; font-weight: bold; color: var(--text-primary);">
-                보유 포인트: <strong id="current-points" style="color: var(--accent-gold); font-size: 1.5rem;">{{ user_points
-                    }}</strong> P
-            </p>
+        <div class="point-display">
+            보유 포인트: <strong id="current-points">{{ user_points }}</strong> P
         </div>
 
-        <div class="gacha-control" style="margin-top: 20px;">
-            <button class="filter-btn active gold-btn" onclick="performGacha(10)"
-                style="font-weight: 900 !important;">10연차 (1,200P)</button>
+        <div class="gacha-control">
+            <button class="gold-btn" onclick="performGacha(10)">10연차 (1,200P)</button>
         </div>
 
         <div id="gacha-deck" class="gacha-grid">
-            <div class="empty-state">버튼을 눌러 가챠를 시작하세요!</div>
+            <div class="empty-state">버튼을 눌러 모집을 시작하세요!</div>
         </div>
     </main>
 
     <div id="owned-data" data-owned='{{ owned_names | tojson | safe }}' style="display:none;"></div>
-
     <script src="{{ url_for('static', filename='js/gacha.js') }}"></script>
-
     <script>
         function toggleMobileMenu() {
             const menu = document.getElementById('mobile-menu');
             const btn = document.querySelector('.hamburger-btn');
             menu.classList.toggle('active');
             btn.classList.toggle('open');
-
-            // 메뉴 열렸을 때 스크롤 방지
-            if (menu.classList.contains('active')) {
-                document.body.style.overflow = 'hidden';
-            } else {
-                document.body.style.overflow = 'auto';
-            }
         }
     </script>
 </body>

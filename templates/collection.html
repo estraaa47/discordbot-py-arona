@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ARONA ARCHIVE | COLLECTION</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/gacha.css') }}">
 </head>
 
 <body>
@@ -23,62 +24,66 @@
         </div>
 
         <div class="header-right">
-            <div class="profile-container">
-                <div class="profile" onclick="toggleDropdown(event)">
-                    <span>{{ user.username }}</span>
-                    <img src="{{ user.avatar_url }}" alt="profile">
-                </div>
-                <div id="dropdownMenu" class="dropdown-menu">
-                    <a href="/logout" class="dropdown-item logout">LOGOUT</a>
+            <div class="pc-nav" style="align-items: center; gap: 1rem; display: flex;">
+                <a href="/collection" class="tab-link active">COLLECTION</a>
+                <a href="/inventory" class="tab-link">INVENTORY</a>
+
+                <div class="profile-container">
+                    <div class="profile" style="padding: 4px 16px 4px 6px;">
+                        <img src="{{ user.avatar_url }}" alt="profile">
+                        <span>{{ user.username }}</span>
+                    </div>
                 </div>
             </div>
+
+            <button class="hamburger-btn mobile-nav" onclick="toggleMobileMenu()">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+
+        <div id="mobile-menu" class="mobile-dropdown">
+            <div class="mobile-profile">
+                <img src="{{ user.avatar_url }}" alt="profile">
+                <span>{{ user.username }}</span>
+            </div>
+            <a href="/gacha" class="mobile-link gacha-link">GACHA</a>
+            <a href="/collection" class="mobile-link">COLLECTION</a>
+            <a href="/inventory" class="mobile-link">INVENTORY</a>
+            <a href="/logout" class="mobile-link logout-link">LOGOUT</a>
         </div>
     </header>
 
     <main>
-        <div class="title-section">
+        <div class="title-section" style="text-align: center;">
             <h1>Collection</h1>
             <p class="subtitle">아로나 아카이브의 모든 카드들이에요!</p>
         </div>
 
-        <div class="tab-container">
-            <a href="/collection" class="tab-link active">COLLECTION</a>
-            <a href="/inventory" class="tab-link">INVENTORY</a>
-        </div>
-
-        <div class="filter-container">
-            <button class="filter-btn active" onclick="filterCards('all', this)">ALL</button>
-            <button class="filter-btn" onclick="filterCards('normal', this)">NORMAL</button>
-            <button class="filter-btn" onclick="filterCards('rare', this)">RARE</button>
-            <button class="filter-btn" onclick="filterCards('super_rare', this)">SR</button>
-            <button class="filter-btn" onclick="filterCards('ultra_rare', this)">UR</button>
+        <div class="filter-container" style="justify-content: center; margin-bottom: 2rem;">
+            <button class="filter-btn active" onclick="filterGrade('all', this)">ALL</button>
+            <button class="filter-btn" onclick="filterGrade('normal', this)">NORMAL</button>
+            <button class="filter-btn" onclick="filterGrade('rare', this)">RARE</button>
+            <button class="filter-btn" onclick="filterGrade('super_rare', this)">SR</button>
+            <button class="filter-btn" onclick="filterGrade('ultra_rare', this)">UR</button>
         </div>
 
         <div id="deck">
             {% for card in all_cards %}
             {% set is_owned = card.name in owned_names %}
-            {% if is_owned %}
-            {% set thumb_url = "/images/thumbnails/" ~ card.path.rsplit('.', 1)[0] ~ ".webp" %}
-            {% set full_url = "/images/" ~ card.path %}
-            {% else %}
-            {% set thumb_url = "/images/thumbnails/hidden.webp" %}
-            {% set full_url = "/images/hidden.jpg" %}
-            {% endif %}
-
-            <div class="card {% if not is_owned %}not-owned{% endif %}" data-grade="{{ card.grade }}"
-                data-img="{{ full_url }}" data-name="{{ card.name }}" onclick="openModal(this)">
-
+            <div class="card {{ 'not-owned' if not is_owned else '' }}"
+                data-grade="{{ card.grade.lower().replace(' ', '_') }}">
                 <div class="card-inner">
                     <div class="card-img-wrapper">
-                        <img data-src="{{ thumb_url }}" alt="{{ card.name }}" class="lazy-load">
+                        <img src="{{ url_for('static', filename='images/thumbnails/' + card.path.split('.')[0] + '.webp') }}"
+                            alt="{{ card.name }}" loading="lazy">
                     </div>
                     <div class="card-info">
                         <div class="card-name">{{ card.name }}</div>
                         <div class="card-status">
                             {% if is_owned %}
-                            <span class="status-owned">● OWNED</span>
+                            <span class="status-owned" style="color: var(--accent-blue);">● OWNED</span>
                             {% else %}
-                            <span class="status-missing">○ Not Owned</span>
+                            <span class="status-missing" style="opacity: 0.5;">○ MISSING</span>
                             {% endif %}
                         </div>
                     </div>
@@ -88,52 +93,35 @@
         </div>
     </main>
 
-    <div id="cardModal" onclick="closeModal()">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <span class="close-btn" onclick="closeModal()">&times;</span>
-            <img id="modalImg" class="modal-img" src="">
-            <div class="modal-info">
-                <div id="modalName" class="modal-name"></div>
-                <div id="modalStatus" class="card-status status-owned"></div>
-                <div id="modalUpgrade" class="modal-upgrade-text"></div>
-            </div>
-        </div>
-    </div>
-
-    <script src="{{ url_for('static', filename='js/collection.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/inventory.js') }}"></script>
-
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const lazyImages = document.querySelectorAll('.lazy-load');
-            let imageQueue = [];
-            let isProcessing = false;
+        // 등급 필터링 로직
+        function filterGrade(grade, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
 
-            const observer = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        imageQueue.push(entry.target);
-                        observer.unobserve(entry.target);
-                        processQueue();
-                    }
-                });
-            }, { rootMargin: "100px 0px" });
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                if (grade === 'all' || card.dataset.grade === grade) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
 
-            lazyImages.forEach(img => observer.observe(img));
+        // 모바일 메뉴 토글
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            const btn = document.querySelector('.hamburger-btn');
+            menu.classList.toggle('active');
+            btn.classList.toggle('open');
 
-            function processQueue() {
-                if (isProcessing || imageQueue.length === 0) return;
-                isProcessing = true;
-
-                const img = imageQueue.shift();
-                img.src = img.getAttribute('data-src');
-
-                img.onload = img.onerror = () => {
-                    isProcessing = false;
-                    setTimeout(processQueue, 50);
-                };
+            if (menu.classList.contains('active')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = 'auto';
             }
-        });
+        }
     </script>
 </body>
 
