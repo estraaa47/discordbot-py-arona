@@ -38,7 +38,7 @@ body.gacha-page {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -60%);
+    transform: translate(-50%, -70%);
     z-index: 2;
     pointer-events: none;
     opacity: 0.9;
@@ -46,13 +46,13 @@ body.gacha-page {
 }
 
 .gacha-center-logo img {
-    width: 280px;
+    width: 420px;
     height: auto;
 }
 
 @media (max-width: 768px) {
     .gacha-center-logo img {
-        width: 180px;
+        width: 270px;
     }
 }
 
