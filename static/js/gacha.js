@@ -97,6 +97,26 @@ function renderGacha(results) {
         grid.appendChild(cardDiv);
     });
 
+    // 최고 등급 계산 로직 (가장 높은 아우라를 부여하기 위함)
+    const gradeHierarchy = {
+        'ultra_rare': 4,
+        'super_rare': 3,
+        'rare': 2,
+        'normal': 1
+    };
+    
+    let highestGrade = 'normal';
+    let highestValue = 0;
+    
+    results.forEach(card => {
+        const gradeKey = card.grade.toLowerCase().replace(' ', '_');
+        const val = gradeHierarchy[gradeKey] || 1;
+        if(val > highestValue) {
+            highestValue = val;
+            highestGrade = gradeKey;
+        }
+    });
+
     // 중앙 스택 애니메이션 계산
     setTimeout(() => {
         const gridRect = grid.getBoundingClientRect();
@@ -118,19 +138,19 @@ function renderGacha(results) {
             // 중앙 위치로 이동값 할당
             card.style.setProperty('--dx', `${dx}px`);
             card.style.setProperty('--dy', `${dy}px`);
-            card.style.setProperty('--rot', `${Math.random() * 40 - 20}deg`); // 무작위 각도로 흩뿌려진 뭉치
+            card.style.setProperty('--rot', `0deg`); // 반듯하게 모임
             card.style.zIndex = 100 + index;
         });
         
         // 투명도 복원 및 클릭 이벤트 활성화
         grid.style.opacity = '1';
         grid.style.pointerEvents = 'auto';
-        grid.classList.add('deck-stacked');
+        grid.className = `gacha-grid deck-stacked deck-stacked-${highestGrade}`; // 최고 등급 아우라 부여
 
         grid.onclick = function(e) {
             // 뭉치를 클릭하면 촤라락 펴지게 함
             grid.onclick = null;
-            grid.classList.remove('deck-stacked');
+            grid.className = 'gacha-grid'; // 스택 애니메이션 해제
             
             cards.forEach((card, index) => {
                 // 부드럽게 각자 제자리로 펴지는 애니메이션

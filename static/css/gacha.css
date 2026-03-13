@@ -2,6 +2,12 @@
    🎰 GACHA SYSTEM STYLE (ARONA ARCHIVE) - 통합 최종본
    ========================================== */
 
+/* 🎬 GACHA SCROLL FIX (바디의 기본 여백/스크롤 제거) */
+body.gacha-page {
+    padding-bottom: 0 !important;
+    overflow: hidden !important; /* 바디 자체의 스크롤을 막고 내부 컨테이너만 스크롤 허용 */
+}
+
 /* ==========================================
    🎬 GACHA VIDEO CONTAINER
    ========================================== */
@@ -154,6 +160,20 @@
 
 .gacha-grid.deck-stacked .card {
     box-shadow: 0 15px 35px rgba(0,0,0,0.7);
+}
+
+/* 카드 뭉치 최고 등급 아우라 방출 (스택 상태일 때 맨 위 카드에만 효과를 주는 대신 뭉치 전체에 아우라 발산) */
+.gacha-grid.deck-stacked-ultra_rare .card:last-child {
+    box-shadow: 0 15px 50px rgba(163, 53, 238, 0.8), inset 0 0 0 2px rgba(163, 53, 238, 0.8) !important;
+}
+.gacha-grid.deck-stacked-super_rare .card:last-child {
+    box-shadow: 0 15px 40px rgba(255, 128, 0, 0.7), inset 0 0 0 2px rgba(255, 128, 0, 0.8) !important;
+}
+.gacha-grid.deck-stacked-rare .card:last-child {
+    box-shadow: 0 15px 35px rgba(0, 112, 221, 0.7), inset 0 0 0 2px rgba(0, 112, 221, 0.8) !important;
+}
+.gacha-grid.deck-stacked-normal .card:last-child {
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.9), inset 0 0 0 2px rgba(255, 255, 255, 0.5) !important;
 }
 
 .gacha-grid.deck-stacked .card-inner {
