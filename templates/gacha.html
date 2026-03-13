@@ -55,9 +55,23 @@
         </div>
     </main>
 
+    <!-- Modal -->
+    <div id="imageModal" class="modal" onclick="closeModal()">
+        <span class="close">&times;</span>
+        <img class="modal-content" id="modalImg">
+    </div>
+
     <div id="owned-data" data-owned='{{ owned_names | tojson | safe }}' style="display:none;"></div>
     <script src="{{ url_for('static', filename='js/gacha.js') }}"></script>
     <script>
+        function showModal(src) {
+            document.getElementById('imageModal').style.display = "flex";
+            document.getElementById('modalImg').src = src;
+        }
+        function closeModal() {
+            document.getElementById('imageModal').style.display = "none";
+        }
+
         function toggleMobileMenu() {
             const menu = document.getElementById('mobile-menu');
             const btn = document.querySelector('.hamburger-btn');

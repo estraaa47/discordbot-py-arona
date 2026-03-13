@@ -54,7 +54,7 @@ function renderGacha(results) {
         if (isNew) {
             // 💡 히든 카드 경로를 /images/thumbnails/hidden.webp로 정확히 수정!
             cardDiv.innerHTML = `
-                <div class="card-inner hidden-card" onclick="revealCard(this, '${gradeKey}', '${pathWithoutExt}', '${cardName}')">
+                <div class="card-inner hidden-card" onclick="revealCard(this, '${gradeKey}', '${pathWithoutExt}', '${cardName}', '${Math.random()}', '${card.path}')">
                     <div class="card-img-wrapper">
                         <img src="/images/thumbnails/hidden.webp" alt="Hidden Card">
                     </div>
@@ -65,7 +65,7 @@ function renderGacha(results) {
             ownedDataElement.dataset.owned = JSON.stringify(ownedNames);
         } else {
             cardDiv.innerHTML = `
-                <div class="card-inner">
+                <div class="card-inner" style="cursor: pointer;" onclick="showModal('/images/${card.path}')">
                     <div class="card-img-wrapper">
                         <img src="/images/thumbnails/${pathWithoutExt}.webp" alt="${cardName}">
                     </div>
@@ -80,8 +80,10 @@ function renderGacha(results) {
     });
 }
 
-function revealCard(el, grade, pathNoExt, cardName) {
+function revealCard(el, grade, pathNoExt, cardName, dumpId, fullPath) {
     el.classList.remove('hidden-card');
+    el.style.cursor = "pointer";
+    el.onclick = function() { showModal('/images/' + fullPath); };
     el.innerHTML = `
         <div class="card-img-wrapper">
             <img src="/images/thumbnails/${pathNoExt}.webp" alt="${cardName}">

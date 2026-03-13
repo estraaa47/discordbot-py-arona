@@ -65,12 +65,15 @@
         </div>
 
         <div id="deck">
-            {% for card in owned_cards %}
-            <div class="card" data-grade="{{ card.grade.lower().replace(' ', '_') }}">
+            {% for card in inventory_items %}
+            <div class="card" data-grade="{{ card.rarity.lower().replace(' ', '_') }}" 
+                 style="cursor: pointer;"
+                 data-full-img="/images/{{ card.rarity.lower().replace(' ', '_') }}/{{ card.item_name }}"
+                 onclick="showModal(this.getAttribute('data-full-img'))">
                 <div class="card-inner">
                     <div class="card-img-wrapper">
-                        <img src="{{ url_for('static', filename='images/thumbnails/' + card.path.split('.')[0] + '.webp') }}"
-                            alt="{{ card.name }}" loading="lazy">
+                        <img src="/images/thumbnails/{{ card.rarity.lower().replace(' ', '_') }}/{{ card.clean_name }}.webp"
+                            alt="{{ card.item_name }}" loading="lazy">
                     </div>
                     <div class="card-info">
                         <div class="card-name">{{ card.name }}</div>
@@ -91,7 +94,21 @@
         </div>
     </main>
 
+    <!-- Modal -->
+    <div id="imageModal" class="modal" onclick="closeModal()">
+        <span class="close">&times;</span>
+        <img class="modal-content" id="modalImg">
+    </div>
+
     <script>
+        function showModal(src) {
+            document.getElementById('imageModal').style.display = "flex";
+            document.getElementById('modalImg').src = src;
+        }
+        function closeModal() {
+            document.getElementById('imageModal').style.display = "none";
+        }
+
         // 모바일 메뉴 토글 및 배경 스크롤 제어
         function toggleMobileMenu() {
             const menu = document.getElementById('mobile-menu');

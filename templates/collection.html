@@ -71,11 +71,15 @@
             {% for card in all_cards %}
             {% set is_owned = card.name in owned_names %}
             <div class="card {{ 'not-owned' if not is_owned else '' }}"
-                data-grade="{{ card.grade.lower().replace(' ', '_') }}">
+                data-grade="{{ card.grade.lower().replace(' ', '_') }}"
+                {% if is_owned %} style="cursor: pointer;" data-full-img="/images/{{ card.path }}" onclick="showModal(this.getAttribute('data-full-img'))" {% endif %}>
                 <div class="card-inner">
                     <div class="card-img-wrapper">
-                        <img src="{{ url_for('static', filename='images/thumbnails/' + card.path.split('.')[0] + '.webp') }}"
-                            alt="{{ card.name }}" loading="lazy">
+                        {% if is_owned %}
+                        <img src="/images/thumbnails/{{ card.path.split('.')[0] }}.webp" alt="{{ card.name }}" loading="lazy">
+                        {% else %}
+                        <img src="/images/thumbnails/hidden.webp" alt="Hidden Card" loading="lazy">
+                        {% endif %}
                     </div>
                     <div class="card-info">
                         <div class="card-name">{{ card.name }}</div>
@@ -93,7 +97,21 @@
         </div>
     </main>
 
+    <!-- Modal -->
+    <div id="imageModal" class="modal" onclick="closeModal()">
+        <span class="close">&times;</span>
+        <img class="modal-content" id="modalImg">
+    </div>
+
     <script>
+        function showModal(src) {
+            document.getElementById('imageModal').style.display = "flex";
+            document.getElementById('modalImg').src = src;
+        }
+        function closeModal() {
+            document.getElementById('imageModal').style.display = "none";
+        }
+
         // 등급 필터링 로직
         function filterGrade(grade, btn) {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
