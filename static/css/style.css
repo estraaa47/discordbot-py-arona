@@ -446,19 +446,83 @@ p {
 }
 .status-owned {
     color: var(--accent-blue);
+    text-shadow: 0 0 8px rgba(59, 130, 246, 0.7);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
 .status-missing {
     color: var(--text-secondary);
-    opacity: 0.5;
+    opacity: 0.85;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
 }
 .card.not-owned {
-    filter: grayscale(1) brightness(0.7);
-    opacity: 0.6;
+    filter: grayscale(0.85) brightness(0.6) contrast(1.1);
+    opacity: 0.7;
 }
 .card-status {
     font-size: 0.75rem;
     font-weight: 700;
-    margin-top: 4px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.9);
+}
+
+/* Upgrade Badges (Text Stroke Effects) */
+.upgrade-level {
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: var(--text-primary);
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 10;
+    font-family: 'Arial', sans-serif !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 0 ~ 4: White stroke */
+.upgrade-white {
+    text-shadow: 
+        -1px -1px 0 #fff,  
+         1px -1px 0 #fff,
+        -1px  1px 0 #fff,
+         1px  1px 0 #fff,
+         0 0 8px rgba(255,255,255,0.5);
+    color: #333;
+}
+
+/* 5 ~ 7: Gold stroke */
+.upgrade-gold {
+    text-shadow: 
+        -1px -1px 0 #ffd700,  
+         1px -1px 0 #ffd700,
+        -1px  1px 0 #ffd700,
+         1px  1px 0 #ffd700,
+         0 0 10px rgba(255, 215, 0, 0.8);
+    color: #fff;
+}
+
+/* 8+: Rainbow / Animated Gradient stroke illusion */
+/* We use background-clip to simulate a colorful inside, or colorful shadow */
+.upgrade-rainbow {
+    color: #fff;
+    text-shadow: 
+        -1px -1px 0 #ff0000, 
+         1px -1px 0 #ff7f00, 
+        -1px  1px 0 #00ff00, 
+         1px  1px 0 #0000ff,
+         0 0 12px rgba(255, 0, 255, 0.8);
+    animation: rainbowGlow 2s infinite linear alternate;
+}
+
+@keyframes rainbowGlow {
+    0%   { text-shadow: -1px -1px 0 #ff0000, 1px -1px 0 #ff7f00, -1px 1px 0 #00ff00, 1px 1px 0 #0000ff, 0 0 15px #ff0000; }
+    33%  { text-shadow: -1px -1px 0 #0000ff, 1px -1px 0 #ff0000, -1px 1px 0 #ff7f00, 1px 1px 0 #00ff00, 0 0 15px #0000ff; }
+    66%  { text-shadow: -1px -1px 0 #00ff00, 1px -1px 0 #0000ff, -1px 1px 0 #ff0000, 1px 1px 0 #ff7f00, 0 0 15px #00ff00; }
+    100% { text-shadow: -1px -1px 0 #ff7f00, 1px -1px 0 #00ff00, -1px 1px 0 #0000ff, 1px 1px 0 #ff0000, 0 0 15px #ff7f00; }
 }
 
 /* Modal for full image */

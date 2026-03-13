@@ -91,6 +91,19 @@
                 data-full-img="/images/{{ card.rarity.lower().replace(' ', '_') }}/{{ card.item_name }}"
                 onclick="showModal(this.getAttribute('data-full-img'))">
                 <div class="card-inner">
+                    {% if card.upgrade_level is not none %}
+                        {% set lvl = card.upgrade_level|int %}
+                        {% set tier_class = 'upgrade-white' %}
+                        {% if lvl >= 5 and lvl <= 7 %}
+                            {% set tier_class = 'upgrade-gold' %}
+                        {% elif lvl >= 8 %}
+                            {% set tier_class = 'upgrade-rainbow' %}
+                        {% endif %}
+                        <div class="upgrade-level {{ tier_class }}">
+                            +{{ lvl }}
+                        </div>
+                    {% endif %}
+
                     <button class="lock-btn {{ 'locked' if card.is_locked else '' }}" data-id="{{ card.id }}"
                         onclick="toggleLock(event, this)" aria-label="Toggle Lock">
                         <img src="{{ url_for('static', filename='icons/unlock.png') }}" class="icon-unlock"
