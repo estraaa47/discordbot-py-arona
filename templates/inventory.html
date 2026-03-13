@@ -59,21 +59,44 @@
     <main>
         <div class="title-section" style="text-align: center;">
             <h1>Inventory</h1>
-            <p class="subtitle"><strong>{{ user.username }}</strong> 선생님이 수집한 소중한 기록들이에요!</p>
+            <p class="subtitle"><strong>{{ user.username }}</strong> 선생님이 보유한 카드들이에요!</p>
         </div>
 
-        <div class="tab-container" style="justify-content: center; margin-bottom: 2rem;">
-            <a href="/collection" class="tab-link">COLLECTION</a>
-            <a href="/inventory" class="tab-link active">INVENTORY</a>
+        <div class="inventory-controls"
+            style="max-width: 1200px; margin: 0 auto 2rem; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div class="filter-container" style="justify-content: flex-start; margin-bottom: 0;">
+                <button class="filter-btn active" onclick="filterGrade('all', this)">ALL</button>
+                <button class="filter-btn" onclick="filterGrade('normal', this)">NORMAL</button>
+                <button class="filter-btn" onclick="filterGrade('rare', this)">RARE</button>
+                <button class="filter-btn" onclick="filterGrade('super_rare', this)">SR</button>
+                <button class="filter-btn" onclick="filterGrade('ultra_rare', this)">UR</button>
+            </div>
+
+            <div class="sort-dropdown">
+                <button class="sort-btn" onclick="toggleDropdown(event)">
+                    정렬 기준 <span class="arrow">▼</span>
+                </button>
+                <div id="dropdownMenu" class="dropdown-content">
+                    <a href="#" onclick="sortDeck('rarity_desc'); return false;">등급 높은순</a>
+                    <a href="#" onclick="sortDeck('rarity_asc'); return false;">등급 낮은순</a>
+                    <a href="#" onclick="sortDeck('name_asc'); return false;">이름순</a>
+                </div>
+            </div>
         </div>
 
         <div id="deck">
             {% for card in inventory_items %}
-            <div class="card" data-grade="{{ card.rarity.lower().replace(' ', '_') }}" 
-                 style="cursor: pointer;"
-                 data-full-img="/images/{{ card.rarity.lower().replace(' ', '_') }}/{{ card.item_name }}"
-                 onclick="showModal(this.getAttribute('data-full-img'))">
+            <div class="card" data-grade="{{ card.rarity.lower().replace(' ', '_') }}" data-name="{{ card.item_name }}"
+                style="cursor: pointer;"
+                data-full-img="/images/{{ card.rarity.lower().replace(' ', '_') }}/{{ card.item_name }}"
+                onclick="showModal(this.getAttribute('data-full-img'))">
                 <div class="card-inner">
+                    <button class="lock-btn {{ 'locked' if card.is_locked else '' }}" data-id="{{ card.id }}"
+                        onclick="toggleLock(event, this)" aria-label="Toggle Lock">
+                        <img src="{{ url_for('static', filename='icons/unlock.png') }}" class="icon-unlock"
+                            alt="unlocked">
+                        <img src="{{ url_for('static', filename='icons/lock.png') }}" class="icon-lock" alt="locked">
+                    </button>
                     <div class="card-img-wrapper">
                         <img data-src="/images/thumbnails/{{ card.rarity.lower().replace(' ', '_') }}/{{ card.clean_name }}.webp"
                             alt="{{ card.item_name }}">
@@ -131,6 +154,56 @@
             document.getElementById('profileDropdown').classList.toggle('active');
         }
 
+        // 등급 필터링 관련 로직
+        function filterGrade(grade, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                if (grade === 'all' || card.dataset.grade === grade) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // 정렬 관련 로직
+        function sortDeck(criteria) {
+            const deck = document.getElementById('deck');
+            const cards = Array.from(deck.querySelectorAll('.card'));
+
+            // 등급 비교 가중치 표 
+            const orderScore = {
+                'ultra_rare': 4,
+                'super_rare': 3,
+                'rare': 2,
+                'normal': 1
+            };
+
+            cards.sort((a, b) => {
+                const gradeA = a.dataset.grade;
+                const gradeB = b.dataset.grade;
+                const nameA = a.dataset.name.toLowerCase();
+                const nameB = b.dataset.name.toLowerCase();
+
+                if (criteria === 'rarity_desc') {
+                    return (orderScore[gradeB] || 0) - (orderScore[gradeA] || 0);
+                } else if (criteria === 'rarity_asc') {
+                    return (orderScore[gradeA] || 0) - (orderScore[gradeB] || 0);
+                } else if (criteria === 'name_asc') {
+                    return nameA.localeCompare(nameB);
+                }
+                return 0;
+            });
+
+            cards.forEach(card => deck.appendChild(card));
+
+            // 정렬 후 메뉴 닫기
+            document.getElementById('dropdownMenu').classList.remove('active');
+        }
+
         // 가짜 스크롤 방어 및 디도스 차단 우회를 위한 이미지 1장씩 순차 로딩
         document.addEventListener('DOMContentLoaded', () => {
             const images = document.querySelectorAll('img[data-src]');
@@ -146,6 +219,7 @@
             loadNextImage();
         });
     </script>
+    <script src="{{ url_for('static', filename='js/inventory.js') }}"></script>
 </body>
 
 </html>

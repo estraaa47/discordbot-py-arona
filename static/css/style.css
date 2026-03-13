@@ -324,8 +324,9 @@ p {
     padding: 0.5rem 1.5rem;
     border-radius: 20px;
     cursor: pointer;
-    font-weight: bold;
+    font-weight: 700;
     transition: all 0.2s;
+    font-family: 'NexonLv2', sans-serif !important;
 }
 .filter-btn:hover {
     background: rgba(255,255,255,0.1);
@@ -336,6 +337,99 @@ p {
     color: white;
     border-color: var(--accent-blue);
     box-shadow: 0 0 10px var(--accent-glow);
+}
+
+/* Sorting Dropdown */
+.sort-dropdown {
+    position: relative;
+    display: inline-block;
+}
+.sort-btn {
+    background: rgba(255,255,255,0.05);
+    color: var(--text-primary);
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+}
+.sort-btn:hover {
+    background: rgba(255,255,255,0.15);
+}
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 110%;
+    background-color: var(--bg-surface);
+    backdrop-filter: blur(10px);
+    min-width: 150px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5);
+    z-index: 100;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+.dropdown-content.active {
+    display: block;
+}
+.dropdown-content a {
+    color: var(--text-primary);
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: 0.2s;
+}
+.dropdown-content a:hover {
+    background-color: rgba(255,255,255,0.1);
+    color: var(--accent-blue);
+}
+
+/* Card Lock Status */
+.lock-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.4);
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    backdrop-filter: blur(4px);
+    transition: all 0.2s;
+}
+.lock-btn:hover {
+    background: rgba(0, 0, 0, 0.7);
+    transform: scale(1.1);
+}
+.lock-btn img {
+    width: 16px;
+    height: 16px;
+    filter: brightness(0) invert(1);
+    transition: opacity 0.2s;
+}
+.lock-btn .icon-lock {
+    display: none;
+}
+.lock-btn.locked {
+    background: rgba(239, 68, 68, 0.8);
+}
+.lock-btn.locked .icon-unlock {
+    display: none;
+}
+.lock-btn.locked .icon-lock {
+    display: block;
 }
 
 /* States */
@@ -363,7 +457,7 @@ p {
 }
 .card-status {
     font-size: 0.75rem;
-    font-weight: bold;
+    font-weight: 700;
     margin-top: 4px;
 }
 
