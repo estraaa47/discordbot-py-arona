@@ -34,6 +34,28 @@ body.gacha-page {
     opacity: 0.8;
 }
 
+.gacha-center-logo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -60%);
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0.9;
+    filter: drop-shadow(0 0 30px rgba(59, 130, 246, 0.3));
+}
+
+.gacha-center-logo img {
+    width: 280px;
+    height: auto;
+}
+
+@media (max-width: 768px) {
+    .gacha-center-logo img {
+        width: 180px;
+    }
+}
+
 .gacha-overlay-ui {
     position: absolute;
     inset: 0;
