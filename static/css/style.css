@@ -10,7 +10,6 @@
     --text-primary: #f3f4f6;
     --text-secondary: #9ca3af;
     --border-color: rgba(255, 255, 255, 0.08);
-    --base-unit: 1rem;
     --side-space: 3.125rem;
     --header-padding-v: 1.125rem;
     --border-radius-lg: 1.75rem;
@@ -18,31 +17,32 @@
     --card-min-width: 13.75rem;
 }
 
-/* [FONTS] */
+/* [FONTS] - 💡 공백 문제 해결을 위해 따옴표를 씌웠습니다. */
 @font-face {
     font-family: 'NexonLv2';
-    src: url('../fonts/NEXON%20Lv2%20Gothic%20Light.ttf') format('truetype');
+    src: url("../fonts/NEXON Lv2 Gothic Light.ttf") format("truetype");
     font-weight: 300;
 }
 
 @font-face {
     font-family: 'NexonLv2';
-    src: url('../fonts/NEXON%20Lv2%20Gothic.ttf') format('truetype');
+    src: url("../fonts/NEXON Lv2 Gothic.ttf") format("truetype");
     font-weight: 400;
 }
 
 @font-face {
     font-family: 'NexonLv2';
-    src: url('../fonts/NEXON%20Lv2%20Gothic%20Medium.ttf') format('truetype');
+    src: url("../fonts/NEXON Lv2 Gothic Medium.ttf") format("truetype");
     font-weight: 500;
 }
 
 @font-face {
     font-family: 'NexonLv2';
-    src: url('../fonts/NEXON%20Lv2%20Gothic%20Bold.ttf') format('truetype');
+    src: url("../fonts/NEXON Lv2 Gothic Bold.ttf") format("truetype");
     font-weight: 700;
 }
 
+/* [BASE] */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -64,7 +64,6 @@ body {
     padding-bottom: 5rem;
 }
 
-/* 폰트 깨짐 방지 강제 고정 */
 a,
 button,
 input,
@@ -107,20 +106,6 @@ p {
     }
 }
 
-@keyframes pulse-energy {
-
-    0%,
-    100% {
-        transform: scale(1);
-        opacity: 0.6;
-    }
-
-    50% {
-        transform: scale(1.15);
-        opacity: 1;
-    }
-}
-
 /* ==========================================
    [HEADER]
    ========================================== */
@@ -130,7 +115,6 @@ p {
     align-items: center;
     padding: calc(var(--header-padding-v) + env(safe-area-inset-top)) var(--side-space) var(--header-padding-v);
     background: var(--header-glass);
-    -webkit-backdrop-filter: blur(1.5rem);
     backdrop-filter: blur(1.5rem);
     position: sticky;
     top: 0;
@@ -142,7 +126,6 @@ p {
     flex: 1;
     display: flex;
     align-items: center;
-    gap: 2.5rem;
 }
 
 .header-center {
@@ -155,6 +138,7 @@ p {
     flex: 1;
     display: flex;
     justify-content: flex-end;
+    gap: 1rem;
 }
 
 .logo {
@@ -176,39 +160,26 @@ p {
     background-color: #5bb3ff;
     color: white !important;
     text-decoration: none;
-    font-weight: 900;
+    font-weight: 900 !important;
     font-size: 1.1rem;
     padding: 8px 30px;
     border-radius: 50px;
-    letter-spacing: 2px;
+    letter-spacing: 1.5px;
     box-shadow: 0 4px 15px rgba(91, 179, 255, 0.4);
     transition: all 0.3s ease;
     border: 2px solid white;
     white-space: nowrap;
 }
 
-.gacha-nav-btn:hover {
-    background-color: #3a9fff;
-    transform: scale(1.1);
-    box-shadow: 0 6px 20px rgba(91, 179, 255, 0.6);
-}
-
 .profile {
     display: flex;
     align-items: center;
     gap: 0.8rem;
-    padding: 4px 4px 4px 16px;
+    padding: 4px 16px 4px 6px;
     background: rgba(255, 255, 255, 0.07);
     border-radius: 100px;
     border: 1px solid var(--border-color);
-    cursor: pointer;
-    transition: all 0.2s ease;
     height: 42px;
-}
-
-.profile:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: var(--accent-blue);
 }
 
 .profile img {
@@ -219,393 +190,8 @@ p {
     object-fit: cover;
 }
 
-.dropdown-menu {
-    position: absolute;
-    top: calc(100% + 0.625rem);
-    right: var(--side-space);
-    min-width: 8.75rem;
-    background: var(--bg-surface);
-    border: 1px solid var(--border-color);
-    border-radius: 0.75rem;
-    padding: 0.5rem;
-    display: none;
-    flex-direction: column;
-    z-index: 1001;
-    backdrop-filter: blur(1.25rem);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
-
-.dropdown-menu.active {
-    display: flex;
-    animation: fadeIn 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.dropdown-menu a {
-    display: block;
-    color: #ff4757;
-    text-decoration: none;
-    padding: 0.6rem 1rem;
-    text-align: center;
-    font-weight: 700;
-    font-size: 0.95rem;
-    border-radius: 0.5rem;
-    background: rgba(255, 71, 87, 0.1);
-    transition: all 0.2s ease;
-}
-
-.dropdown-menu a:hover {
-    background: rgba(255, 71, 87, 0.2);
-    color: #ff6b81;
-    transform: translateY(-2px);
-}
-
 /* ==========================================
-   [MAIN CONTENT]
-   ========================================== */
-.title-section {
-    padding: 4.375rem var(--side-space) 1.25rem;
-}
-
-h1 {
-    font-size: 2.8rem;
-    font-weight: 700;
-    background: linear-gradient(135deg, #fff 30%, var(--accent-blue) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.tab-container {
-    display: flex;
-    gap: 1rem;
-    padding: 0 var(--side-space) 2rem;
-}
-
-.tab-link {
-    text-decoration: none;
-    cursor: pointer;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid var(--border-color);
-    color: var(--text-secondary);
-    padding: 0.8rem 1.8rem;
-    border-radius: var(--border-radius-md);
-    font-size: 0.9rem;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.tab-link.active {
-    background: var(--bg-surface);
-    border-color: var(--accent-blue);
-    color: var(--accent-blue);
-    box-shadow: 0 0 1rem var(--accent-glow);
-}
-
-.filter-container {
-    padding: 0 var(--side-space) 1.875rem;
-    display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-}
-
-.filter-btn {
-    cursor: pointer;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid var(--border-color);
-    color: var(--text-secondary);
-    padding: 0.625rem 1.25rem;
-    border-radius: var(--border-radius-md);
-    font-size: 0.8rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
-}
-
-.filter-btn.active {
-    background: var(--accent-blue);
-    color: white;
-    box-shadow: 0 0 0.9375rem var(--accent-glow);
-}
-
-/* ==========================================
-   [DECK & CARDS]
-   ========================================== */
-#deck {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(var(--card-min-width), 1fr));
-    gap: 2.1875rem;
-    padding: 2.5rem var(--side-space);
-}
-
-.card {
-    position: relative;
-    z-index: 1;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.card-inner {
-    position: relative;
-    width: 100%;
-    background: var(--bg-surface);
-    border-radius: var(--border-radius-lg);
-    border: 1px solid var(--border-color);
-    overflow: hidden;
-    z-index: 2;
-}
-
-.card:not(.not-owned):hover {
-    transform: translateY(-0.75rem);
-}
-
-.card:not(.not-owned)[data-grade="ultra_rare"]::before,
-.card:not(.not-owned)[data-grade="super_rare"]::before {
-    content: "";
-    position: absolute;
-    inset: -1.25rem;
-    z-index: -1;
-    filter: blur(25px);
-}
-
-.card:not(.not-owned)[data-grade="ultra_rare"]::before {
-    animation: pulse-energy 5s infinite ease-in-out;
-    background: radial-gradient(circle, rgba(168, 85, 247, 0.9) 0%, rgba(168, 85, 247, 0.4) 50%, transparent 80%);
-}
-
-.card:not(.not-owned)[data-grade="ultra_rare"] {
-    border-color: var(--accent-purple);
-}
-
-.card:not(.not-owned)[data-grade="super_rare"]::before {
-    animation: pulse-energy 7s infinite ease-in-out;
-    background: radial-gradient(circle, rgba(251, 191, 36, 0.8) 0%, rgba(251, 191, 36, 0.3) 50%, transparent 80%);
-}
-
-.card:not(.not-owned)[data-grade="super_rare"] {
-    border-color: var(--accent-gold);
-}
-
-.card.not-owned {
-    opacity: 0.6;
-}
-
-.card.not-owned .card-inner {
-    filter: grayscale(1) brightness(0.6);
-    border: 1px dashed rgba(255, 255, 255, 0.15);
-}
-
-.card-img-wrapper {
-    width: 100%;
-    position: relative;
-    padding-top: 133.33%;
-    background: #111;
-    overflow: hidden;
-}
-
-.card img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0.85;
-    transition: 0.5s;
-}
-
-.card-info {
-    padding: 1.5625rem 1.25rem 1.25rem;
-    background: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 50%, transparent 100%);
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-}
-
-.card-name {
-    font-size: 1.05rem;
-    font-weight: 500;
-    color: #fff;
-    margin-bottom: 4px;
-}
-
-.card-status {
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.125rem;
-    text-transform: uppercase;
-}
-
-.status-owned {
-    color: var(--accent-blue);
-}
-
-.status-missing {
-    color: var(--text-secondary);
-    opacity: 0.7;
-}
-
-/* ==========================================
-   [MODAL & BADGES]
-   ========================================== */
-#cardModal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.95);
-    z-index: 2000;
-    -webkit-backdrop-filter: blur(1.5rem);
-    backdrop-filter: blur(1.5rem);
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-#cardModal.active {
-    display: flex;
-    opacity: 1;
-}
-
-.modal-content {
-    position: relative;
-    max-width: 26.25rem;
-    width: 90%;
-    transform: scale(0.85);
-    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-#cardModal.active .modal-content {
-    transform: scale(1);
-}
-
-.modal-img {
-    width: 100%;
-    border-radius: 2rem;
-    border: 2px solid transparent;
-}
-
-.modal-img[data-grade="ultra_rare"] {
-    border-color: var(--accent-purple);
-    box-shadow: 0 0 60px rgba(168, 85, 247, 0.7);
-}
-
-.modal-img[data-grade="super_rare"] {
-    border-color: var(--accent-gold);
-    box-shadow: 0 0 50px rgba(251, 191, 36, 0.6);
-}
-
-.modal-info {
-    text-align: center;
-    margin-top: 1.5625rem;
-}
-
-.modal-name {
-    font-size: 2.2rem;
-    font-weight: 700;
-    color: #fff;
-    margin-bottom: 0.3125rem;
-}
-
-.close-btn {
-    position: absolute;
-    top: -3.75rem;
-    right: 0;
-    color: #fff;
-    font-size: 2.5rem;
-    cursor: pointer;
-    opacity: 0.6;
-}
-
-.lock-btn {
-    position: absolute;
-    top: 0.8rem;
-    right: 0.8rem;
-    z-index: 10;
-    width: 2.2rem;
-    height: 2.2rem;
-    border-radius: 50%;
-    background: rgba(10, 10, 12, 0.7);
-    -webkit-backdrop-filter: blur(4px);
-    backdrop-filter: blur(4px);
-    border: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
-
-.lock-btn::before {
-    content: "";
-    width: 60%;
-    height: 60%;
-    background-image: url('../icons/unlock.png');
-    background-size: contain;
-    background-position: center;
-    background-repeat: no-repeat;
-    filter: brightness(0) invert(1);
-}
-
-.lock-btn.locked::before {
-    background-image: url('../icons/lock.png');
-}
-
-.upgrade-badge {
-    position: absolute;
-    top: 1rem;
-    left: 1rem;
-    z-index: 10;
-    background: var(--header-glass);
-    -webkit-backdrop-filter: blur(5px);
-    backdrop-filter: blur(5px);
-    padding: 0.2rem 0.6rem;
-    border-radius: 0.5rem;
-    font-size: 0.75rem;
-    font-weight: 800;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.tier-white {
-    color: #ffffff;
-    border-color: rgba(255, 255, 255, 0.4);
-    text-shadow: 0 0 5px rgba(255, 255, 255, 0.4);
-}
-
-.tier-gold {
-    color: var(--accent-gold);
-    border-color: var(--accent-gold);
-    text-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
-}
-
-.tier-rainbow {
-    background: linear-gradient(to right, #ff2424, #ffad60, #fbff00, #43ff64, #417aff, #b472ff, #ff72ff, #ff2424);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    font-weight: 900;
-    animation: rainbow-scroll 3s linear infinite;
-}
-
-@keyframes rainbow-scroll {
-    to {
-        background-position: 200% center;
-    }
-}
-
-
-/* ==========================================
-   [RESPONSIVE] - 💡 모바일 햄버거 메뉴 최적화
+   [RESPONSIVE & MOBILE MENU]
    ========================================== */
 .mobile-nav,
 .mobile-dropdown {
@@ -613,68 +199,43 @@ h1 {
 }
 
 @media (max-width: 48rem) {
-
-    /* 768px 이하 (태블릿~모바일) */
     :root {
         --side-space: 1.2rem;
-        --header-padding-v: 0.8rem;
     }
 
-    h1 {
-        font-size: 2.2rem;
-    }
-
-    /* 💡 기존 PC 헤더 메뉴 싹 숨기기 */
     .pc-nav {
         display: none !important;
     }
 
-    /* 💡 햄버거 버튼 보이기 */
     .mobile-nav {
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        width: 26px;
-        height: 18px;
+        width: 24px;
+        height: 16px;
         background: none;
         border: none;
         cursor: pointer;
         z-index: 2002;
     }
 
-    .hamburger-btn span {
+    .mobile-nav span {
         display: block;
         height: 3px;
         width: 100%;
         background-color: var(--text-primary);
         border-radius: 3px;
-        transition: all 0.3s ease;
     }
 
-    /* 🍔 햄버거 토글 시 [ X ] 모양 애니메이션 */
-    .hamburger-btn.open span:nth-child(1) {
-        transform: translateY(7.5px) rotate(45deg);
-    }
-
-    .hamburger-btn.open span:nth-child(2) {
-        opacity: 0;
-    }
-
-    .hamburger-btn.open span:nth-child(3) {
-        transform: translateY(-7.5px) rotate(-45deg);
-    }
-
-    /* 💡 모바일 전체화면 메뉴 */
+    /* 💡 모바일 전체화면 메뉴 디자인 */
     .mobile-dropdown {
         display: flex;
         position: fixed;
-        top: 0;
-        left: 0;
+        inset: 0;
         width: 100%;
         height: 100vh;
-        background: rgba(10, 10, 12, 0.95);
-        -webkit-backdrop-filter: blur(15px);
-        backdrop-filter: blur(15px);
+        background: rgba(10, 10, 12, 0.98);
+        backdrop-filter: blur(20px);
         flex-direction: column;
         align-items: center;
         justify-content: center;
@@ -682,86 +243,29 @@ h1 {
         z-index: 2001;
         opacity: 0;
         pointer-events: none;
-        transition: all 0.3s ease;
+        transition: 0.3s;
     }
 
     .mobile-dropdown.active {
         opacity: 1;
         pointer-events: auto;
     }
+}
 
-    .mobile-profile {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 2rem;
+@media (max-width: 30rem) {
+    .header-left .logo {
+        display: none !important;
     }
 
-    .mobile-profile img {
-        width: 70px;
-        height: 70px;
-        border-radius: 50%;
-        border: 2px solid var(--accent-blue);
-        box-shadow: 0 0 15px var(--accent-glow);
+    /* 로고 삭제 */
+    .gacha-nav-btn {
+        padding: 6px 16px !important;
+        font-size: 0.85rem !important;
     }
 
-    .mobile-profile span {
-        font-size: 1.3rem;
-        font-weight: 700;
-    }
-
-    .mobile-link {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        text-decoration: none;
-        letter-spacing: 2px;
-        transition: 0.2s;
-    }
-
-    .mobile-link.gacha-link {
-        color: var(--accent-blue);
-        font-size: 1.8rem;
-        font-weight: 900;
-        text-shadow: 0 0 15px var(--accent-glow);
-    }
-
-    .mobile-link.logout-link {
-        color: #ff4757;
-        margin-top: 2rem;
-        font-size: 1.2rem;
-    }
-
-    .logo span {
-        display: none;
-    }
-
-    /* 모바일 카드 배열 최적화 (2열) */
-    #deck {
-        grid-template-columns: 1fr 1fr !important;
-        gap: 0.75rem;
-        padding: 1rem var(--side-space);
-    }
-
-    .card {
-        min-width: 0 !important;
-    }
-
-    .card-name {
-        font-size: 0.85rem;
-    }
-
-    .upgrade-badge {
-        top: 0.5rem;
-        left: 0.5rem;
-        font-size: 0.65rem;
-    }
-
-    .lock-btn {
-        top: 0.5rem;
-        right: 0.5rem;
-        width: 1.8rem;
-        height: 1.8rem;
+    /* 버튼 축소 */
+    .header-right {
+        flex: 1;
+        gap: 0.5rem;
     }
 }
