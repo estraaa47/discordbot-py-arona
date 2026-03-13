@@ -131,7 +131,6 @@ body {
     border-bottom: 1px solid var(--border-color);
 }
 
-/* 좌, 중, 우를 flex: 1로 설정해서 버튼을 완벽한 정중앙에 배치 */
 .header-left {
     flex: 1;
     display: flex;
@@ -166,7 +165,6 @@ body {
     text-shadow: 0 0 0.9375rem var(--accent-glow);
 }
 
-/* 🎰 헤더 가챠 버튼 */
 .gacha-nav-btn {
     background-color: #5bb3ff;
     color: white !important;
@@ -214,6 +212,9 @@ body {
     object-fit: cover;
 }
 
+/* ==========================================
+   [DROPDOWN & LOGOUT] - 통합 완료
+   ========================================== */
 .dropdown-menu {
     position: absolute;
     top: calc(100% + 0.625rem);
@@ -233,6 +234,39 @@ body {
 .dropdown-menu.active {
     display: flex;
     animation: fadeIn 0.2s ease-out;
+}
+
+/* 💡 누락됐던 fadeIn 애니메이션 뼈대 추가 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 💡 파란색으로 깨지던 로그아웃 버튼 디자인 복구 */
+.dropdown-menu a {
+    display: block;
+    color: #ff4757;
+    text-decoration: none;
+    padding: 0.6rem 1rem;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-radius: 0.5rem;
+    background: rgba(255, 71, 87, 0.1);
+    transition: all 0.2s ease;
+}
+
+.dropdown-menu a:hover {
+    background: rgba(255, 71, 87, 0.2);
+    color: #ff6b81;
+    transform: translateY(-2px);
 }
 
 /* ==========================================
@@ -586,7 +620,6 @@ h1 {
         --header-padding-v: 0.8rem;
     }
 
-    /* 💡 모바일에서 가챠 버튼 스케일링 (레이아웃 파괴 방지) */
     .gacha-nav-btn {
         padding: 6px 16px;
         font-size: 0.85rem;
@@ -597,7 +630,6 @@ h1 {
         display: none;
     }
 
-    /* 폰에서는 ARONA 만 표시해서 공간 확보 */
     .header-left {
         gap: 1rem;
     }
@@ -627,8 +659,6 @@ h1 {
     .profile span {
         display: none;
     }
-
-    /* 폰에서는 프로필 이미지만 표시해서 깔끔하게 */
 
     .upgrade-badge {
         top: 0.5rem;
