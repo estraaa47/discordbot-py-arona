@@ -269,3 +269,100 @@ p {
         gap: 0.5rem;
     }
 }
+
+/* ==========================================
+   [UI COMPONENTS & STATES]
+   ========================================== */
+
+/* Tabs */
+.tab-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius-md);
+    transition: all 0.2s ease;
+}
+.tab-link:hover {
+    color: var(--text-primary);
+    background: rgba(255,255,255,0.1);
+}
+.tab-link.active {
+    color: var(--accent-blue);
+    background: var(--accent-glow);
+}
+.tab-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+/* Titles */
+.title-section h1 {
+    font-size: 2.5rem;
+    margin-top: 2rem;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 15px rgba(255,255,255,0.2);
+}
+.title-section .subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+}
+
+/* Filters */
+.filter-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+.filter-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 0.5rem 1.5rem;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+.filter-btn:hover {
+    background: rgba(255,255,255,0.1);
+    color: var(--text-primary);
+}
+.filter-btn.active {
+    background: var(--accent-blue);
+    color: white;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+
+/* States */
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 4rem 2rem;
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+    border: 1px dashed var(--border-color);
+    width: 100%;
+}
+.status-owned {
+    color: var(--accent-blue);
+}
+.status-missing {
+    color: var(--text-secondary);
+    opacity: 0.5;
+}
+.card.not-owned {
+    filter: grayscale(1) brightness(0.7);
+    opacity: 0.6;
+}
+.card-status {
+    font-size: 0.75rem;
+    font-weight: bold;
+    margin-top: 4px;
+}

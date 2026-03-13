@@ -48,7 +48,7 @@
 }
 
 /* 🎰 2x5 그리드 시스템 (카드 크기 고정) */
-.gacha-grid {
+.gacha-grid, #deck {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 20px;
@@ -78,21 +78,21 @@
 }
 
 /* ✨ 등급별 아우라 */
-.card.ultra_rare {
+.card.ultra_rare, .card[data-grade="ultra_rare"] {
     border: 3px solid #a335ee;
     box-shadow: 0 0 25px rgba(163, 53, 238, 0.5);
 }
 
-.card.super_rare {
+.card.super_rare, .card[data-grade="super_rare"] {
     border: 3px solid #ff8000;
     box-shadow: 0 0 15px rgba(255, 128, 0, 0.4);
 }
 
-.card.rare {
+.card.rare, .card[data-grade="rare"] {
     border: 2px solid #0070dd;
 }
 
-.card.normal {
+.card.normal, .card[data-grade="normal"] {
     border: 1px solid #eee;
 }
 
@@ -168,7 +168,7 @@
 
 /* 📱 모바일 최적화 (2열) */
 @media (max-width: 1000px) {
-    .gacha-grid {
+    .gacha-grid, #deck {
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
     }
