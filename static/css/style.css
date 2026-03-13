@@ -405,4 +405,47 @@ p {
 }
 .modal .close:hover {
     color: var(--accent-red);
+}
+
+/* Profile Dropdown */
+.profile-container {
+    position: relative;
+}
+.profile {
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.profile:hover {
+    background: rgba(255,255,255,0.15);
+}
+.profile-dropdown {
+    position: absolute;
+    top: 120%;
+    right: 0;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.5rem 0;
+    min-width: 120px;
+    display: none;
+    flex-direction: column;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+}
+.profile-dropdown.active {
+    display: flex;
+}
+.profile-dropdown a {
+    color: var(--text-primary);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    font-weight: bold;
+    text-align: center;
+    transition: 0.2s;
+}
+.profile-dropdown a:hover {
+    background: rgba(255,255,255,0.1);
+    color: var(--accent-red);
 }

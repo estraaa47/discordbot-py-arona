@@ -22,9 +22,12 @@
                 <a href="/collection" class="tab-link">COLLECTION</a>
                 <a href="/inventory" class="tab-link">INVENTORY</a>
                 <div class="profile-container">
-                    <div class="profile" style="padding: 4px 16px 4px 6px;">
+                    <div class="profile" style="padding: 4px 16px 4px 6px;" onclick="toggleProfileDropdown()">
                         <img src="{{ user.avatar_url }}" alt="profile">
                         <span>{{ user.username }}</span>
+                    </div>
+                    <div id="profileDropdown" class="profile-dropdown">
+                        <a href="/logout">LOGOUT</a>
                     </div>
                 </div>
             </div>
@@ -77,6 +80,16 @@
             const btn = document.querySelector('.hamburger-btn');
             menu.classList.toggle('active');
             btn.classList.toggle('open');
+            if (menu.classList.contains('active')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        // 프로필 클릭 시 로그아웃 드롭다운 토글
+        function toggleProfileDropdown() {
+            document.getElementById('profileDropdown').classList.toggle('active');
         }
     </script>
 </body>

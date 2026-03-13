@@ -29,9 +29,12 @@
                 <a href="/inventory" class="tab-link">INVENTORY</a>
 
                 <div class="profile-container">
-                    <div class="profile" style="padding: 4px 16px 4px 6px;">
+                    <div class="profile" style="padding: 4px 16px 4px 6px;" onclick="toggleProfileDropdown()">
                         <img src="{{ user.avatar_url }}" alt="profile">
                         <span>{{ user.username }}</span>
+                    </div>
+                    <div id="profileDropdown" class="profile-dropdown">
+                        <a href="/logout">LOGOUT</a>
                     </div>
                 </div>
             </div>
@@ -76,9 +79,9 @@
                 <div class="card-inner">
                     <div class="card-img-wrapper">
                         {% if is_owned %}
-                        <img src="/images/thumbnails/{{ card.path.split('.')[0] }}.webp" alt="{{ card.name }}" loading="lazy">
+                        <img data-src="/images/thumbnails/{{ card.path.split('.')[0] }}.webp" alt="{{ card.name }}">
                         {% else %}
-                        <img src="/images/thumbnails/hidden.webp" alt="Hidden Card" loading="lazy">
+                        <img data-src="/images/thumbnails/hidden.webp" alt="Hidden Card">
                         {% endif %}
                     </div>
                     <div class="card-info">
@@ -140,6 +143,26 @@
                 document.body.style.overflow = 'auto';
             }
         }
+
+        // 프로필 클릭 시 로그아웃 드롭다운 토글
+        function toggleProfileDropdown() {
+            document.getElementById('profileDropdown').classList.toggle('active');
+        }
+
+        // 가짜 스크롤 방어 및 디도스 차단 우회를 위한 이미지 1장씩 순차 로딩
+        document.addEventListener('DOMContentLoaded', () => {
+            const images = document.querySelectorAll('img[data-src]');
+            let i = 0;
+            function loadNextImage() {
+                if (i >= images.length) return;
+                const img = images[i];
+                img.onload = () => { i++; requestAnimationFrame(loadNextImage); };
+                img.onerror = () => { i++; requestAnimationFrame(loadNextImage); };
+                img.src = img.getAttribute('data-src');
+                img.removeAttribute('data-src');
+            }
+            loadNextImage();
+        });
     </script>
 </body>
 
