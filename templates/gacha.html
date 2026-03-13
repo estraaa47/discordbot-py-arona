@@ -16,9 +16,9 @@
 
     <header class="header">
         <div class="header-left"><a href="/" class="logo">ARONA <span>ARCHIVE</span></a></div>
-        <div class="header-center"><a href="/gacha" class="gacha-nav-btn">GACHA</a></div>
 
-        <div class="header-right" style="align-items: center; gap: 1rem; display: flex;">
+        <div class="header-center pc-nav"><a href="/gacha" class="gacha-nav-btn">GACHA</a></div>
+        <div class="header-right pc-nav" style="align-items: center; gap: 1rem; display: flex;">
             <a href="/collection" class="tab-link"
                 style="padding: 0.4rem 1rem; font-size: 0.8rem; margin: 0;">COLLECTION</a>
             <a href="/inventory" class="tab-link"
@@ -30,6 +30,21 @@
                     <span>{{ user.username }}</span>
                 </div>
             </div>
+        </div>
+
+        <button class="hamburger-btn mobile-nav" onclick="toggleMobileMenu()">
+            <span></span><span></span><span></span>
+        </button>
+
+        <div id="mobile-menu" class="mobile-dropdown">
+            <div class="mobile-profile">
+                <img src="{{ user.avatar_url }}" alt="profile">
+                <span>{{ user.username }}</span>
+            </div>
+            <a href="/gacha" class="mobile-link gacha-link">GACHA</a>
+            <a href="/collection" class="mobile-link">COLLECTION</a>
+            <a href="/inventory" class="mobile-link">INVENTORY</a>
+            <a href="/logout" class="mobile-link logout-link">LOGOUT</a>
         </div>
     </header>
 
@@ -53,6 +68,15 @@
     <div id="owned-data" data-owned='{{ owned_names | tojson | safe }}' style="display:none;"></div>
 
     <script src="{{ url_for('static', filename='js/gacha.js') }}"></script>
+
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            const btn = document.querySelector('.hamburger-btn');
+            menu.classList.toggle('active');
+            btn.classList.toggle('open');
+        }
+    </script>
 </body>
 
 </html>

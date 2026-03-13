@@ -11,8 +11,6 @@
     --text-secondary: #9ca3af;
     --border-color: rgba(255, 255, 255, 0.08);
     --base-unit: 1rem;
-
-    /* 💡 여백 통합 관리 변수 */
     --side-space: 3.125rem;
     --header-padding-v: 1.125rem;
     --border-radius-lg: 1.75rem;
@@ -45,7 +43,6 @@
     font-weight: 700;
 }
 
-/* [BASE] */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -65,6 +62,16 @@ body {
     font-family: 'NexonLv2', sans-serif;
     line-height: 1.6;
     padding-bottom: 5rem;
+}
+
+/* 폰트 깨짐 방지 강제 고정 */
+a,
+button,
+input,
+span,
+strong,
+p {
+    font-family: 'NexonLv2', sans-serif !important;
 }
 
 .pearl-background {
@@ -115,7 +122,7 @@ body {
 }
 
 /* ==========================================
-   [HEADER] - 가챠 버튼 포함 최적화
+   [HEADER]
    ========================================== */
 .header {
     display: flex;
@@ -212,9 +219,6 @@ body {
     object-fit: cover;
 }
 
-/* ==========================================
-   [DROPDOWN & LOGOUT] - 통합 완료
-   ========================================== */
 .dropdown-menu {
     position: absolute;
     top: calc(100% + 0.625rem);
@@ -236,7 +240,6 @@ body {
     animation: fadeIn 0.2s ease-out;
 }
 
-/* 💡 누락됐던 fadeIn 애니메이션 뼈대 추가 */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -249,7 +252,6 @@ body {
     }
 }
 
-/* 💡 파란색으로 깨지던 로그아웃 버튼 디자인 복구 */
 .dropdown-menu a {
     display: block;
     color: #ff4757;
@@ -601,39 +603,141 @@ h1 {
     }
 }
 
+
 /* ==========================================
-   [RESPONSIVE] - 모바일 최적화
+   [RESPONSIVE] - 💡 모바일 햄버거 메뉴 최적화
    ========================================== */
+.mobile-nav,
+.mobile-dropdown {
+    display: none;
+}
+
 @media (max-width: 48rem) {
+
+    /* 768px 이하 (태블릿~모바일) */
     :root {
-        --side-space: 1.5rem;
+        --side-space: 1.2rem;
+        --header-padding-v: 0.8rem;
     }
 
     h1 {
         font-size: 2.2rem;
     }
-}
 
-@media (max-width: 30rem) {
-    :root {
-        --side-space: 1rem;
-        --header-padding-v: 0.8rem;
+    /* 💡 기존 PC 헤더 메뉴 싹 숨기기 */
+    .pc-nav {
+        display: none !important;
     }
 
-    .gacha-nav-btn {
-        padding: 6px 16px;
-        font-size: 0.85rem;
-        letter-spacing: 1px;
+    /* 💡 햄버거 버튼 보이기 */
+    .mobile-nav {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        width: 26px;
+        height: 18px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        z-index: 2002;
+    }
+
+    .hamburger-btn span {
+        display: block;
+        height: 3px;
+        width: 100%;
+        background-color: var(--text-primary);
+        border-radius: 3px;
+        transition: all 0.3s ease;
+    }
+
+    /* 🍔 햄버거 토글 시 [ X ] 모양 애니메이션 */
+    .hamburger-btn.open span:nth-child(1) {
+        transform: translateY(7.5px) rotate(45deg);
+    }
+
+    .hamburger-btn.open span:nth-child(2) {
+        opacity: 0;
+    }
+
+    .hamburger-btn.open span:nth-child(3) {
+        transform: translateY(-7.5px) rotate(-45deg);
+    }
+
+    /* 💡 모바일 전체화면 메뉴 */
+    .mobile-dropdown {
+        display: flex;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background: rgba(10, 10, 12, 0.95);
+        -webkit-backdrop-filter: blur(15px);
+        backdrop-filter: blur(15px);
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
+        z-index: 2001;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.3s ease;
+    }
+
+    .mobile-dropdown.active {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .mobile-profile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 2rem;
+    }
+
+    .mobile-profile img {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        border: 2px solid var(--accent-blue);
+        box-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    .mobile-profile span {
+        font-size: 1.3rem;
+        font-weight: 700;
+    }
+
+    .mobile-link {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        text-decoration: none;
+        letter-spacing: 2px;
+        transition: 0.2s;
+    }
+
+    .mobile-link.gacha-link {
+        color: var(--accent-blue);
+        font-size: 1.8rem;
+        font-weight: 900;
+        text-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    .mobile-link.logout-link {
+        color: #ff4757;
+        margin-top: 2rem;
+        font-size: 1.2rem;
     }
 
     .logo span {
         display: none;
     }
 
-    .header-left {
-        gap: 1rem;
-    }
-
+    /* 모바일 카드 배열 최적화 (2열) */
     #deck {
         grid-template-columns: 1fr 1fr !important;
         gap: 0.75rem;
@@ -646,18 +750,6 @@ h1 {
 
     .card-name {
         font-size: 0.85rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .profile {
-        height: 38px;
-        gap: 0.5rem;
-    }
-
-    .profile span {
-        display: none;
     }
 
     .upgrade-badge {
