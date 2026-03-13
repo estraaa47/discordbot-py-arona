@@ -57,7 +57,6 @@ html,
 body {
     width: 100%;
     overflow-x: hidden;
-    /* 가로 스크롤 방지 */
 }
 
 body {
@@ -115,12 +114,13 @@ body {
     }
 }
 
-/* [HEADER] */
+/* ==========================================
+   [HEADER] - 가챠 버튼 포함 최적화
+   ========================================== */
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    /* 💡 노치 대응 패딩 및 좌우 여백 통일 */
     padding: calc(var(--header-padding-v) + env(safe-area-inset-top)) var(--side-space) var(--header-padding-v);
     background: var(--header-glass);
     -webkit-backdrop-filter: blur(1.5rem);
@@ -131,10 +131,24 @@ body {
     border-bottom: 1px solid var(--border-color);
 }
 
+/* 좌, 중, 우를 flex: 1로 설정해서 버튼을 완벽한 정중앙에 배치 */
 .header-left {
+    flex: 1;
     display: flex;
     align-items: center;
     gap: 2.5rem;
+}
+
+.header-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.header-right {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
 }
 
 .logo {
@@ -144,11 +158,34 @@ body {
     text-transform: uppercase;
     text-decoration: none;
     color: inherit;
+    white-space: nowrap;
 }
 
 .logo span {
     color: var(--accent-blue);
     text-shadow: 0 0 0.9375rem var(--accent-glow);
+}
+
+/* 🎰 헤더 가챠 버튼 */
+.gacha-nav-btn {
+    background-color: #5bb3ff;
+    color: white !important;
+    text-decoration: none;
+    font-weight: 900;
+    font-size: 1.1rem;
+    padding: 8px 30px;
+    border-radius: 50px;
+    letter-spacing: 2px;
+    box-shadow: 0 4px 15px rgba(91, 179, 255, 0.4);
+    transition: all 0.3s ease;
+    border: 2px solid white;
+    white-space: nowrap;
+}
+
+.gacha-nav-btn:hover {
+    background-color: #3a9fff;
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(91, 179, 255, 0.6);
 }
 
 .profile {
@@ -180,7 +217,7 @@ body {
 .dropdown-menu {
     position: absolute;
     top: calc(100% + 0.625rem);
-    right: 0;
+    right: var(--side-space);
     min-width: 8.75rem;
     background: var(--bg-surface);
     border: 1px solid var(--border-color);
@@ -198,7 +235,9 @@ body {
     animation: fadeIn 0.2s ease-out;
 }
 
-/* [MAIN CONTENT] */
+/* ==========================================
+   [MAIN CONTENT]
+   ========================================== */
 .title-section {
     padding: 4.375rem var(--side-space) 1.25rem;
 }
@@ -263,7 +302,9 @@ h1 {
     box-shadow: 0 0 0.9375rem var(--accent-glow);
 }
 
-/* [DECK & CARDS] */
+/* ==========================================
+   [DECK & CARDS]
+   ========================================== */
 #deck {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(var(--card-min-width), 1fr));
@@ -291,7 +332,6 @@ h1 {
     transform: translateY(-0.75rem);
 }
 
-/* 아우라 효과 (수집 카드만) */
 .card:not(.not-owned)[data-grade="ultra_rare"]::before,
 .card:not(.not-owned)[data-grade="super_rare"]::before {
     content: "";
@@ -328,12 +368,10 @@ h1 {
     border: 1px dashed rgba(255, 255, 255, 0.15);
 }
 
-/* 💡 이미지 비율 고정 호환성 기법 */
 .card-img-wrapper {
     width: 100%;
     position: relative;
     padding-top: 133.33%;
-    /* 3:4 비율 */
     background: #111;
     overflow: hidden;
 }
@@ -381,7 +419,9 @@ h1 {
     opacity: 0.7;
 }
 
-/* [MODAL] */
+/* ==========================================
+   [MODAL & BADGES]
+   ========================================== */
 #cardModal {
     display: none;
     position: fixed;
@@ -451,7 +491,6 @@ h1 {
     opacity: 0.6;
 }
 
-/* [BADGE & LOCK] */
 .lock-btn {
     position: absolute;
     top: 0.8rem;
@@ -528,7 +567,9 @@ h1 {
     }
 }
 
-/* [RESPONSIVE] */
+/* ==========================================
+   [RESPONSIVE] - 모바일 최적화
+   ========================================== */
 @media (max-width: 48rem) {
     :root {
         --side-space: 1.5rem;
@@ -545,8 +586,23 @@ h1 {
         --header-padding-v: 0.8rem;
     }
 
+    /* 💡 모바일에서 가챠 버튼 스케일링 (레이아웃 파괴 방지) */
+    .gacha-nav-btn {
+        padding: 6px 16px;
+        font-size: 0.85rem;
+        letter-spacing: 1px;
+    }
+
+    .logo span {
+        display: none;
+    }
+
+    /* 폰에서는 ARONA 만 표시해서 공간 확보 */
+    .header-left {
+        gap: 1rem;
+    }
+
     #deck {
-        /* 💡 카드 짤림 방지: 2열 강제 고정 및 최소 너비 해제 */
         grid-template-columns: 1fr 1fr !important;
         gap: 0.75rem;
         padding: 1rem var(--side-space);
@@ -569,8 +625,10 @@ h1 {
     }
 
     .profile span {
-        font-size: 0.75rem;
+        display: none;
     }
+
+    /* 폰에서는 프로필 이미지만 표시해서 깔끔하게 */
 
     .upgrade-badge {
         top: 0.5rem;
