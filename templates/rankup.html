@@ -114,8 +114,8 @@
                     <button id="sortDirectionBtn" class="gacha-nav-btn" style="padding: 10px 15px; background: rgba(255,255,255,0.1);" onclick="toggleSortDirection()">내림차순 ↓</button>
                     
                     <div class="sort-dropdown">
-                        <button class="sort-btn" onclick="toggleDropdown(event)">
-                            정렬 기준 <span class="arrow">▼</span>
+                        <button class="sort-btn" id="currentSortLabel" onclick="toggleDropdown(event)">
+                            등급 높은순 <span class="arrow">▼</span>
                         </button>
                         <div id="dropdownMenu" class="dropdown-content">
                             <a href="#" class="sort-option" data-criteria="id" onclick="sortDeck('id'); return false;">획득일</a>
@@ -251,7 +251,9 @@
                 
                 // 타겟 카드를 최상단으로 옮기기
                 const deck = document.getElementById('deck');
-                deck.insertAdjacentElement('afterbegin', cardElement);
+                deck.prepend(cardElement);
+                // 명시적으로 flex order 등 방지 
+                cardElement.style.order = -1;
                 
                 updateUIAfterSelection();
             } else if (!materialId) {
@@ -308,9 +310,14 @@
                 title.innerText = "강화에 사용할 재료 카드를 선택하세요";
                 subtitle.innerText = "강화 대상과 동일한 등급의 카드 1장을 소모합니다. 잠금된 카드는 사용할 수 없으니 유의해주세요.";
                 
-                // 타겟 카드 하이라이트 표시
+                // 타겟 카드 하이라이트 표시 및 최상단 이동
                 const targetCardEl = document.getElementById('card-' + targetId);
-                if (targetCardEl) targetCardEl.classList.add('selected');
+                if (targetCardEl) {
+                    targetCardEl.classList.add('selected');
+                    const deck = document.getElementById('deck');
+                    deck.prepend(targetCardEl);
+                    targetCardEl.style.order = "-1"; // flex 레이아웃에서 확실히 맨앞으로 오도록 설정
+                }
 
                 allCards.forEach(c => {
                     const id = c.getAttribute('data-id');
@@ -320,6 +327,8 @@
 
                     if (id === targetId) return; // 타겟은 보존
                     
+                    c.style.order = "0"; // 타겟이 아닌 카드는 원래 순서 유지
+
                     if (grade !== targetGrade) {
                         c.style.display = 'none'; // 다른 등급 숨김
                     } else if (locked || lvl > 0) {
@@ -334,12 +343,24 @@
                 
                 const targetCardEl = document.getElementById('card-' + targetId);
                 const matCardEl = document.getElementById('card-' + materialId);
-                if (targetCardEl) targetCardEl.classList.add('selected');
-                if (matCardEl) matCardEl.classList.add('selected');
+                const deck = document.getElementById('deck');
+
+                if (targetCardEl) {
+                    targetCardEl.classList.add('selected');
+                    deck.prepend(targetCardEl);
+                    targetCardEl.style.order = "-2"; 
+                }
+                if (matCardEl) {
+                    matCardEl.classList.add('selected');
+                    deck.prepend(matCardEl); // target 밑에 오게 하려면 order로 조절
+                    matCardEl.style.order = "-1"; 
+                }
 
                 allCards.forEach(c => {
                     const id = c.getAttribute('data-id');
                     if(id !== targetId && id !== materialId) {
+                        c.style.order = "0"; // 타겟, 재료 외에는 원래 순서로
+
                         const grade = c.getAttribute('data-grade');
                         if (grade !== targetGrade) {
                             c.style.display = 'none';
@@ -351,10 +372,8 @@
                 btn.classList.remove('disabled');
             }
 
-            // 만약 타겟 선택 과정이 아니라면 기존 필터 복구
-            if (!targetId && !materialId) {
-                applyCurrentFilterAndSort();
-            }
+            // 만약 타겟 선택 과정이 아니라면 기존 필터 복구용 코드는 지움. 왜냐면 
+            // 정렬 버튼 클릭시 apply->updateUI 가 순차 실행되므로.
         }
         
         function filterGrade(grade, btn) {
@@ -366,8 +385,6 @@
 
         function toggleSortDirection() {
             isDescending = !isDescending;
-            const btn = document.getElementById('sortDirectionBtn');
-            btn.innerText = isDescending ? "내림차순 ↓" : "오름차순 ↑";
             applyCurrentFilterAndSort();
         }
 
@@ -387,19 +404,45 @@
             
             // 모든 드롭다운 항목 포커스 지우기
             document.querySelectorAll('.sort-option').forEach(el => el.style.fontWeight = 'normal');
+            
             // 선택된 드롭다운 진하게 표시
             const selectedOpt = document.querySelector(`.sort-option[data-criteria="${criteria}"]`);
-            if (selectedOpt) selectedOpt.style.fontWeight = 'bold';
+            if (selectedOpt) {
+                selectedOpt.style.fontWeight = 'bold';
+            }
 
             applyCurrentFilterAndSort();
             document.getElementById('dropdownMenu').classList.remove('active');
         }
 
-        function applyCurrentFilterAndSort() {
-            // target 선택된 상태면 외부 정렬/필터를 잠시 무시 (updateUIAfterSelection에 맡김)
-            if (targetId) {
-                return;
+        function updateSortLabels() {
+            // 버튼 텍스트 변경
+            const btn = document.getElementById('sortDirectionBtn');
+            btn.innerText = isDescending ? "내림차순 ↓" : "오름차순 ↑";
+
+            // 드롭다운 버튼 텍스트 변경
+            const labelMap = {
+                'id': '획득일',
+                'rarity': '등급',
+                'level': '강화레벨',
+                'name': '이름',
+                'count': '보유갯수'
+            };
+            const currentLabelText = labelMap[currentSortCriteria] || '정렬 기준';
+            const suffix = isDescending ? '높은순' : '낮은순'; // 맥락에 따라 뒤에 붙일지 말지. 일단 간단히 이름+방향
+            const buttonLabel = document.getElementById('currentSortLabel');
+            
+            if(currentSortCriteria === 'rarity' || currentSortCriteria === 'level' || currentSortCriteria === 'count') {
+                buttonLabel.innerHTML = `${currentLabelText} ${suffix} <span class="arrow">▼</span>`;
+            } else if (currentSortCriteria === 'id') {
+                buttonLabel.innerHTML = isDescending ? `최근 획득순 <span class="arrow">▼</span>` : `과거 획득순 <span class="arrow">▼</span>`;
+            } else {
+                buttonLabel.innerHTML = isDescending ? `이름 역순 <span class="arrow">▼</span>` : `이름순 <span class="arrow">▼</span>`;
             }
+        }
+
+        function applyCurrentFilterAndSort() {
+            updateSortLabels();
 
             const deck = document.getElementById('deck');
             const cards = Array.from(deck.querySelectorAll('.rankup-card'));
@@ -461,7 +504,17 @@
             });
 
             cards.forEach(card => {
-                // 필터링 적용
+                const id = card.getAttribute('data-id');
+                // 대상이나 재료로 선택된 카드가 아니라면 order 강제 초기화
+                if (id !== targetId && id !== materialId) {
+                    card.style.order = ""; 
+                } else if (id === targetId) {
+                    card.style.order = "-2";
+                } else if (id === materialId) {
+                    card.style.order = "-1";
+                }
+
+                // 필터링 적용 (기본 필터)
                 if (currentFilterGrade === 'all' || card.dataset.grade === currentFilterGrade) {
                     card.style.display = 'block';
                 } else {
@@ -470,6 +523,12 @@
                 
                 deck.appendChild(card);
             });
+
+            // 타겟이 선택되어 있을 때 필터 로직 덮어쓰기 (랭크업 전용)
+            // 요소가 DOM에 모두 부착된 뒤 마지막에 실행하여 강제로 숨기거나 스타일을 정리함
+            if (targetId) {
+                updateUIAfterSelection();
+            }
         }
 
         async function attemptRankup() {
@@ -631,6 +690,9 @@
                 img.removeAttribute('data-src');
             }
             loadNextImage();
+            
+            // 초기 로딩시 정렬 적용
+            applyCurrentFilterAndSort();
         });
     </script>
 </body>
