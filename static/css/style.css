@@ -469,7 +469,8 @@ p {
 .lock-btn {
     position: absolute;
     top: 8px;
-    right: 8px;
+    left: 50%;
+    transform: translateX(-50%);
     background: rgba(0, 0, 0, 0.4);
     border: none;
     border-radius: 50%;
@@ -485,7 +486,7 @@ p {
 }
 .lock-btn:hover {
     background: rgba(0, 0, 0, 0.7);
-    transform: scale(1.1);
+    transform: translateX(-50%) scale(1.1);
 }
 .lock-btn img {
     width: 16px;

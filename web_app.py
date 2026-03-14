@@ -57,6 +57,27 @@ def get_db_connection():
         print(f"DB Connection Error: {e}")
         return None
 
+# DB 마이그레이션: is_new 컬럼이 없으면 자동 추가
+def ensure_db_schema():
+    conn = get_db_connection()
+    if conn:
+        try:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT COUNT(*) as cnt FROM INFORMATION_SCHEMA.COLUMNS 
+                    WHERE TABLE_NAME = 'inventory' AND COLUMN_NAME = 'is_new'
+                """)
+                if cur.fetchone()['cnt'] == 0:
+                    cur.execute("ALTER TABLE inventory ADD COLUMN is_new TINYINT(1) DEFAULT 0")
+                    conn.commit()
+                    print("✅ Added 'is_new' column to inventory table")
+        except Exception as e:
+            print(f"DB Migration Error: {e}")
+        finally:
+            conn.close()
+
+ensure_db_schema()
+
 def get_all_card_files():
     image_list = []
     card_base_path = os.path.join(base_dir, 'images')
@@ -148,7 +169,7 @@ def inventory():
         try:
             with conn.cursor() as cursor:
                 sql = """
-                    SELECT id, item_name, rarity, upgrade_level, is_locked 
+                    SELECT id, item_name, rarity, upgrade_level, is_locked, is_new 
                     FROM inventory 
                     WHERE user_id = %s 
                     ORDER BY rarity DESC, item_name ASC
@@ -163,10 +184,13 @@ def inventory():
         finally:
             conn.close()
 
+    # is_new 플래그 기반으로 new_card_ids 추출
+    new_card_ids = [item['id'] for item in inventory_items if item.get('is_new')]
+
     return render_template("inventory.html", 
                            user=user, 
                            inventory_items=inventory_items,
-                           new_card_ids=session.get('new_card_ids', []))
+                           new_card_ids=new_card_ids)
 
 @app.route("/rankup")
 def rankup():
@@ -376,8 +400,10 @@ def do_gacha():
                 return jsonify({"success": False, "message": f"포인트가 부족합니다. ({cost}P 필요)"}), 400
 
             pull_results = []
-            new_card_ids = []
             valid_exts = ('.png', '.jpg', '.jpeg', '.gif', '.webp')
+
+            # 기존 NEW 마크 초기화
+            cur.execute("UPDATE inventory SET is_new = 0 WHERE user_id = %s AND is_new = 1", (user.id,))
 
             for _ in range(pull_count):
                 rarity = random.choices(rarities, weights=weights, k=1)[0]
@@ -402,9 +428,8 @@ def do_gacha():
                     cur.execute("INSERT INTO collection (user_id, item_name, rarity) VALUES (%s, %s, %s)", 
                                 (user.id, selected_file, rarity))
 
-                cur.execute("INSERT INTO inventory (user_id, item_name, rarity) VALUES (%s, %s, %s)", 
+                cur.execute("INSERT INTO inventory (user_id, item_name, rarity, is_new) VALUES (%s, %s, %s, 1)", 
                             (user.id, selected_file, rarity))
-                new_card_ids.append(cur.lastrowid)
 
                 pull_results.append({
                     "name": card_name,
@@ -414,9 +439,6 @@ def do_gacha():
 
             cur.execute("UPDATE users SET points = points - %s WHERE user_id = %s", (cost, user.id))
             conn.commit()
-            
-            # 세션에 새 카드 ID 저장 (다음 가챠 시 덮어씌워짐)
-            session['new_card_ids'] = new_card_ids
             
             return jsonify({"success": True, "results": pull_results})
 

@@ -54,13 +54,15 @@ class Gacha(commands.Cog):
                 # 4. 포인트 차감
                 await cur.execute("UPDATE users SET points = points - %s WHERE user_id = %s", (cost, user_id))
                 
+                # 4.5 기존 NEW 마크 초기화
+                await cur.execute("UPDATE inventory SET is_new = 0 WHERE user_id = %s AND is_new = 1", (user_id,))
+                
                 # 5. 💡 도감에 없는 신규 카드라면 collection 테이블에 등록 (도감작)
                 if not is_duplicate:
                     await cur.execute("INSERT INTO collection (user_id, item_name, rarity) VALUES (%s, %s, %s)", (user_id, selected_file, rarity))
 
                 # 6. 💡 중복이든 신규든 실물 카드는 무조건 inventory 테이블에 추가 (강화/합성 재료용)
-                # (방금 만든 새 inventory 테이블 구조에 맞춰 upgrade_level 등은 기본값(0)으로 자동 들어갑니다)
-                await cur.execute("INSERT INTO inventory (user_id, item_name, rarity) VALUES (%s, %s, %s)", (user_id, selected_file, rarity))
+                await cur.execute("INSERT INTO inventory (user_id, item_name, rarity, is_new) VALUES (%s, %s, %s, 1)", (user_id, selected_file, rarity))
                 
                 # 7. UI 메시지 분기 처리 (신규 vs 중복)
                 file = discord.File(f"{path}/{selected_file}", filename=selected_file)
