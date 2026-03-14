@@ -94,21 +94,36 @@
             </div>
 
             <!-- 보유 카드 리스트 안내 -->
-            <div class="inventory-controls" style="margin-top: 2rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-                <div style="text-align: left; flex: 1;">
+            <div class="inventory-controls" style="margin-top: 2rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
+                <div style="text-align: left; flex: 1; min-width: 300px;">
                     <h2 id="selectionTitle" style="color: var(--text-primary); margin: 0; font-size: 1.5rem;">강화할 대상을 선택하세요</h2>
-                    <p id="selectionSubtitle" style="color: var(--text-secondary); margin-top: 0.5rem;">모든 카드를 대상으로 선택할 수 있습니다.</p>
+                    <p id="selectionSubtitle" style="color: var(--text-secondary); margin-top: 0.5rem; margin-bottom: 1rem;">모든 카드를 대상으로 선택할 수 있습니다.</p>
+                    
+                    <!-- 등급 필터 추가 -->
+                    <div class="filter-container" style="justify-content: flex-start; margin-bottom: 0;">
+                        <button class="filter-btn active" onclick="filterGrade('all', this)">ALL</button>
+                        <button class="filter-btn" onclick="filterGrade('normal', this)">NORMAL</button>
+                        <button class="filter-btn" onclick="filterGrade('rare', this)">RARE</button>
+                        <button class="filter-btn" onclick="filterGrade('super_rare', this)">SR</button>
+                        <button class="filter-btn" onclick="filterGrade('ultra_rare', this)">UR</button>
+                    </div>
                 </div>
-                <div class="sort-dropdown" style="margin-left: 1rem;">
-                    <button class="sort-btn" onclick="toggleDropdown(event)">
-                        정렬 기준 <span class="arrow">▼</span>
-                    </button>
-                    <div id="dropdownMenu" class="dropdown-content">
-                        <a href="#" onclick="sortDeck('id_asc'); return false;">획득순</a>
-                        <a href="#" onclick="sortDeck('rarity_desc'); return false;">등급 높은순</a>
-                        <a href="#" onclick="sortDeck('rarity_asc'); return false;">등급 낮은순</a>
-                        <a href="#" onclick="sortDeck('level_desc'); return false;">강화순</a>
-                        <a href="#" onclick="sortDeck('name_asc'); return false;">이름순</a>
+                
+                <div class="sort-actions" style="display: flex; gap: 10px; align-items: center;">
+                    <!-- 오름차순/내림차순 토글 버튼 -->
+                    <button id="sortDirectionBtn" class="gacha-nav-btn" style="padding: 10px 15px; background: rgba(255,255,255,0.1);" onclick="toggleSortDirection()">내림차순 ↓</button>
+                    
+                    <div class="sort-dropdown">
+                        <button class="sort-btn" onclick="toggleDropdown(event)">
+                            정렬 기준 <span class="arrow">▼</span>
+                        </button>
+                        <div id="dropdownMenu" class="dropdown-content">
+                            <a href="#" class="sort-option" data-criteria="id" onclick="sortDeck('id'); return false;">획득일</a>
+                            <a href="#" class="sort-option" data-criteria="rarity" onclick="sortDeck('rarity'); return false;">등급</a>
+                            <a href="#" class="sort-option" data-criteria="level" onclick="sortDeck('level'); return false;">강화레벨</a>
+                            <a href="#" class="sort-option" data-criteria="name" onclick="sortDeck('name'); return false;">이름</a>
+                            <a href="#" class="sort-option" data-criteria="count" onclick="sortDeck('count'); return false;">보유갯수</a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -163,20 +178,14 @@
         </div>
     </main>
 
-    <!-- Modal Form (Hidden) -->
-    <div id="resultModal" class="modal" style="display: none; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);">
-        <div style="background: rgba(15, 15, 18, 0.9); border: 1px solid var(--border-color); border-radius: 20px; padding: 3rem; text-align: center; max-width: 400px; width: 90%;">
-            <h2 id="resultTitle" style="color: white; margin-bottom: 1rem; font-size: 2rem;">결과</h2>
-            <p id="resultMessage" style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 2rem;">-</p>
-            <button class="gacha-nav-btn" onclick="location.reload()">확인</button>
-        </div>
-    </div>
-
     <script>
         let targetId = null;
         let materialId = null;
         let targetGrade = null;
         let targetLevel = 0;
+        let isDescending = true; // 기본 내림차순
+        let currentSortCriteria = 'rarity'; // 기본 정렬 기준
+        let currentFilterGrade = 'all'; // 기본 필터 기준
 
         function toggleMobileMenu() {
             const menu = document.getElementById('mobile-menu');
@@ -219,13 +228,19 @@
             const imgSrc = cardElement.getAttribute('data-img-src');
 
             if (!targetId) {
+                // UR 제외(등급별) 맥스랩 검사 
+                if (grade !== 'ultra_rare' && level >= 5) {
+                    alert("해당 등급의 카드는 5강이 최대 레벨입니다.");
+                    return;
+                }
+
                 // 강화 대상 선택
                 targetId = id;
                 targetGrade = grade;
                 targetLevel = level;
 
-                // 확률 계산: 0->1(100%), 1->2(60%), 2->3(36%)
-                const prob = Math.floor(100 * Math.pow(0.6, level));
+                // 확률 계산: 0->1(100%), 1->2(70%), 2->3(49%)
+                const prob = Math.floor(100 * Math.pow(0.7, level));
                 document.getElementById('probValue').innerText = prob;
 
                 document.getElementById('targetSlot').innerHTML = `
@@ -233,6 +248,10 @@
                     <div class="overlay-level">+${level}</div>
                 `;
                 document.getElementById('targetSlot').classList.add('filled');
+                
+                // 타겟 카드를 최상단으로 옮기기
+                const deck = document.getElementById('deck');
+                deck.insertAdjacentElement('afterbegin', cardElement);
                 
                 updateUIAfterSelection();
             } else if (!materialId) {
@@ -243,6 +262,10 @@
                 }
                 if (locked) {
                     alert("잠금된 카드는 재료로 사용할 수 없습니다.");
+                    return;
+                }
+                if (level > 0) {
+                    alert("강화된 카드는 재료로 사용할 수 없습니다.");
                     return;
                 }
                 if (grade !== targetGrade) {
@@ -293,13 +316,14 @@
                     const id = c.getAttribute('data-id');
                     const grade = c.getAttribute('data-grade');
                     const locked = c.getAttribute('data-locked') === 'true';
+                    const lvl = parseInt(c.getAttribute('data-level') || '0');
 
                     if (id === targetId) return; // 타겟은 보존
                     
                     if (grade !== targetGrade) {
-                        c.style.display = 'none'; // 다른 등급은 아예 숨김
-                    } else if (locked) {
-                        c.classList.add('disabled'); // 조건 불일치(잠금) 시 회색화
+                        c.style.display = 'none'; // 다른 등급 숨김
+                    } else if (locked || lvl > 0) {
+                        c.classList.add('disabled'); // 조건 불일치(잠금 또는 강화됨) 시 회색화
                     }
                 });
                 btn.classList.add('disabled');
@@ -326,6 +350,25 @@
                 });
                 btn.classList.remove('disabled');
             }
+
+            // 만약 타겟 선택 과정이 아니라면 기존 필터 복구
+            if (!targetId && !materialId) {
+                applyCurrentFilterAndSort();
+            }
+        }
+        
+        function filterGrade(grade, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            if(btn) btn.classList.add('active');
+            currentFilterGrade = grade;
+            applyCurrentFilterAndSort();
+        }
+
+        function toggleSortDirection() {
+            isDescending = !isDescending;
+            const btn = document.getElementById('sortDirectionBtn');
+            btn.innerText = isDescending ? "내림차순 ↓" : "오름차순 ↑";
+            applyCurrentFilterAndSort();
         }
 
         function toggleDropdown(event) {
@@ -340,8 +383,33 @@
         });
 
         function sortDeck(criteria) {
+            currentSortCriteria = criteria;
+            
+            // 모든 드롭다운 항목 포커스 지우기
+            document.querySelectorAll('.sort-option').forEach(el => el.style.fontWeight = 'normal');
+            // 선택된 드롭다운 진하게 표시
+            const selectedOpt = document.querySelector(`.sort-option[data-criteria="${criteria}"]`);
+            if (selectedOpt) selectedOpt.style.fontWeight = 'bold';
+
+            applyCurrentFilterAndSort();
+            document.getElementById('dropdownMenu').classList.remove('active');
+        }
+
+        function applyCurrentFilterAndSort() {
+            // target 선택된 상태면 외부 정렬/필터를 잠시 무시 (updateUIAfterSelection에 맡김)
+            if (targetId) {
+                return;
+            }
+
             const deck = document.getElementById('deck');
             const cards = Array.from(deck.querySelectorAll('.rankup-card'));
+            
+            // 갯수 세기
+            const nameCountMap = {};
+            cards.forEach(c => {
+                const name = c.dataset.name;
+                nameCountMap[name] = (nameCountMap[name] || 0) + 1;
+            });
 
             const orderScore = {
                 'ultra_rare': 4,
@@ -359,35 +427,49 @@
                 const levelB = parseInt(b.dataset.level || '0');
                 const idA = parseInt(a.dataset.id || '0');
                 const idB = parseInt(b.dataset.id || '0');
+                const countA = nameCountMap[a.dataset.name] || 0;
+                const countB = nameCountMap[b.dataset.name] || 0;
 
-                if (criteria === 'rarity_desc') {
+                let comparison = 0;
+
+                if (currentSortCriteria === 'rarity') {
                     if (orderScore[gradeB] !== orderScore[gradeA]) {
-                        return (orderScore[gradeB] || 0) - (orderScore[gradeA] || 0);
+                        comparison = (orderScore[gradeA] || 0) - (orderScore[gradeB] || 0); // 기본 로직은 오름차순으로 통일한뒤, 토글로 뒤집음
+                    } else {
+                        comparison = levelA - levelB; 
                     }
-                    return levelB - levelA; // 같은 등급이면 높은 강화가 앞으로
-                } else if (criteria === 'rarity_asc') {
-                    if (orderScore[gradeA] !== orderScore[gradeB]) {
-                        return (orderScore[gradeA] || 0) - (orderScore[gradeB] || 0);
-                    }
-                    return levelB - levelA; // 같은 등급이면 높은 강화가 앞으로
-                } else if (criteria === 'name_asc') {
-                    if (nameA !== nameB) {
-                        return nameA.localeCompare(nameB);
-                    }
-                    return levelB - levelA;
-                } else if (criteria === 'id_asc') {
-                    return idA - idB;
-                } else if (criteria === 'level_desc') {
+                } else if (currentSortCriteria === 'name') {
+                    comparison = nameA.localeCompare(nameB);
+                    if (comparison === 0) comparison = levelA - levelB;
+                } else if (currentSortCriteria === 'id') {
+                    comparison = idA - idB;
+                } else if (currentSortCriteria === 'level') {
                     if (levelB !== levelA) {
-                        return levelB - levelA;
+                        comparison = levelA - levelB;
+                    } else {
+                        comparison = (orderScore[gradeA] || 0) - (orderScore[gradeB] || 0);
                     }
-                    return (orderScore[gradeB] || 0) - (orderScore[gradeA] || 0);
+                } else if (currentSortCriteria === 'count') {
+                    if (countA !== countB) {
+                        comparison = countA - countB;
+                    } else {
+                        comparison = idA - idB;
+                    }
                 }
-                return 0;
+
+                return isDescending ? -comparison : comparison;
             });
 
-            cards.forEach(card => deck.appendChild(card));
-            document.getElementById('dropdownMenu').classList.remove('active');
+            cards.forEach(card => {
+                // 필터링 적용
+                if (currentFilterGrade === 'all' || card.dataset.grade === currentFilterGrade) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+                
+                deck.appendChild(card);
+            });
         }
 
         async function attemptRankup() {
@@ -429,30 +511,98 @@
                         }
                     }
 
-                    // 애니메이션 결과 시각적 효과 확인 후 모달 띄우기 (1.5초)
+                    // 애니메이션 결과 시각적 효과 확인 후 변경 (모달 생략)
                     setTimeout(() => {
-                        const modal = document.getElementById('resultModal');
-                        const title = document.getElementById('resultTitle');
-                        const message = document.getElementById('resultMessage');
-
-                        modal.style.display = 'flex';
                         rankupContainer.classList.remove('animating');
+                        
+                        const targetCardEl = document.getElementById('card-' + targetId);
 
                         if (result.success) {
                             if (result.is_upgraded) {
-                                title.innerText = "강화 성공!";
-                                title.style.color = "#4ade80"; // green
+                                btn.innerText = result.message; // "강화 성공..."
+                                btn.style.background = "#4ade80"; // 초록색 버튼으로 알림
+                                
+                                // 타겟 렙업 수치 갱신(프론트단)
+                                targetLevel = result.new_level;
+                                if(targetCardEl) {
+                                    targetCardEl.setAttribute('data-level', targetLevel);
+                                    let lvlBadge = targetCardEl.querySelector('.upgrade-level');
+                                    let tierClass = 'upgrade-white';
+                                    if(targetLevel >= 5 && targetLevel <= 7) tierClass = 'upgrade-gold';
+                                    if(targetLevel >= 8) tierClass = 'upgrade-rainbow';
+                                        
+                                    if(!lvlBadge) {
+                                        // 레벨 뱃지 신규 생성
+                                        lvlBadge = document.createElement('div');
+                                        targetCardEl.querySelector('.card-inner').insertBefore(lvlBadge, targetCardEl.querySelector('.card-inner').firstChild);
+                                    }
+                                    lvlBadge.className = `upgrade-level ${tierClass}`;
+                                    lvlBadge.innerText = `+${targetLevel}`;
+                                    
+                                    // 타겟 슬롯 정보도 갱신
+                                    const imgSrc = targetCardEl.getAttribute('data-img-src');
+                                    document.getElementById('targetSlot').innerHTML = `
+                                        <img src="${imgSrc}" />
+                                        <div class="overlay-level">+${targetLevel}</div>
+                                    `;
+                                }
                             } else {
-                                title.innerText = "강화 실패...";
-                                title.style.color = "#f87171"; // red
+                                btn.innerText = result.message; // "강화 실패..."
+                                btn.style.background = "#f87171"; // 빨간색 버튼
+                                
+                                // 타겟 렙업 강등 수치 갱신(프론트단)
+                                targetLevel = result.new_level;
+                                if(targetCardEl) {
+                                    targetCardEl.setAttribute('data-level', targetLevel);
+                                    let lvlBadge = targetCardEl.querySelector('.upgrade-level');
+                                    let tierClass = 'upgrade-white';
+                                    if(targetLevel >= 5 && targetLevel <= 7) tierClass = 'upgrade-gold';
+                                    if(targetLevel >= 8) tierClass = 'upgrade-rainbow';
+                                    
+                                    if(targetLevel > 0) {
+                                        if(!lvlBadge) {
+                                            lvlBadge = document.createElement('div');
+                                            targetCardEl.querySelector('.card-inner').insertBefore(lvlBadge, targetCardEl.querySelector('.card-inner').firstChild);
+                                        }
+                                        lvlBadge.className = `upgrade-level ${tierClass}`;
+                                        lvlBadge.innerText = `+${targetLevel}`;
+                                    } else {
+                                        if(lvlBadge) lvlBadge.remove(); // 0레벨이면 삭제
+                                    }
+                                    
+                                    // 타겟 슬롯 정보 갱신
+                                    const imgSrc = targetCardEl.getAttribute('data-img-src');
+                                    document.getElementById('targetSlot').innerHTML = `
+                                        <img src="${imgSrc}" />
+                                        <div class="overlay-level">+${targetLevel}</div>
+                                    `;
+                                }
                             }
-                            message.innerText = result.message;
+                            
+                            // 재료 카드 DOM에서 삭제
+                            const matCardEl = document.getElementById('card-' + materialId);
+                            if(matCardEl) matCardEl.remove();
+
+                            // 확률 재계산
+                            const prob = Math.floor(100 * Math.pow(0.7, targetLevel));
+                            document.getElementById('probValue').innerText = prob;
+
+                            // 재료 슬롯만 초기화 시키고 준비상태로
+                            clearMaterialSelection();
                         } else {
-                            title.innerText = "오류 발생";
-                            title.style.color = "#f87171";
-                            message.innerText = result.message || "서버 통신에 실패했습니다.";
+                            btn.innerText = result.message || "서버 오류";
+                            btn.style.background = "#f87171";
                             targetSlotEl.className = 'slot target-slot filled'; // 초기화
+                            btn.classList.remove('disabled');
                         }
+                        
+                        // 2초 후 기존 버튼 색/글씨 롤백
+                        setTimeout(() => {
+                            btn.innerText = "강화 시도";
+                            btn.style.background = ""; // 원본 복구
+                            if(targetId && materialId) btn.classList.remove('disabled');
+                        }, 2000);
+
                     }, 1500);
 
                 }, 2000);
@@ -462,6 +612,7 @@
                 alert("강화 요청 중 오류가 발생했습니다.");
                 btn.classList.remove('disabled');
                 btn.innerText = "강화 시도";
+                btn.style.background = "";
                 targetSlotEl.classList.remove('rankup-pending');
                 rankupContainer.classList.remove('animating');
             }

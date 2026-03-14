@@ -225,7 +225,7 @@ def do_rankup():
             target_card = cur.fetchone()
             
             # 재료 카드 확인
-            cur.execute("SELECT id, rarity, is_locked FROM inventory WHERE id = %s AND user_id = %s", (material_id, user.id))
+            cur.execute("SELECT id, rarity, is_locked, upgrade_level FROM inventory WHERE id = %s AND user_id = %s", (material_id, user.id))
             material_card = cur.fetchone()
 
             if not target_card or not material_card:
@@ -236,12 +236,19 @@ def do_rankup():
 
             if target_card['rarity'] != material_card['rarity']:
                 return jsonify({"success": False, "message": "같은 등급의 카드를 재료로 사용해야 합니다."}), 400
+                
+            if material_card['upgrade_level'] and int(material_card['upgrade_level']) > 0:
+                return jsonify({"success": False, "message": "강화된 카드는 재료로 사용할 수 없습니다."}), 400
 
             current_level = int(target_card['upgrade_level'] or 0)
             
+            # UR 제외 기타 등급은 최대 5강까지만
+            if target_card['rarity'] != 'Ultra Rare' and current_level >= 5:
+                return jsonify({"success": False, "message": "해당 등급은 최대 5강까지만 가능합니다."}), 400
+            
             # 확률 계산
-            # 0->1: 100%, 1->2: 60%, 2->3: 36%
-            prob = 1.0 * (0.6 ** current_level)
+            # 0->1: 100%, 1->2: 70%, 2->3: 49%
+            prob = 1.0 * (0.7 ** current_level)
             
             # 재료 소모
             cur.execute("DELETE FROM inventory WHERE id = %s AND user_id = %s", (material_id, user.id))
@@ -260,8 +267,12 @@ def do_rankup():
                     "message": f"강화 성공! (+{new_level})"
                 })
             else:
-                # 실패 처리: 1~3단계 하락 (단, 0미만으로 떨어지지 않음)
-                drop_amount = random.randint(1, 3)
+                # 실패 처리: 기본 1~2단계 하락, 8강 이상은 1단계 하락 (단, 0미만으로 떨어지지 않음)
+                if current_level >= 8:
+                    drop_amount = 1
+                else:
+                    drop_amount = random.randint(1, 2)
+                    
                 new_level = max(0, current_level - drop_amount)
                 
                 cur.execute("UPDATE inventory SET upgrade_level = %s WHERE id = %s AND user_id = %s", (new_level, target_id, user.id))
