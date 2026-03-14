@@ -47,14 +47,14 @@ class Point(commands.Cog):
         if message.author.bot or message.content.startswith('!'):
             return
 
-        earned = random.randint(1, 5)
+        earned = random.randint(5, 25)
         await self.add_points(message.author.id, earned)
 
     # --- 백그라운드 태스크: 음성 체류 보상 (10분마다) ---
     @tasks.loop(minutes=10)
     async def vc_reward_loop(self):
         """음성 채널 접속자에게 조용히 포인트를 지급합니다."""
-        reward_amount = 10 # 10분당 지급할 포인트 양
+        reward_amount = 50 # 10분당 지급할 포인트 양
         
         # 봇이 연결된 모든 서버를 확인
         for guild in self.bot.guilds:
