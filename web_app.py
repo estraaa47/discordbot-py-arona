@@ -187,6 +187,19 @@ def inventory():
     # is_new 플래그 기반으로 new_card_ids 추출
     new_card_ids = [item['id'] for item in inventory_items if item.get('is_new')]
 
+    # 인벤토리 페이지 방문 시 NEW 마크 초기화
+    if new_card_ids:
+        conn2 = get_db_connection()
+        if conn2:
+            try:
+                with conn2.cursor() as cur:
+                    cur.execute("UPDATE inventory SET is_new = 0 WHERE user_id = %s AND is_new = 1", (user.id,))
+                    conn2.commit()
+            except Exception as e:
+                print(f"NEW mark clear error: {e}")
+            finally:
+                conn2.close()
+
     return render_template("inventory.html", 
                            user=user, 
                            inventory_items=inventory_items,
@@ -402,8 +415,7 @@ def do_gacha():
             pull_results = []
             valid_exts = ('.png', '.jpg', '.jpeg', '.gif', '.webp')
 
-            # 기존 NEW 마크 초기화
-            cur.execute("UPDATE inventory SET is_new = 0 WHERE user_id = %s AND is_new = 1", (user.id,))
+
 
             for _ in range(pull_count):
                 rarity = random.choices(rarities, weights=weights, k=1)[0]

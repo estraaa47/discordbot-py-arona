@@ -302,7 +302,13 @@
 
             allCards.forEach(c => {
                 c.classList.remove('disabled', 'selected');
-                c.style.display = 'block';
+                // 등급 필터를 존중: 현재 필터에 맞는 카드만 표시
+                const grade = c.getAttribute('data-grade');
+                if (currentFilterGrade === 'all' || grade === currentFilterGrade) {
+                    c.style.display = 'block';
+                } else {
+                    c.style.display = 'none';
+                }
             });
 
             if (!targetId) {
@@ -341,10 +347,16 @@
 
                     if (id === targetId) return; // 타겟은 보존
                     
+                    // 등급 필터 적용 (필터에 해당하지 않으면 숨김)
+                    if (currentFilterGrade !== 'all' && grade !== currentFilterGrade) {
+                        c.style.display = 'none';
+                        return;
+                    }
+                    
                     c.style.order = "0"; // 타겟이 아닌 카드는 원래 순서 유지
 
                     if (grade !== targetGrade) {
-                        c.style.display = 'none'; // 다른 등급 숨김
+                        c.style.display = 'none'; // 다른 등급(재료 불가) 숨김
                     } else if (locked || lvl > 0) {
                         c.classList.add('disabled'); // 조건 불일치(잠금 또는 강화됨) 시 회색화
                     }
@@ -386,7 +398,10 @@
                         c.style.order = "0";
 
                         const grade = c.getAttribute('data-grade');
-                        if (grade !== targetGrade) {
+                        // 등급 필터 우선 적용
+                        if (currentFilterGrade !== 'all' && grade !== currentFilterGrade) {
+                            c.style.display = 'none';
+                        } else if (grade !== targetGrade) {
                             c.style.display = 'none';
                         } else {
                             c.classList.add('disabled');
