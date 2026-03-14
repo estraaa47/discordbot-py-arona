@@ -542,6 +542,34 @@ p {
     text-shadow: 0 2px 5px rgba(0,0,0,0.9);
 }
 
+/* NEW Badge for recently obtained cards */
+.new-badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 11;
+    background: rgba(0, 0, 0, 0.6);
+    color: #ffd700;
+    font-family: 'Warhaven', sans-serif !important;
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 1px 8px;
+    border-radius: 6px;
+    border: 1px solid #ffd700;
+    letter-spacing: 1px;
+    text-shadow: 0 0 6px rgba(255, 215, 0, 0.8);
+    animation: newPulse 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes newPulse {
+    0% {
+        box-shadow: 0 0 4px rgba(255, 215, 0, 0.4);
+    }
+    100% {
+        box-shadow: 0 0 12px rgba(255, 215, 0, 0.9);
+    }
+}
+
 /* Upgrade Badges (Block Border Effects) */
 .upgrade-level {
     font-size: 0.9rem;

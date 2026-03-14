@@ -588,9 +588,10 @@
                                 btn.innerText = result.message; // "강화 성공..."
                                 btn.style.background = "#4ade80"; // 초록색 버튼으로 알림
                                 
+                                const levelDiff = result.new_level - targetLevel;
                                 mainTitle.innerText = "강화 성공!";
                                 mainTitle.style.color = "#4ade80";
-                                mainSubtitle.innerText = "카드가 성공적으로 강화되었습니다!";
+                                mainSubtitle.innerText = `카드가 성공적으로 강화되었습니다! [${levelDiff}단계 상승]`;
                                 
                                 // 타겟 렙업 수치 갱신(프론트단)
                                 targetLevel = result.new_level;
@@ -620,9 +621,10 @@
                                 btn.innerText = result.message; // "강화 실패..."
                                 btn.style.background = "#f87171"; // 빨간색 버튼
                                 
+                                const levelDiff = targetLevel - result.new_level;
                                 mainTitle.innerText = "강화 실패...";
                                 mainTitle.style.color = "#f87171";
-                                mainSubtitle.innerText = "강화에 실패하여 카드의 레벨이 하락했습니다.";
+                                mainSubtitle.innerText = `강화에 실패하여 카드의 레벨이 하락했습니다. [${levelDiff}단계 하락]`;
                                 
                                 // 타겟 렙업 강등 수치 갱신(프론트단)
                                 targetLevel = result.new_level;
@@ -670,11 +672,17 @@
                             btn.classList.remove('disabled');
                         }
                         
-                        // 2.5초 후 기존 버튼 색/글씨 롤백 (타이틀도 복구)
+                        // 4.0초 후 기존 버튼 색/글씨 롤백 (타이틀도 복구)
                         setTimeout(() => {
                             btn.innerText = "강화 시도";
                             btn.style.background = ""; // 원본 복구
                             if(targetId && materialId) btn.classList.remove('disabled');
+                            
+                            // 슬롯 애니메이션 클래스 제거 (어두워진 상태 복구)
+                            const slotEl = document.getElementById('targetSlot');
+                            if(slotEl) {
+                                slotEl.classList.remove('rankup-success', 'rankup-fail', 'rankup-pending');
+                            }
                             
                             const mainTitle = document.getElementById('mainRankupTitle');
                             const mainSubtitle = document.getElementById('mainRankupSubtitle');
@@ -683,7 +691,7 @@
                                 mainTitle.style.color = "";
                                 mainSubtitle.innerText = "카드를 강화하여 더 높은 레벨로 성장시키세요!";
                             }
-                        }, 2500);
+                        }, 4000);
 
                     }, 1500);
 

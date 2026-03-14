@@ -101,6 +101,9 @@
                 data-full-img="/images/{{ card.rarity.lower().replace(' ', '_') }}/{{ card.item_name }}"
                 onclick="showModal(this.getAttribute('data-full-img'))">
                 <div class="card-inner">
+                    {% if card.id in new_card_ids %}
+                    <div class="new-badge">NEW</div>
+                    {% endif %}
                     {% if card.upgrade_level is not none %}
                         {% set lvl = card.upgrade_level|int %}
                         {% set tier_class = 'upgrade-white' %}

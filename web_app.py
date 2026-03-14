@@ -165,7 +165,8 @@ def inventory():
 
     return render_template("inventory.html", 
                            user=user, 
-                           inventory_items=inventory_items)
+                           inventory_items=inventory_items,
+                           new_card_ids=session.get('new_card_ids', []))
 
 @app.route("/rankup")
 def rankup():
@@ -375,6 +376,7 @@ def do_gacha():
                 return jsonify({"success": False, "message": f"포인트가 부족합니다. ({cost}P 필요)"}), 400
 
             pull_results = []
+            new_card_ids = []
             valid_exts = ('.png', '.jpg', '.jpeg', '.gif', '.webp')
 
             for _ in range(pull_count):
@@ -402,6 +404,7 @@ def do_gacha():
 
                 cur.execute("INSERT INTO inventory (user_id, item_name, rarity) VALUES (%s, %s, %s)", 
                             (user.id, selected_file, rarity))
+                new_card_ids.append(cur.lastrowid)
 
                 pull_results.append({
                     "name": card_name,
@@ -411,6 +414,9 @@ def do_gacha():
 
             cur.execute("UPDATE users SET points = points - %s WHERE user_id = %s", (cost, user.id))
             conn.commit()
+            
+            # 세션에 새 카드 ID 저장 (다음 가챠 시 덮어씌워짐)
+            session['new_card_ids'] = new_card_ids
             
             return jsonify({"success": True, "results": pull_results})
 
