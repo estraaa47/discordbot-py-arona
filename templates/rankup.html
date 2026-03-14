@@ -699,7 +699,12 @@
                                 if (targetCardEl) {
                                     targetCardEl.classList.add('disabled');
                                 }
-                                // 대상+재료 슬롯 모두 초기화
+                                // 재료 슬롯을 먼저 직접 초기화 (clearTargetSelection 내부에서
+                                // targetId가 null이 되면 clearMaterialSelection이 early return하므로)
+                                materialId = null;
+                                document.getElementById('materialSlot').innerHTML = '<div class="slot-placeholder">선택</div>';
+                                document.getElementById('materialSlot').classList.remove('filled');
+                                // 대상 슬롯 초기화
                                 clearTargetSelection();
                             } else {
                                 // 재료 슬롯만 초기화 시키고 준비상태로
