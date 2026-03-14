@@ -286,8 +286,11 @@
                 updateUIAfterSelection();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             } else {
-                // 이미 둘 다 선택되었을 경우 재료 카드 갱신 가능성? 무시.
-                alert("대상과 재료가 모두 이미 선택되었습니다.");
+                if (id === targetId) {
+                    clearTargetSelection();
+                } else if (id === materialId) {
+                    clearMaterialSelection();
+                }
             }
         }
 
