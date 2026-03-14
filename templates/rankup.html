@@ -61,8 +61,8 @@
 
     <main>
         <div class="title-section" style="text-align: center;">
-            <h1>Card Rank Up</h1>
-            <p class="subtitle">카드를 강화하여 더 높은 레벨로 성장시키세요!</p>
+            <h1 id="mainRankupTitle">Card Rank Up</h1>
+            <p class="subtitle" id="mainRankupSubtitle">카드를 강화하여 더 높은 레벨로 성장시키세요!</p>
         </div>
 
         <div class="rankup-container">
@@ -256,10 +256,11 @@
                 cardElement.style.order = -1;
                 
                 updateUIAfterSelection();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             } else if (!materialId) {
                 // 재료 카드 선택 
                 if (id === targetId) {
-                    alert("강화 대상과 재료는 같을 수 없습니다.");
+                    clearTargetSelection();
                     return;
                 }
                 if (locked) {
@@ -283,6 +284,7 @@
                 document.getElementById('materialSlot').classList.add('filled');
                 
                 updateUIAfterSelection();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             } else {
                 // 이미 둘 다 선택되었을 경우 재료 카드 갱신 가능성? 무시.
                 alert("대상과 재료가 모두 이미 선택되었습니다.");
@@ -575,11 +577,17 @@
                         rankupContainer.classList.remove('animating');
                         
                         const targetCardEl = document.getElementById('card-' + targetId);
+                        const mainTitle = document.getElementById('mainRankupTitle');
+                        const mainSubtitle = document.getElementById('mainRankupSubtitle');
 
                         if (result.success) {
                             if (result.is_upgraded) {
                                 btn.innerText = result.message; // "강화 성공..."
                                 btn.style.background = "#4ade80"; // 초록색 버튼으로 알림
+                                
+                                mainTitle.innerText = "강화 성공!";
+                                mainTitle.style.color = "#4ade80";
+                                mainSubtitle.innerText = "카드가 성공적으로 강화되었습니다!";
                                 
                                 // 타겟 렙업 수치 갱신(프론트단)
                                 targetLevel = result.new_level;
@@ -608,6 +616,10 @@
                             } else {
                                 btn.innerText = result.message; // "강화 실패..."
                                 btn.style.background = "#f87171"; // 빨간색 버튼
+                                
+                                mainTitle.innerText = "강화 실패...";
+                                mainTitle.style.color = "#f87171";
+                                mainSubtitle.innerText = "강화에 실패하여 카드의 레벨이 하락했습니다.";
                                 
                                 // 타겟 렙업 강등 수치 갱신(프론트단)
                                 targetLevel = result.new_level;
@@ -655,12 +667,20 @@
                             btn.classList.remove('disabled');
                         }
                         
-                        // 2초 후 기존 버튼 색/글씨 롤백
+                        // 2.5초 후 기존 버튼 색/글씨 롤백 (타이틀도 복구)
                         setTimeout(() => {
                             btn.innerText = "강화 시도";
                             btn.style.background = ""; // 원본 복구
                             if(targetId && materialId) btn.classList.remove('disabled');
-                        }, 2000);
+                            
+                            const mainTitle = document.getElementById('mainRankupTitle');
+                            const mainSubtitle = document.getElementById('mainRankupSubtitle');
+                            if(mainTitle) {
+                                mainTitle.innerText = "Card Rank Up";
+                                mainTitle.style.color = "";
+                                mainSubtitle.innerText = "카드를 강화하여 더 높은 레벨로 성장시키세요!";
+                            }
+                        }, 2500);
 
                     }, 1500);
 

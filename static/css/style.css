@@ -555,44 +555,44 @@ p {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 2px 8px;
+    padding: 3px 10px;
     border-radius: 8px;
-    background: rgba(10, 10, 12, 0.8);
-    backdrop-filter: blur(4px);
     border: 2px solid transparent;
 }
 
-/* 0 ~ 4: White border */
+/* 0 ~ 4: White Background */
 .upgrade-white {
+    background: #ffffff;
     border-color: rgba(255, 255, 255, 0.85);
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-    color: #fff;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    color: #000;
     text-shadow: none;
 }
 
-/* 5 ~ 7: Gold border */
+/* 5 ~ 7: Gold Background */
 .upgrade-gold {
+    background: #ffd700;
     border-color: #ffd700;
-    box-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
-    color: #ffd700;
-    text-shadow: 0 0 4px rgba(255, 215, 0, 0.4);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+    color: #000;
+    text-shadow: none;
 }
 
-/* 8+: Rainbow / Animated Gradient border illusion */
+/* 8+: Rainbow Background (Animated Gradient) */
 .upgrade-rainbow {
-    color: #fff;
-    text-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
-    background: linear-gradient(rgba(10, 10, 12, 0.85), rgba(10, 10, 12, 0.85)) padding-box,
-                linear-gradient(90deg, #ff0000, #ff7f00, #00ff00, #0000ff, #8b00ff) border-box;
-    border: 2px solid transparent;
-    animation: rainbowBox 2s infinite linear alternate;
+    color: #000;
+    text-shadow: none;
+    background: linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
+    background-size: 300% 300%;
+    border-color: transparent;
+    animation: rainbowBox 3s ease infinite;
 }
 
 @keyframes rainbowBox {
-    0%   { box-shadow: 0 0 12px #ff0000; }
-    33%  { box-shadow: 0 0 12px #0000ff; }
-    66%  { box-shadow: 0 0 12px #00ff00; }
-    100% { box-shadow: 0 0 12px #ff7f00; }
+    0%   { background-position: 0% 50%; box-shadow: 0 0 15px #ff0000; }
+    33%  { background-position: 50% 100%; box-shadow: 0 0 15px #00ff00; }
+    66%  { background-position: 100% 50%; box-shadow: 0 0 15px #0000ff; }
+    100% { background-position: 0% 50%; box-shadow: 0 0 15px #ff7f00; }
 }
 
 /* Modal for full image */
