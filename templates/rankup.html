@@ -239,8 +239,8 @@
                 targetGrade = grade;
                 targetLevel = level;
 
-                // 확률 계산: 0->1(100%), 1->2(70%), 2->3(49%)
-                const prob = Math.floor(100 * Math.pow(0.7, level));
+                // 확률 계산: 0->1(100%), 1->2(85%), 2->3(72%)
+                const prob = Math.floor(100 * Math.pow(0.85, level));
                 document.getElementById('probValue').innerText = prob;
 
                 document.getElementById('targetSlot').innerHTML = `
@@ -660,7 +660,7 @@
                             if(matCardEl) matCardEl.remove();
 
                             // 확률 재계산
-                            const prob = Math.floor(100 * Math.pow(0.7, targetLevel));
+                            const prob = Math.floor(100 * Math.pow(0.85, targetLevel));
                             document.getElementById('probValue').innerText = prob;
 
                             // 재료 슬롯만 초기화 시키고 준비상태로

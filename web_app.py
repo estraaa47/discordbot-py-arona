@@ -272,8 +272,8 @@ def do_rankup():
                 return jsonify({"success": False, "message": "해당 등급은 최대 5강까지만 가능합니다."}), 400
             
             # 확률 계산
-            # 0->1: 100%, 1->2: 70%, 2->3: 49%
-            prob = 1.0 * (0.7 ** current_level)
+            # 0->1: 100%, 1->2: 85%, 2->3: 72%
+            prob = 1.0 * (0.85 ** current_level)
             
             # 재료 소모
             cur.execute("DELETE FROM inventory WHERE id = %s AND user_id = %s", (material_id, user.id))
