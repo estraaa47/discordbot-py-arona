@@ -54,7 +54,7 @@ class Point(commands.Cog):
     @tasks.loop(minutes=10)
     async def vc_reward_loop(self):
         """음성 채널 접속자에게 조용히 포인트를 지급합니다."""
-        reward_amount = 50 # 10분당 지급할 포인트 양
+        reward_amount = 200 # 10분당 지급할 포인트 양
         
         # 봇이 연결된 모든 서버를 확인
         for guild in self.bot.guilds:
