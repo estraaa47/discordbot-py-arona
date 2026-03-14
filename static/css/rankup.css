@@ -1,0 +1,180 @@
+/* [RANK UP CUSTOM STYLES] */
+
+.rankup-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.rankup-slots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 3rem;
+    margin: 3rem 0;
+    padding: 2rem;
+    background: rgba(15, 15, 18, 0.4);
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    backdrop-filter: blur(10px);
+}
+
+.slot-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+}
+
+.slot-label {
+    font-weight: bold;
+    color: var(--text-primary);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    text-align: center;
+}
+
+.slot {
+    width: 140px;
+    height: 200px;
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.slot:hover {
+    border-color: var(--accent-blue);
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.slot.filled {
+    border: 2px solid var(--accent-blue);
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+.slot-placeholder {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.slot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.slot .overlay-level {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    background: rgba(0,0,0,0.7);
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 0.8rem;
+    color: white;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.upgrade-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.upgrade-info .arrow {
+    font-size: 3rem;
+    color: var(--accent-blue);
+    text-shadow: 0 0 15px var(--accent-glow);
+    animation: pulse 2s infinite ease-in-out;
+}
+
+.prob-text {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); opacity: 0.8; }
+}
+
+.action-btn-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 3rem;
+}
+
+.rankup-btn {
+    font-size: 1.2rem;
+    padding: 15px 40px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.rankup-btn.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    filter: grayscale(1);
+}
+
+.rankup-deck {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.5rem;
+}
+
+.rankup-card {
+    transition: all 0.3s ease;
+}
+
+.rankup-card.disabled {
+    opacity: 0.3;
+    pointer-events: none;
+    filter: grayscale(1);
+}
+
+.rankup-card.selected {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4);
+    border: 2px solid var(--accent-blue);
+    border-radius: 12px;
+}
+
+.lock-overlay {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(0,0,0,0.6);
+    border-radius: 50%;
+    padding: 4px;
+    z-index: 10;
+}
+
+@media (max-width: 768px) {
+    .rankup-slots {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .upgrade-info .arrow {
+        transform: rotate(90deg);
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1) rotate(90deg); opacity: 0.8; }
+        50% { transform: scale(1.1) rotate(90deg); opacity: 1; }
+        100% { transform: scale(1) rotate(90deg); opacity: 0.8; }
+    }
+}

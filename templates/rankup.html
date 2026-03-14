@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARONA ARCHIVE | RANK UP</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/gacha.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/rankup.css') }}">
+</head>
+
+<body>
+    <div class="pearl-background">
+        <div class="swoosh swoosh-1"></div>
+    </div>
+
+    <header class="header">
+        <div class="header-left">
+            <a href="/" class="logo">ARONA <span>ARCHIVE</span></a>
+        </div>
+
+        <div class="header-center">
+            <a href="/gacha" class="gacha-nav-btn">GACHA</a>
+        </div>
+
+        <div class="header-right">
+            <div class="pc-nav" style="align-items: center; gap: 1rem; display: flex;">
+                <a href="/collection" class="tab-link">COLLECTION</a>
+                <a href="/inventory" class="tab-link">INVENTORY</a>
+                <a href="/rankup" class="tab-link active">RANK UP</a>
+
+                <div class="profile-container">
+                    <div class="profile" style="padding: 4px 16px 4px 6px;" onclick="toggleProfileDropdown()">
+                        <img src="{{ user.avatar_url }}" alt="profile">
+                        <span>{{ user.username }}</span>
+                    </div>
+                    <div id="profileDropdown" class="profile-dropdown">
+                        <a href="/logout">LOGOUT</a>
+                    </div>
+                </div>
+            </div>
+
+            <button class="hamburger-btn mobile-nav" onclick="toggleMobileMenu()">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+
+        <div id="mobile-menu" class="mobile-dropdown">
+            <div class="mobile-profile">
+                <img src="{{ user.avatar_url }}" alt="profile">
+                <span>{{ user.username }}</span>
+            </div>
+            <a href="/gacha" class="mobile-link gacha-link">GACHA</a>
+            <a href="/collection" class="mobile-link">COLLECTION</a>
+            <a href="/inventory" class="mobile-link">INVENTORY</a>
+            <a href="/rankup" class="mobile-link">RANK UP</a>
+            <a href="/logout" class="mobile-link logout-link">LOGOUT</a>
+        </div>
+    </header>
+
+    <main>
+        <div class="title-section" style="text-align: center;">
+            <h1>Card Rank Up</h1>
+            <p class="subtitle">카드를 강화하여 더 높은 레벨로 성장시키세요!</p>
+        </div>
+
+        <div class="rankup-container">
+            <div class="rankup-slots">
+                <!-- 선택한 강화 대상 -->
+                <div class="slot-container" onclick="clearTargetSelection()">
+                    <div class="slot-label">강화 대상</div>
+                    <div class="slot target-slot" id="targetSlot">
+                        <div class="slot-placeholder">선택</div>
+                    </div>
+                </div>
+
+                <div class="upgrade-info" id="upgradeInfo">
+                    <div class="prob-text">성공 확률: <span id="probValue">-</span>%</div>
+                    <div class="arrow">➔</div>
+                </div>
+
+                <!-- 선택한 강화 재료 -->
+                <div class="slot-container" onclick="clearMaterialSelection()">
+                    <div class="slot-label">강화 재료 <br/><span style="font-size: 0.8rem; font-weight: normal;">(같은 등급 1장 소모)</span></div>
+                    <div class="slot material-slot" id="materialSlot">
+                        <div class="slot-placeholder">선택</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-btn-container">
+                <button class="gacha-nav-btn rankup-btn disabled" id="doRankupBtn" onclick="attemptRankup()">강화 시도</button>
+            </div>
+
+            <!-- 보유 카드 리스트 안내 -->
+            <div class="inventory-controls" style="margin-top: 2rem; margin-bottom: 2rem; text-align: center;">
+                <h2 id="selectionTitle" style="color: var(--text-primary); margin: 0; font-size: 1.5rem;">강화할 대상을 선택하세요</h2>
+                <p id="selectionSubtitle" style="color: var(--text-secondary); margin-top: 0.5rem;">모든 카드를 대상으로 선택할 수 있습니다.</p>
+            </div>
+
+            <!-- 카드 리스트 -->
+            <div id="deck" class="rankup-deck">
+                {% for card in inventory_items %}
+                <div class="card rankup-card" 
+                    id="card-{{ card.id }}"
+                    data-id="{{ card.id }}" 
+                    data-grade="{{ card.rarity.lower().replace(' ', '_') }}" 
+                    data-name="{{ card.item_name }}"
+                    data-level="{{ card.upgrade_level }}"
+                    data-locked="{{ 'true' if card.is_locked else 'false' }}"
+                    data-img-src="/images/thumbnails/{{ card.rarity.lower().replace(' ', '_') }}/{{ card.clean_name }}.webp"
+                    onclick="selectCard(this)">
+                    <div class="card-inner">
+                        {% if card.upgrade_level is not none %}
+                            {% set lvl = card.upgrade_level|int %}
+                            {% set tier_class = 'upgrade-white' %}
+                            {% if lvl >= 5 and lvl <= 7 %}
+                                {% set tier_class = 'upgrade-gold' %}
+                            {% elif lvl >= 8 %}
+                                {% set tier_class = 'upgrade-rainbow' %}
+                            {% endif %}
+                            <div class="upgrade-level {{ tier_class }}">
+                                +{{ lvl }}
+                            </div>
+                        {% endif %}
+
+                        {% if card.is_locked %}
+                        <div class="lock-overlay"><img src="{{ url_for('static', filename='icons/lock.png') }}" alt="locked" style="width:24px; filter: invert(1);"></div>
+                        {% endif %}
+
+                        <div class="card-img-wrapper">
+                            <img data-src="/images/thumbnails/{{ card.rarity.lower().replace(' ', '_') }}/{{ card.clean_name }}.webp" alt="{{ card.item_name }}">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name" style="font-size: 0.9rem;">{{ card.clean_name }}</div>
+                            <div class="card-status">
+                                <span class="status-owned" style="color: var(--accent-blue);">{{ card.rarity }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="empty-state" style="grid-column: 1/-1; text-align: center; padding: 4rem 2rem;">
+                    <p style="color: var(--text-secondary); font-size: 1.1rem;">아직 획득한 카드가 없습니다.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Form (Hidden) -->
+    <div id="resultModal" class="modal" style="display: none; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);">
+        <div style="background: rgba(15, 15, 18, 0.9); border: 1px solid var(--border-color); border-radius: 20px; padding: 3rem; text-align: center; max-width: 400px; width: 90%;">
+            <h2 id="resultTitle" style="color: white; margin-bottom: 1rem; font-size: 2rem;">결과</h2>
+            <p id="resultMessage" style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 2rem;">-</p>
+            <button class="gacha-nav-btn" onclick="location.reload()">확인</button>
+        </div>
+    </div>
+
+    <script>
+        let targetId = null;
+        let materialId = null;
+        let targetGrade = null;
+        let targetLevel = 0;
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            const btn = document.querySelector('.hamburger-btn');
+            menu.classList.toggle('active');
+            btn.classList.toggle('open');
+            document.body.style.overflow = menu.classList.contains('active') ? 'hidden' : 'auto';
+        }
+
+        function toggleProfileDropdown() {
+            document.getElementById('profileDropdown').classList.toggle('active');
+        }
+
+        function clearTargetSelection() {
+            targetId = null;
+            targetGrade = null;
+            targetLevel = 0;
+            document.getElementById('targetSlot').innerHTML = '<div class="slot-placeholder">선택</div>';
+            document.getElementById('targetSlot').classList.remove('filled');
+            document.getElementById('probValue').innerText = '-';
+            clearMaterialSelection();
+            updateUIAfterSelection();
+        }
+
+        function clearMaterialSelection() {
+            if(!targetId) return; // If target is cleared, this is called anyway
+            materialId = null;
+            document.getElementById('materialSlot').innerHTML = '<div class="slot-placeholder">선택</div>';
+            document.getElementById('materialSlot').classList.remove('filled');
+            updateUIAfterSelection();
+        }
+
+        function selectCard(cardElement) {
+            if (cardElement.classList.contains('disabled')) return;
+
+            const id = cardElement.getAttribute('data-id');
+            const grade = cardElement.getAttribute('data-grade');
+            const level = parseInt(cardElement.getAttribute('data-level') || '0');
+            const locked = cardElement.getAttribute('data-locked') === 'true';
+            const imgSrc = cardElement.getAttribute('data-img-src');
+
+            if (!targetId) {
+                // 강화 대상 선택
+                targetId = id;
+                targetGrade = grade;
+                targetLevel = level;
+
+                // 확률 계산: 0->1(100%), 1->2(60%), 2->3(36%)
+                const prob = Math.floor(100 * Math.pow(0.6, level));
+                document.getElementById('probValue').innerText = prob;
+
+                document.getElementById('targetSlot').innerHTML = `
+                    <img src="${imgSrc}" />
+                    <div class="overlay-level">+${level}</div>
+                `;
+                document.getElementById('targetSlot').classList.add('filled');
+                
+                updateUIAfterSelection();
+            } else if (!materialId) {
+                // 재료 카드 선택 
+                if (id === targetId) {
+                    alert("강화 대상과 재료는 같을 수 없습니다.");
+                    return;
+                }
+                if (locked) {
+                    alert("잠금된 카드는 재료로 사용할 수 없습니다.");
+                    return;
+                }
+                if (grade !== targetGrade) {
+                    alert("강화 대상과 같은 등급의 카드만 재료로 사용할 수 있습니다.");
+                    return;
+                }
+
+                materialId = id;
+                document.getElementById('materialSlot').innerHTML = `
+                    <img src="${imgSrc}" />
+                    <div class="overlay-level">+${level}</div>
+                `;
+                document.getElementById('materialSlot').classList.add('filled');
+                
+                updateUIAfterSelection();
+            } else {
+                // 이미 둘 다 선택되었을 경우 재료 카드 갱신 가능성? 무시.
+                alert("대상과 재료가 모두 이미 선택되었습니다.");
+            }
+        }
+
+        function updateUIAfterSelection() {
+            const allCards = document.querySelectorAll('.rankup-card');
+            const title = document.getElementById('selectionTitle');
+            const subtitle = document.getElementById('selectionSubtitle');
+            const btn = document.getElementById('doRankupBtn');
+
+            allCards.forEach(c => {
+                c.classList.remove('disabled', 'selected');
+            });
+
+            if (!targetId) {
+                // 대상 선택 전
+                title.innerText = "강화할 대상을 선택하세요";
+                subtitle.innerText = "모든 카드를 대상으로 선택할 수 있습니다. (잠금 카드 포함)";
+                btn.classList.add('disabled');
+            } else if (!materialId) {
+                // 재료 선택 전
+                title.innerText = "강화에 사용할 재료 카드를 선택하세요";
+                subtitle.innerText = "강화 대상과 동일한 등급의 카드 1장을 소모합니다. 잠금된 카드는 사용할 수 없으니 유의해주세요.";
+                
+                // 타겟 카드 하이라이트 표시
+                const targetCardEl = document.getElementById('card-' + targetId);
+                if (targetCardEl) targetCardEl.classList.add('selected');
+
+                allCards.forEach(c => {
+                    const id = c.getAttribute('data-id');
+                    const grade = c.getAttribute('data-grade');
+                    const locked = c.getAttribute('data-locked') === 'true';
+
+                    if (id === targetId) return; // 타겟은 보존
+                    
+                    if (grade !== targetGrade || locked) {
+                        c.classList.add('disabled'); // 조건 불일치 시 회색화
+                    }
+                });
+                btn.classList.add('disabled');
+            } else {
+                // 모두 선택됨
+                title.innerText = "강화 시도 준비 완료!";
+                subtitle.innerText = "카드를 소모하여 강화를 시도합니다.";
+                
+                const targetCardEl = document.getElementById('card-' + targetId);
+                const matCardEl = document.getElementById('card-' + materialId);
+                if (targetCardEl) targetCardEl.classList.add('selected');
+                if (matCardEl) matCardEl.classList.add('selected');
+
+                allCards.forEach(c => {
+                    const id = c.getAttribute('data-id');
+                    if(id !== targetId && id !== materialId) {
+                        c.classList.add('disabled');
+                    }
+                });
+                btn.classList.remove('disabled');
+            }
+        }
+
+        async function attemptRankup() {
+            if (!targetId || !materialId) return;
+
+            const btn = document.getElementById('doRankupBtn');
+            btn.classList.add('disabled');
+            btn.innerText = "강화 중...";
+
+            try {
+                const response = await fetch('/api/rankup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        target_id: targetId,
+                        material_id: materialId
+                    })
+                });
+
+                const result = await response.json();
+                
+                const modal = document.getElementById('resultModal');
+                const title = document.getElementById('resultTitle');
+                const message = document.getElementById('resultMessage');
+
+                modal.style.display = 'flex';
+
+                if (result.success) {
+                    if (result.is_upgraded) {
+                        title.innerText = "강화 성공!";
+                        title.style.color = "#4ade80"; // green
+                    } else {
+                        title.innerText = "강화 실패...";
+                        title.style.color = "#f87171"; // red
+                    }
+                    message.innerText = result.message;
+                } else {
+                    title.innerText = "오류 발생";
+                    title.style.color = "#f87171";
+                    message.innerText = result.message || "서버 통신에 실패했습니다.";
+                }
+
+            } catch (err) {
+                console.error(err);
+                alert("강화 요청 중 오류가 발생했습니다.");
+                btn.classList.remove('disabled');
+                btn.innerText = "강화 시도";
+            }
+        }
+
+        // 가짜 스크롤 방어 및 디도스 차단 우회를 위한 이미지 1장씩 순차 로딩
+        document.addEventListener('DOMContentLoaded', () => {
+            const images = document.querySelectorAll('img[data-src]');
+            let i = 0;
+            function loadNextImage() {
+                if (i >= images.length) return;
+                const img = images[i];
+                img.onload = () => { i++; requestAnimationFrame(loadNextImage); };
+                img.onerror = () => { i++; requestAnimationFrame(loadNextImage); };
+                img.src = img.getAttribute('data-src');
+                img.removeAttribute('data-src');
+            }
+            loadNextImage();
+        });
+    </script>
+</body>
+</html>

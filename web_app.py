@@ -167,6 +167,116 @@ def inventory():
                            user=user, 
                            inventory_items=inventory_items)
 
+@app.route("/rankup")
+def rankup():
+    if not discord.authorized:
+        return redirect(url_for("login"))
+    
+    user = discord.fetch_user()
+    inventory_items = []
+    conn = get_db_connection()
+    
+    if conn:
+        try:
+            with conn.cursor() as cursor:
+                sql = """
+                    SELECT id, item_name, rarity, upgrade_level, is_locked 
+                    FROM inventory 
+                    WHERE user_id = %s 
+                    ORDER BY rarity DESC, item_name ASC
+                """
+                cursor.execute(sql, (user.id,))
+                inventory_items = cursor.fetchall()
+                
+                for item in inventory_items:
+                    item['clean_name'] = os.path.splitext(item['item_name'])[0]
+                    if item['upgrade_level'] is None:
+                        item['upgrade_level'] = 0
+        except Exception as e:
+            print(f"DB Error: {e}")
+        finally:
+            conn.close()
+
+    return render_template("rankup.html", 
+                           user=user, 
+                           inventory_items=inventory_items)
+
+@app.route("/api/rankup", methods=["POST"])
+def do_rankup():
+    if not discord.authorized:
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+    
+    data = request.json
+    target_id = data.get("target_id")
+    material_id = data.get("material_id")
+    user = discord.fetch_user()
+
+    if not target_id or not material_id or target_id == material_id:
+        return jsonify({"success": False, "message": "유효하지 않은 선택입니다."}), 400
+
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"success": False, "message": "DB Connection Error"}), 500
+
+    try:
+        with conn.cursor() as cur:
+            # 타겟 카드 확인
+            cur.execute("SELECT id, rarity, upgrade_level, is_locked FROM inventory WHERE id = %s AND user_id = %s", (target_id, user.id))
+            target_card = cur.fetchone()
+            
+            # 재료 카드 확인
+            cur.execute("SELECT id, rarity, is_locked FROM inventory WHERE id = %s AND user_id = %s", (material_id, user.id))
+            material_card = cur.fetchone()
+
+            if not target_card or not material_card:
+                return jsonify({"success": False, "message": "카드를 찾을 수 없습니다."}), 400
+                
+            if material_card['is_locked']:
+                return jsonify({"success": False, "message": "잠금된 카드는 재료로 사용할 수 없습니다."}), 400
+
+            if target_card['rarity'] != material_card['rarity']:
+                return jsonify({"success": False, "message": "같은 등급의 카드를 재료로 사용해야 합니다."}), 400
+
+            current_level = int(target_card['upgrade_level'] or 0)
+            
+            # 확률 계산
+            # 0->1: 100%, 1->2: 60%, 2->3: 36%
+            prob = 1.0 * (0.6 ** current_level)
+            
+            # 재료 소모
+            cur.execute("DELETE FROM inventory WHERE id = %s AND user_id = %s", (material_id, user.id))
+            
+            is_success = random.random() < prob
+            
+            if is_success:
+                new_level = current_level + 1
+                cur.execute("UPDATE inventory SET upgrade_level = %s WHERE id = %s AND user_id = %s", (new_level, target_id, user.id))
+                conn.commit()
+                return jsonify({
+                    "success": True, 
+                    "is_upgraded": True, 
+                    "new_level": new_level,
+                    "prob": prob,
+                    "message": f"강화 성공! (+{new_level})"
+                })
+            else:
+                conn.commit()
+                return jsonify({
+                    "success": True, 
+                    "is_upgraded": False, 
+                    "current_level": current_level,
+                    "prob": prob,
+                    "message": "강화 실패..."
+                })
+
+    except Exception as e:
+        conn.rollback()
+        print(f"Rankup API Error: {e}")
+        return jsonify({"success": False, "message": "서버 처리 중 오류가 발생했습니다."}), 500
+    finally:
+        if conn:
+            conn.close()
+
 @app.route("/api/inventory/lock", methods=["POST"])
 def toggle_inventory_lock():
     if not discord.authorized:
