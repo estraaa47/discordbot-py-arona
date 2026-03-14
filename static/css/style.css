@@ -159,6 +159,29 @@ p {
     white-space: nowrap;
 }
 
+.rankup-nav-btn {
+    background-color: #a855f7;
+    color: white !important;
+    text-decoration: none;
+    font-weight: 900 !important;
+    font-size: 1rem;
+    padding: 6px 20px;
+    border-radius: 50px;
+    letter-spacing: 1.5px;
+    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+    transition: all 0.3s ease;
+    border: 2px solid white;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rankup-nav-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(168, 85, 247, 0.6);
+}
+
 .profile {
     display: flex;
     align-items: center;
@@ -307,6 +330,11 @@ p {
     .gacha-nav-btn {
         padding: 6px 16px !important;
         font-size: 0.85rem !important;
+    }
+    
+    .rankup-nav-btn {
+        padding: 4px 12px !important;
+        font-size: 0.8rem !important;
     }
 
     /* 버튼 축소 */

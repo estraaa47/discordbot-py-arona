@@ -27,7 +27,7 @@
             <div class="pc-nav" style="align-items: center; gap: 1rem; display: flex;">
                 <a href="/collection" class="tab-link">COLLECTION</a>
                 <a href="/inventory" class="tab-link active">INVENTORY</a>
-                <a href="/rankup" class="tab-link">RANK UP</a>
+                <a href="/rankup" class="rankup-nav-btn" style="margin-left: 0.5rem;">RANK UP</a>
 
                 <div class="profile-container">
                     <div class="profile" style="padding: 4px 16px 4px 6px;" onclick="toggleProfileDropdown()">
@@ -53,7 +53,7 @@
             <a href="/gacha" class="mobile-link gacha-link">GACHA</a>
             <a href="/collection" class="mobile-link">COLLECTION</a>
             <a href="/inventory" class="mobile-link">INVENTORY</a>
-            <a href="/rankup" class="mobile-link">RANK UP</a>
+            <a href="/rankup" class="mobile-link" style="color: #a855f7;">RANK UP</a>
             <a href="/logout" class="mobile-link logout-link">LOGOUT</a>
         </div>
     </header>
@@ -79,8 +79,10 @@
                     정렬 기준 <span class="arrow">▼</span>
                 </button>
                 <div id="dropdownMenu" class="dropdown-content">
+                    <a href="#" onclick="sortDeck('id_asc'); return false;">획득순</a>
                     <a href="#" onclick="sortDeck('rarity_desc'); return false;">등급 높은순</a>
                     <a href="#" onclick="sortDeck('rarity_asc'); return false;">등급 낮은순</a>
+                    <a href="#" onclick="sortDeck('level_desc'); return false;">강화순</a>
                     <a href="#" onclick="sortDeck('name_asc'); return false;">이름순</a>
                 </div>
             </div>
@@ -89,6 +91,7 @@
         <div id="deck">
             {% for card in inventory_items %}
             <div class="card" data-grade="{{ card.rarity.lower().replace(' ', '_') }}" data-name="{{ card.item_name }}"
+                data-id="{{ card.id }}" data-level="{{ card.upgrade_level or 0 }}"
                 style="cursor: pointer;"
                 data-full-img="/images/{{ card.rarity.lower().replace(' ', '_') }}/{{ card.item_name }}"
                 onclick="showModal(this.getAttribute('data-full-img'))">
@@ -202,13 +205,33 @@
                 const gradeB = b.dataset.grade;
                 const nameA = a.dataset.name.toLowerCase();
                 const nameB = b.dataset.name.toLowerCase();
+                const levelA = parseInt(a.dataset.level || '0');
+                const levelB = parseInt(b.dataset.level || '0');
+                const idA = parseInt(a.dataset.id || '0');
+                const idB = parseInt(b.dataset.id || '0');
 
                 if (criteria === 'rarity_desc') {
-                    return (orderScore[gradeB] || 0) - (orderScore[gradeA] || 0);
+                    if (orderScore[gradeB] !== orderScore[gradeA]) {
+                        return (orderScore[gradeB] || 0) - (orderScore[gradeA] || 0);
+                    }
+                    return levelB - levelA; // 같은 등급이면 높은 강화가 앞으로
                 } else if (criteria === 'rarity_asc') {
-                    return (orderScore[gradeA] || 0) - (orderScore[gradeB] || 0);
+                    if (orderScore[gradeA] !== orderScore[gradeB]) {
+                        return (orderScore[gradeA] || 0) - (orderScore[gradeB] || 0);
+                    }
+                    return levelB - levelA; // 같은 등급이면 높은 강화가 앞으로
                 } else if (criteria === 'name_asc') {
-                    return nameA.localeCompare(nameB);
+                    if (nameA !== nameB) {
+                        return nameA.localeCompare(nameB);
+                    }
+                    return levelB - levelA;
+                } else if (criteria === 'id_asc') {
+                    return idA - idB;
+                } else if (criteria === 'level_desc') {
+                    if (levelB !== levelA) {
+                        return levelB - levelA;
+                    }
+                    return (orderScore[gradeB] || 0) - (orderScore[gradeA] || 0);
                 }
                 return 0;
             });

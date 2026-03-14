@@ -28,7 +28,7 @@
             <div class="pc-nav" style="align-items: center; gap: 1rem; display: flex;">
                 <a href="/collection" class="tab-link">COLLECTION</a>
                 <a href="/inventory" class="tab-link">INVENTORY</a>
-                <a href="/rankup" class="tab-link active">RANK UP</a>
+                <a href="/rankup" class="rankup-nav-btn" style="margin-left: 0.5rem;">RANK UP</a>
 
                 <div class="profile-container">
                     <div class="profile" style="padding: 4px 16px 4px 6px;" onclick="toggleProfileDropdown()">
@@ -54,7 +54,7 @@
             <a href="/gacha" class="mobile-link gacha-link">GACHA</a>
             <a href="/collection" class="mobile-link">COLLECTION</a>
             <a href="/inventory" class="mobile-link">INVENTORY</a>
-            <a href="/rankup" class="mobile-link">RANK UP</a>
+            <a href="/rankup" class="mobile-link" style="color: #a855f7;">RANK UP</a>
             <a href="/logout" class="mobile-link logout-link">LOGOUT</a>
         </div>
     </header>
@@ -94,9 +94,23 @@
             </div>
 
             <!-- 보유 카드 리스트 안내 -->
-            <div class="inventory-controls" style="margin-top: 2rem; margin-bottom: 2rem; text-align: center;">
-                <h2 id="selectionTitle" style="color: var(--text-primary); margin: 0; font-size: 1.5rem;">강화할 대상을 선택하세요</h2>
-                <p id="selectionSubtitle" style="color: var(--text-secondary); margin-top: 0.5rem;">모든 카드를 대상으로 선택할 수 있습니다.</p>
+            <div class="inventory-controls" style="margin-top: 2rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                <div style="text-align: left; flex: 1;">
+                    <h2 id="selectionTitle" style="color: var(--text-primary); margin: 0; font-size: 1.5rem;">강화할 대상을 선택하세요</h2>
+                    <p id="selectionSubtitle" style="color: var(--text-secondary); margin-top: 0.5rem;">모든 카드를 대상으로 선택할 수 있습니다.</p>
+                </div>
+                <div class="sort-dropdown" style="margin-left: 1rem;">
+                    <button class="sort-btn" onclick="toggleDropdown(event)">
+                        정렬 기준 <span class="arrow">▼</span>
+                    </button>
+                    <div id="dropdownMenu" class="dropdown-content">
+                        <a href="#" onclick="sortDeck('id_asc'); return false;">획득순</a>
+                        <a href="#" onclick="sortDeck('rarity_desc'); return false;">등급 높은순</a>
+                        <a href="#" onclick="sortDeck('rarity_asc'); return false;">등급 낮은순</a>
+                        <a href="#" onclick="sortDeck('level_desc'); return false;">강화순</a>
+                        <a href="#" onclick="sortDeck('name_asc'); return false;">이름순</a>
+                    </div>
+                </div>
             </div>
 
             <!-- 카드 리스트 -->
@@ -258,6 +272,7 @@
 
             allCards.forEach(c => {
                 c.classList.remove('disabled', 'selected');
+                c.style.display = 'block';
             });
 
             if (!targetId) {
@@ -281,8 +296,10 @@
 
                     if (id === targetId) return; // 타겟은 보존
                     
-                    if (grade !== targetGrade || locked) {
-                        c.classList.add('disabled'); // 조건 불일치 시 회색화
+                    if (grade !== targetGrade) {
+                        c.style.display = 'none'; // 다른 등급은 아예 숨김
+                    } else if (locked) {
+                        c.classList.add('disabled'); // 조건 불일치(잠금) 시 회색화
                     }
                 });
                 btn.classList.add('disabled');
@@ -299,11 +316,78 @@
                 allCards.forEach(c => {
                     const id = c.getAttribute('data-id');
                     if(id !== targetId && id !== materialId) {
-                        c.classList.add('disabled');
+                        const grade = c.getAttribute('data-grade');
+                        if (grade !== targetGrade) {
+                            c.style.display = 'none';
+                        } else {
+                            c.classList.add('disabled');
+                        }
                     }
                 });
                 btn.classList.remove('disabled');
             }
+        }
+
+        function toggleDropdown(event) {
+            event.stopPropagation();
+            const menu = document.getElementById('dropdownMenu');
+            if (menu) menu.classList.toggle('active');
+        }
+
+        window.addEventListener('click', () => {
+            const menu = document.getElementById('dropdownMenu');
+            if (menu) menu.classList.remove('active');
+        });
+
+        function sortDeck(criteria) {
+            const deck = document.getElementById('deck');
+            const cards = Array.from(deck.querySelectorAll('.rankup-card'));
+
+            const orderScore = {
+                'ultra_rare': 4,
+                'super_rare': 3,
+                'rare': 2,
+                'normal': 1
+            };
+
+            cards.sort((a, b) => {
+                const gradeA = a.dataset.grade;
+                const gradeB = b.dataset.grade;
+                const nameA = a.dataset.name.toLowerCase();
+                const nameB = b.dataset.name.toLowerCase();
+                const levelA = parseInt(a.dataset.level || '0');
+                const levelB = parseInt(b.dataset.level || '0');
+                const idA = parseInt(a.dataset.id || '0');
+                const idB = parseInt(b.dataset.id || '0');
+
+                if (criteria === 'rarity_desc') {
+                    if (orderScore[gradeB] !== orderScore[gradeA]) {
+                        return (orderScore[gradeB] || 0) - (orderScore[gradeA] || 0);
+                    }
+                    return levelB - levelA; // 같은 등급이면 높은 강화가 앞으로
+                } else if (criteria === 'rarity_asc') {
+                    if (orderScore[gradeA] !== orderScore[gradeB]) {
+                        return (orderScore[gradeA] || 0) - (orderScore[gradeB] || 0);
+                    }
+                    return levelB - levelA; // 같은 등급이면 높은 강화가 앞으로
+                } else if (criteria === 'name_asc') {
+                    if (nameA !== nameB) {
+                        return nameA.localeCompare(nameB);
+                    }
+                    return levelB - levelA;
+                } else if (criteria === 'id_asc') {
+                    return idA - idB;
+                } else if (criteria === 'level_desc') {
+                    if (levelB !== levelA) {
+                        return levelB - levelA;
+                    }
+                    return (orderScore[gradeB] || 0) - (orderScore[gradeA] || 0);
+                }
+                return 0;
+            });
+
+            cards.forEach(card => deck.appendChild(card));
+            document.getElementById('dropdownMenu').classList.remove('active');
         }
 
         async function attemptRankup() {
