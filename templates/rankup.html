@@ -693,8 +693,18 @@
                             const prob = Math.floor(100 * Math.pow(0.85, targetLevel));
                             document.getElementById('probValue').innerText = prob;
 
-                            // 재료 슬롯만 초기화 시키고 준비상태로
-                            clearMaterialSelection();
+                            // UR 제외 5강 달성 시 자동으로 대상 슬롯에서 카드 빼기
+                            if (targetGrade !== 'ultra_rare' && targetLevel >= 5) {
+                                // 대상 카드 disabled 처리
+                                if (targetCardEl) {
+                                    targetCardEl.classList.add('disabled');
+                                }
+                                // 대상+재료 슬롯 모두 초기화
+                                clearTargetSelection();
+                            } else {
+                                // 재료 슬롯만 초기화 시키고 준비상태로
+                                clearMaterialSelection();
+                            }
                         } else {
                             btn.innerText = result.message || "서버 오류";
                             btn.style.background = "#f87171";
