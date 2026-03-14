@@ -547,11 +547,8 @@
                 deck.appendChild(card);
             });
 
-            // 타겟이 선택되어 있을 때 필터 로직 덮어쓰기 (랭크업 전용)
-            // 요소가 DOM에 모두 부착된 뒤 마지막에 실행하여 강제로 숨기거나 스타일을 정리함
-            if (targetId) {
-                updateUIAfterSelection();
-            }
+            // 타겟 선택 여부와 상관없이 UI 상태 업데이트 (5강 비활성화 등)
+            updateUIAfterSelection();
         }
 
         async function attemptRankup() {
