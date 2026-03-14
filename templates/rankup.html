@@ -397,6 +397,14 @@
             btn.classList.add('disabled');
             btn.innerText = "강화 중...";
 
+            const targetSlotEl = document.getElementById('targetSlot');
+            const rankupContainer = document.querySelector('.rankup-container');
+            
+            // UI 블락
+            rankupContainer.classList.add('animating');
+            // 애니메이션 시작 (충전)
+            targetSlotEl.classList.add('rankup-pending');
+
             try {
                 const response = await fetch('/api/rankup', {
                     method: 'POST',
@@ -408,33 +416,54 @@
                 });
 
                 const result = await response.json();
-                
-                const modal = document.getElementById('resultModal');
-                const title = document.getElementById('resultTitle');
-                const message = document.getElementById('resultMessage');
 
-                modal.style.display = 'flex';
-
-                if (result.success) {
-                    if (result.is_upgraded) {
-                        title.innerText = "강화 성공!";
-                        title.style.color = "#4ade80"; // green
-                    } else {
-                        title.innerText = "강화 실패...";
-                        title.style.color = "#f87171"; // red
+                // 2초의 충전(pending) 애니메이션을 기다림
+                setTimeout(() => {
+                    targetSlotEl.classList.remove('rankup-pending');
+                    
+                    if (result.success) {
+                        if (result.is_upgraded) {
+                            targetSlotEl.classList.add('rankup-success');
+                        } else {
+                            targetSlotEl.classList.add('rankup-fail');
+                        }
                     }
-                    message.innerText = result.message;
-                } else {
-                    title.innerText = "오류 발생";
-                    title.style.color = "#f87171";
-                    message.innerText = result.message || "서버 통신에 실패했습니다.";
-                }
+
+                    // 애니메이션 결과 시각적 효과 확인 후 모달 띄우기 (1.5초)
+                    setTimeout(() => {
+                        const modal = document.getElementById('resultModal');
+                        const title = document.getElementById('resultTitle');
+                        const message = document.getElementById('resultMessage');
+
+                        modal.style.display = 'flex';
+                        rankupContainer.classList.remove('animating');
+
+                        if (result.success) {
+                            if (result.is_upgraded) {
+                                title.innerText = "강화 성공!";
+                                title.style.color = "#4ade80"; // green
+                            } else {
+                                title.innerText = "강화 실패...";
+                                title.style.color = "#f87171"; // red
+                            }
+                            message.innerText = result.message;
+                        } else {
+                            title.innerText = "오류 발생";
+                            title.style.color = "#f87171";
+                            message.innerText = result.message || "서버 통신에 실패했습니다.";
+                            targetSlotEl.className = 'slot target-slot filled'; // 초기화
+                        }
+                    }, 1500);
+
+                }, 2000);
 
             } catch (err) {
                 console.error(err);
                 alert("강화 요청 중 오류가 발생했습니다.");
                 btn.classList.remove('disabled');
                 btn.innerText = "강화 시도";
+                targetSlotEl.classList.remove('rankup-pending');
+                rankupContainer.classList.remove('animating');
             }
         }
 

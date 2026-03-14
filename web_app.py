@@ -260,13 +260,20 @@ def do_rankup():
                     "message": f"강화 성공! (+{new_level})"
                 })
             else:
+                # 실패 처리: 1~3단계 하락 (단, 0미만으로 떨어지지 않음)
+                drop_amount = random.randint(1, 3)
+                new_level = max(0, current_level - drop_amount)
+                
+                cur.execute("UPDATE inventory SET upgrade_level = %s WHERE id = %s AND user_id = %s", (new_level, target_id, user.id))
                 conn.commit()
                 return jsonify({
                     "success": True, 
                     "is_upgraded": False, 
                     "current_level": current_level,
+                    "new_level": new_level,
                     "prob": prob,
-                    "message": "강화 실패..."
+                    "drop_amount": current_level - new_level,
+                    "message": f"강화 실패... ({current_level - new_level}단계 하락)" if (current_level - new_level) > 0 else "강화 실패..."
                 })
 
     except Exception as e:

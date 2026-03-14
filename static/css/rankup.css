@@ -178,3 +178,41 @@
         100% { transform: scale(1) rotate(90deg); opacity: 0.8; }
     }
 }
+
+/* Animations */
+.animating {
+    pointer-events: none;
+}
+
+/* Rank Up Pending Animation (Yellow Aura & Scale) */
+.rankup-pending {
+    animation: rankupCharge 2s ease-in-out forwards;
+}
+
+@keyframes rankupCharge {
+    0% { transform: scale(1); box-shadow: 0 0 0 rgba(255, 215, 0, 0); }
+    50% { transform: scale(1.15); box-shadow: 0 0 30px rgba(255, 215, 0, 0.8); border-color: #ffd700; z-index: 100; }
+    100% { transform: scale(1); box-shadow: 0 0 50px rgba(255, 215, 0, 1); border-color: #ffd700; z-index: 100; }
+}
+
+/* Rank Up Success Animation (White Aura burst) */
+.rankup-success {
+    animation: rankupSuccessAnim 1.5s ease-out forwards;
+}
+
+@keyframes rankupSuccessAnim {
+    0% { transform: scale(1); box-shadow: 0 0 50px rgba(255, 215, 0, 1); border-color: #ffd700; }
+    20% { transform: scale(1.2); box-shadow: 0 0 80px rgba(255, 255, 255, 1); border-color: #fff; background: rgba(255,255,255,0.2); }
+    100% { transform: scale(1); box-shadow: 0 0 20px rgba(74, 222, 128, 0.6); border-color: #4ade80; }
+}
+
+/* Rank Up Fail Animation (Red Aura & Darken) */
+.rankup-fail {
+    animation: rankupFailAnim 1.5s ease-out forwards;
+}
+
+@keyframes rankupFailAnim {
+    0% { transform: scale(1); box-shadow: 0 0 50px rgba(255, 215, 0, 1); border-color: #ffd700; }
+    20% { transform: scale(0.9); box-shadow: 0 0 40px rgba(248, 113, 113, 0.8); border-color: #f87171; filter: grayscale(0.5); }
+    100% { transform: scale(1); box-shadow: 0 0 10px rgba(248, 113, 113, 0.4); border-color: rgba(255,255,255,0.1); filter: brightness(0.5) grayscale(0.8); }
+}
