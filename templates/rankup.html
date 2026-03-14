@@ -352,12 +352,22 @@
                 btn.classList.add('disabled');
             } else {
                 // 모두 선택됨
-                title.innerText = "강화 시도 준비 완료!";
-                subtitle.innerText = "카드를 소모하여 강화를 시도합니다.";
-                
                 const targetCardEl = document.getElementById('card-' + targetId);
                 const matCardEl = document.getElementById('card-' + materialId);
                 const deck = document.getElementById('deck');
+
+                // 맥스 랩 체크 (UR 제외 5강)
+                const isMaxLevel = (targetGrade !== 'ultra_rare' && targetLevel >= 5);
+                
+                if (isMaxLevel) {
+                    title.innerText = "5강까지만 가능합니다";
+                    subtitle.innerText = "해당 등급의 카드는 최대 5강까지만 강화할 수 있습니다.";
+                    btn.classList.add('disabled');
+                } else {
+                    title.innerText = "강화 시도 준비 완료!";
+                    subtitle.innerText = "카드를 소모하여 강화를 시도합니다.";
+                    btn.classList.remove('disabled');
+                }
 
                 if (targetCardEl) {
                     targetCardEl.classList.add('selected');
@@ -366,14 +376,14 @@
                 }
                 if (matCardEl) {
                     matCardEl.classList.add('selected');
-                    deck.prepend(matCardEl); // target 밑에 오게 하려면 order로 조절
+                    deck.prepend(matCardEl);
                     matCardEl.style.order = "-1"; 
                 }
 
                 allCards.forEach(c => {
                     const id = c.getAttribute('data-id');
                     if(id !== targetId && id !== materialId) {
-                        c.style.order = "0"; // 타겟, 재료 외에는 원래 순서로
+                        c.style.order = "0";
 
                         const grade = c.getAttribute('data-grade');
                         if (grade !== targetGrade) {
@@ -383,7 +393,6 @@
                         }
                     }
                 });
-                btn.classList.remove('disabled');
             }
 
             // 만약 타겟 선택 과정이 아니라면 기존 필터 복구용 코드는 지움. 왜냐면 
