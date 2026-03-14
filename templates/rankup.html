@@ -230,7 +230,7 @@
             if (!targetId) {
                 // UR 제외(등급별) 맥스랩 검사 
                 if (grade !== 'ultra_rare' && level >= 5) {
-                    alert("해당 등급의 카드는 5강이 최대 레벨입니다.");
+                    // 5강 MAX - 선택 차단 (카드가 이미 disabled 처리됨)
                     return;
                 }
 
@@ -310,6 +310,15 @@
                 title.innerText = "강화할 대상을 선택하세요";
                 subtitle.innerText = "모든 카드를 대상으로 선택할 수 있습니다. (잠금 카드 포함)";
                 btn.classList.add('disabled');
+                
+                // UR 제외 5강 카드는 선택 불가능하게 표시
+                allCards.forEach(c => {
+                    const g = c.getAttribute('data-grade');
+                    const lvl = parseInt(c.getAttribute('data-level') || '0');
+                    if (g !== 'ultra_rare' && lvl >= 5) {
+                        c.classList.add('disabled');
+                    }
+                });
             } else if (!materialId) {
                 // 재료 선택 전
                 title.innerText = "강화에 사용할 재료 카드를 선택하세요";
