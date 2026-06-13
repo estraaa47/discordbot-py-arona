@@ -393,8 +393,19 @@ def do_gacha():
         return jsonify({"success": False, "message": "Unauthorized"}), 401
 
     user = discord.fetch_user()
-    data = request.json
-    pull_count = data.get("count", 1)
+    data = request.get_json(silent=True) or {}
+
+    # [보안] 파라미터 변조 방지: count는 1~10 정수만 허용.
+    # 음수/0/문자열/거대값을 막지 않으면 cost가 음수가 되어 포인트가
+    # 차감이 아닌 '적립'되거나(무한 재화 생성), 루프 폭주(DoS)가 발생한다.
+    raw_count = data.get("count", 1)
+    try:
+        pull_count = int(raw_count)
+    except (TypeError, ValueError):
+        return jsonify({"success": False, "message": "잘못된 요청입니다."}), 400
+    if pull_count < 1 or pull_count > 10:
+        return jsonify({"success": False, "message": "1~10회만 뽑을 수 있습니다."}), 400
+
     cost = 120 * pull_count
 
     rarities = ["Normal", "Rare", "Super Rare", "Ultra Rare"]

@@ -1,6 +1,6 @@
 # 환경 변수 파일 (기밀 정보)
 .env
-
+PatchNote.md
 # 파이썬 실행 시 생성되는 캐시 폴더
 __pycache__/
 *.pyc
