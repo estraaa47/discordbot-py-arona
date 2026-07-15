@@ -68,6 +68,16 @@ class AronaVoice(commands.Cog):
         vc = self.active.get(guild_id)
         return vc is not None and vc.is_connected()
 
+    def is_member_in_channel(self, guild_id: int, member) -> bool:
+        """호출자(member)가 봇과 '같은' 음성 채널에 있는지."""
+        vc = self.active.get(guild_id)
+        if vc is None or not vc.is_connected() or vc.channel is None:
+            return False
+        voice_state = getattr(member, "voice", None)
+        if voice_state is None or voice_state.channel is None:
+            return False
+        return voice_state.channel.id == vc.channel.id
+
     # ==========================================================
     # 음성 채널 접속 / 해제
     # ==========================================================

@@ -359,8 +359,8 @@ class AronaChat(commands.Cog):
             print(f"Unexpected Error: {e}")
             return "", "지금은 아로나가 바빠요! 잠시 후에 다시 불러주세요, 선생님! ☆", None, None
 
-    def _trigger_voice(self, guild, jp_line):
-        """음성 채널에 참여 중인 길드면 일본어 대사를 백그라운드로 재생.
+    def _trigger_voice(self, guild, member, jp_line):
+        """호출자가 봇과 '같은 음성 채널'에 있을 때만 일본어 대사를 백그라운드 재생.
 
         재생은 수 초 걸리므로 채팅 응답을 막지 않도록 백그라운드 태스크로 던진다.
         (AronaVoice 쪽 길드별 Lock 이 동시 재생을 직렬화한다.)
@@ -369,6 +369,9 @@ class AronaChat(commands.Cog):
             return
         voice_cog = self.bot.get_cog("AronaVoice")
         if voice_cog is None or not voice_cog.is_active(guild.id):
+            return
+        # 봇과 같은 음성 채널에 있는 사람이 부른 경우에만 TTS 재생
+        if not voice_cog.is_member_in_channel(guild.id, member):
             return
         self.bot.loop.create_task(voice_cog.speak(guild.id, jp_line))
 
@@ -386,7 +389,7 @@ class AronaChat(commands.Cog):
             await interaction.followup.send(intro_text[:1900], suppress_embeds=True)
 
         await self._send_with_status_image(interaction.followup, final_text, status)
-        self._trigger_voice(interaction.guild, jp_line)
+        self._trigger_voice(interaction.guild, interaction.user, jp_line)
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -406,7 +409,7 @@ class AronaChat(commands.Cog):
             await message.channel.send(intro_text[:1900], suppress_embeds=True)
 
         await self._send_with_status_image(message.channel, final_text, status)
-        self._trigger_voice(message.guild, jp_line)
+        self._trigger_voice(message.guild, message.author, jp_line)
 
 
 async def setup(bot):
