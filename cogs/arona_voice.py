@@ -113,8 +113,23 @@ class AronaVoice(commands.Cog):
     async def leave(self, interaction: discord.Interaction):
         guild_id = interaction.guild_id
         vc = interaction.guild.voice_client
-        if vc and vc.is_connected():
-            await vc.disconnect(force=True)
+
+        if not (vc and vc.is_connected()):
+            self.active.pop(guild_id, None)
+            await interaction.response.send_message(
+                "저 지금 음성 채널에 없는데요, 선생님?", ephemeral=True
+            )
+            return
+
+        # 봇과 같은 음성 채널에 있는 사람만 내보낼 수 있음
+        vs = getattr(interaction.user, "voice", None)
+        if vs is None or vs.channel is None or vs.channel.id != vc.channel.id:
+            await interaction.response.send_message(
+                "같은 음성 채널에 있는 선생님만 저를 내보낼 수 있어요!", ephemeral=True
+            )
+            return
+
+        await vc.disconnect(force=True)
         self.active.pop(guild_id, None)
         await interaction.response.send_message(
             "음성 채널에서 나왔어요, 선생님! 다음에 또 불러주세요~"
