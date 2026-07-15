@@ -67,6 +67,8 @@ class AronaChat(commands.Cog):
 - 한국어 본문을 그대로 직역하지 말고, 실제로 말하는 것처럼 짧고 자연스럽게(길어도 2문장).
 - 코드·링크·표처럼 음성으로 읽기 부적절한 답변이면 [jp:] 줄을 생략하세요.
 - [jp:] 줄은 채팅에는 표시되지 않고 음성 합성에만 사용됩니다.
+- **일본어는 반드시 [jp:...] 태그 안에만** 쓰세요. 채팅 본문(한국어)에 일본어 문장을 섞지 마세요.
+- 출력 순서 고정: 한국어 본문 → [jp:...] → [status:...] (마지막 두 줄).
 
 # [TOOL USE]
 - 최신·실시간 정보가 필요할 때만 웹 검색을 사용하세요. 일반 대화·잡담엔 검색하지 마세요.
@@ -204,44 +206,35 @@ class AronaChat(commands.Cog):
 
         return "".join(before_tool).strip(), "".join(after_tool).strip(), seen_tool
 
-    def _parse_status_and_clean_reply(self, text: str):
-        """
-        답변 마지막 줄의 [status:xxx]를 파싱해서
-        (본문, status) 형태로 반환
-        """
-        if not text:
-            return "", None
+    def _parse_tags(self, text: str):
+        """본문에서 [status:감정]과 [jp:일본어대사]를 위치와 무관하게 추출·제거.
 
-        pattern = r"\n?\[status:([a-z_]+)\]\s*$"
-        stripped = text.strip()
-        match = re.search(pattern, stripped)
-
-        if not match:
-            return stripped, None
-
-        status = match.group(1).strip().lower()
-        clean_text = re.sub(pattern, "", stripped).strip()
-
-        if status not in self.valid_statuses:
-            return clean_text, None
-
-        return clean_text, status
-
-    def _extract_jp_line(self, text: str):
-        """본문에서 [jp:...] 일본어 음성 대사를 분리해 (본문, jp_line) 반환.
-
-        jp_line 은 음성 합성에만 쓰이고 채팅 본문에는 표시하지 않는다.
+        모델이 태그 순서를 바꾸거나(status 뒤에 jp 등) 본문 중간에 넣어도
+        채팅에 태그/일본어가 새어 나가지 않도록 방어적으로 파싱한다.
+        반환: (본문, status, jp_line)
         """
         if not text:
-            return text, None
+            return "", None, None
 
-        match = re.search(r"\n?\[jp:([^\]]*)\]", text)
-        if not match:
-            return text, None
+        # [jp:...] — 위치 무관, 첫 번째 것 사용 후 전부 제거
+        jp_line = None
+        m = re.search(r"\[jp:([^\]]*)\]", text)
+        if m:
+            jp_line = m.group(1).strip() or None
+        text = re.sub(r"\[jp:[^\]]*\]", "", text)
 
-        jp_line = match.group(1).strip()
-        cleaned = re.sub(r"\n?\[jp:[^\]]*\]", "", text).strip()
-        return cleaned, (jp_line or None)
+        # [status:...] — 위치 무관, 마지막 것 사용 후 전부 제거
+        status = None
+        found = re.findall(r"\[status:([a-zA-Z_]+)\]", text)
+        if found:
+            candidate = found[-1].strip().lower()
+            if candidate in self.valid_statuses:
+                status = candidate
+        text = re.sub(r"\[status:[a-zA-Z_]+\]", "", text)
+
+        # 태그 제거 후 남은 빈 줄 정리
+        text = re.sub(r"\n{3,}", "\n\n", text).strip()
+        return text, status, jp_line
 
     def _get_status_image_path(self, status: str):
         if not status:
@@ -342,9 +335,8 @@ class AronaChat(commands.Cog):
             if not final_text:
                 return intro_text, "선생님! 그 주제는 아로나가 대답하기 조금 곤란해요! ☆", None, None
 
-            clean_final_text, status = self._parse_status_and_clean_reply(final_text)
-            # 일본어 음성 대사 분리 (채팅 본문/메모리에는 남기지 않음)
-            clean_final_text, jp_line = self._extract_jp_line(clean_final_text)
+            # status/jp 태그를 위치 무관하게 추출·제거 (채팅 본문/메모리에는 남기지 않음)
+            clean_final_text, status, jp_line = self._parse_tags(final_text)
 
             if not clean_final_text:
                 clean_final_text = "선생님! 그 주제는 아로나가 대답하기 조금 곤란해요! ☆"

@@ -7,6 +7,7 @@ import asyncio
 import tempfile
 from pathlib import Path
 import httpx
+import tts_registry
 
 
 class OggOpusAudio(discord.AudioSource):
@@ -152,8 +153,11 @@ class AronaVoice(commands.Cog):
     async def speak(self, guild_id: int, text_jp: str):
         if not self.is_active(guild_id):
             return
-        if not self.local_tts_url:
-            print("[voice] LOCAL_TTS_URL 미설정 — 음성 스킵")
+
+        # 로컬이 자기등록한 URL 우선, 없으면 env 고정값(LOCAL_TTS_URL) 폴백
+        base_url = tts_registry.get_url() or self.local_tts_url
+        if not base_url:
+            print("[voice] 등록된 TTS URL 없음 — 음성 스킵 (로컬 PC/터널 확인)")
             return
 
         text_jp = (text_jp or "").strip()
@@ -165,7 +169,7 @@ class AronaVoice(commands.Cog):
             tmp_fd, tmp_path = tempfile.mkstemp(suffix=".ogg", prefix="arona_tts_")
             os.close(tmp_fd)
 
-            url = self.local_tts_url.rstrip("/") + "/tts"
+            url = base_url.rstrip("/") + "/tts"
             headers = {"X-TTS-Secret": self.tts_secret or ""}
             timeout = httpx.Timeout(60.0, connect=10.0)
 

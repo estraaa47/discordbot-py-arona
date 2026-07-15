@@ -1,11 +1,12 @@
 import os
 import random
-from flask import Flask, redirect, url_for, render_template, session, send_from_directory, request, jsonify 
+from flask import Flask, redirect, url_for, render_template, session, send_from_directory, request, jsonify
 from flask_discord import DiscordOAuth2Session
 import pymysql
 from dotenv import load_dotenv
 from werkzeug.middleware.proxy_fix import ProxyFix
-from waitress import serve 
+from waitress import serve
+import tts_registry
 
 load_dotenv()
 
@@ -471,6 +472,32 @@ def do_gacha():
         return jsonify({"success": False, "message": "Server Processing Error"}), 500
     finally:
         conn.close()
+
+# ==========================================
+# [로컬 TTS URL 자기등록]
+#  로컬 PC 가 quick tunnel URL 을 여기에 등록 → arona_voice.speak() 가 사용.
+#  로컬이 60초마다 heartbeat 로 재등록하므로 재시작에도 자동 복구됨.
+# ==========================================
+@app.route("/tts/register", methods=["POST"])
+def tts_register():
+    secret = os.getenv("TTS_SHARED_SECRET", "")
+    if not secret or request.headers.get("X-TTS-Secret") != secret:
+        return jsonify({"ok": False, "error": "unauthorized"}), 401
+    data = request.get_json(silent=True) or {}
+    url = (data.get("url") or "").strip()
+    if not url.startswith("http"):
+        return jsonify({"ok": False, "error": "invalid url"}), 400
+    tts_registry.set_url(url)
+    return jsonify({"ok": True})
+
+
+@app.route("/tts/status", methods=["GET"])
+def tts_status():
+    secret = os.getenv("TTS_SHARED_SECRET", "")
+    if not secret or request.headers.get("X-TTS-Secret") != secret:
+        return jsonify({"ok": False, "error": "unauthorized"}), 401
+    return jsonify({"ok": True, **tts_registry.status()})
+
 
 # ==========================================
 # [서버 실행]
