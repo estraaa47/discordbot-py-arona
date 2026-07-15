@@ -58,6 +58,16 @@ class AronaChat(commands.Cog):
 - 같은 감정 반복 지양 / 부정적 상황에 긍정 감정(happy·cute·encouraging) 사용 금지
 - 본문 중간에 [status:] 형식 사용 금지
 
+# [VOICE LINE]
+답변 맨 끝의 [status:감정] **바로 앞줄**에, 채팅 본문의 뜻을 담은 짧은 일본어 음성 대사를 한 줄 출력하세요:
+
+[jp:여기에 아로나가 말하듯 자연스러운 구어체 일본어 1~2문장]
+
+**규칙:**
+- 한국어 본문을 그대로 직역하지 말고, 실제로 말하는 것처럼 짧고 자연스럽게(길어도 2문장).
+- 코드·링크·표처럼 음성으로 읽기 부적절한 답변이면 [jp:] 줄을 생략하세요.
+- [jp:] 줄은 채팅에는 표시되지 않고 음성 합성에만 사용됩니다.
+
 # [TOOL USE]
 - 최신·실시간 정보가 필요할 때만 웹 검색을 사용하세요. 일반 대화·잡담엔 검색하지 마세요.
 - 검색 후엔 최종 답변만 깔끔하게 정리하고, 링크는 요청 시에만 첨부하세요.
@@ -217,6 +227,22 @@ class AronaChat(commands.Cog):
 
         return clean_text, status
 
+    def _extract_jp_line(self, text: str):
+        """본문에서 [jp:...] 일본어 음성 대사를 분리해 (본문, jp_line) 반환.
+
+        jp_line 은 음성 합성에만 쓰이고 채팅 본문에는 표시하지 않는다.
+        """
+        if not text:
+            return text, None
+
+        match = re.search(r"\n?\[jp:([^\]]*)\]", text)
+        if not match:
+            return text, None
+
+        jp_line = match.group(1).strip()
+        cleaned = re.sub(r"\n?\[jp:[^\]]*\]", "", text).strip()
+        return cleaned, (jp_line or None)
+
     def _get_status_image_path(self, status: str):
         if not status:
             return None
@@ -247,8 +273,9 @@ class AronaChat(commands.Cog):
         """
         반환:
             intro_text: 검색 전에 나온 짧은 1차 문구(없을 수 있음)
-            final_text: status 제거된 최종 답변
+            final_text: status/jp 제거된 최종 답변
             status: 감정 상태 문자열 또는 None
+            jp_line: 음성 합성용 일본어 대사 또는 None
         """
         cid, memory = self._get_or_create_memory(channel_id)
 
@@ -290,7 +317,7 @@ class AronaChat(commands.Cog):
 
             stop_reason = getattr(final_message, "stop_reason", None)
             if stop_reason not in ("end_turn", "max_tokens"):
-                return "", "선생님! 그 주제는 아로나가 대답하기 조금 곤란해요! ☆", None
+                return "", "선생님! 그 주제는 아로나가 대답하기 조금 곤란해요! ☆", None, None
 
             before_tool_text, after_tool_text, used_tool = self._extract_texts_from_final_message(final_message)
 
@@ -313,32 +340,47 @@ class AronaChat(commands.Cog):
                 ).strip()
 
             if not final_text:
-                return intro_text, "선생님! 그 주제는 아로나가 대답하기 조금 곤란해요! ☆", None
+                return intro_text, "선생님! 그 주제는 아로나가 대답하기 조금 곤란해요! ☆", None, None
 
             clean_final_text, status = self._parse_status_and_clean_reply(final_text)
+            # 일본어 음성 대사 분리 (채팅 본문/메모리에는 남기지 않음)
+            clean_final_text, jp_line = self._extract_jp_line(clean_final_text)
 
             if not clean_final_text:
                 clean_final_text = "선생님! 그 주제는 아로나가 대답하기 조금 곤란해요! ☆"
 
-            # 메모리에는 status 제거된 본문만 저장
+            # 메모리에는 status/jp 제거된 본문만 저장
             memory["messages"].append({"role": "assistant", "content": clean_final_text})
             memory["last_active"] = datetime.now(timezone.utc)
             self._trim_memory(cid)
 
-            return intro_text, clean_final_text, status
+            return intro_text, clean_final_text, status, jp_line
 
         except anthropic.APIStatusError as e:
             print(f"Anthropic API Error [{e.status_code}]: {e.message}")
-            return "", "지금은 아로나가 바빠요! 잠시 후에 다시 불러주세요, 선생님! ☆", None
+            return "", "지금은 아로나가 바빠요! 잠시 후에 다시 불러주세요, 선생님! ☆", None, None
         except Exception as e:
             print(f"Unexpected Error: {e}")
-            return "", "지금은 아로나가 바빠요! 잠시 후에 다시 불러주세요, 선생님! ☆", None
+            return "", "지금은 아로나가 바빠요! 잠시 후에 다시 불러주세요, 선생님! ☆", None, None
+
+    def _trigger_voice(self, guild, jp_line):
+        """음성 채널에 참여 중인 길드면 일본어 대사를 백그라운드로 재생.
+
+        재생은 수 초 걸리므로 채팅 응답을 막지 않도록 백그라운드 태스크로 던진다.
+        (AronaVoice 쪽 길드별 Lock 이 동시 재생을 직렬화한다.)
+        """
+        if guild is None or not jp_line:
+            return
+        voice_cog = self.bot.get_cog("AronaVoice")
+        if voice_cog is None or not voice_cog.is_active(guild.id):
+            return
+        self.bot.loop.create_task(voice_cog.speak(guild.id, jp_line))
 
     @app_commands.command(name="arona", description="Chat with Arona")
     async def arona_slash(self, interaction: discord.Interaction, message: str):
         await interaction.response.defer(thinking=True)
 
-        intro_text, final_text, status = await self._run_arona_stream(
+        intro_text, final_text, status, jp_line = await self._run_arona_stream(
             interaction.channel.id,
             interaction.user.display_name,
             message
@@ -348,6 +390,7 @@ class AronaChat(commands.Cog):
             await interaction.followup.send(intro_text[:1900], suppress_embeds=True)
 
         await self._send_with_status_image(interaction.followup, final_text, status)
+        self._trigger_voice(interaction.guild, jp_line)
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -357,7 +400,7 @@ class AronaChat(commands.Cog):
         user_input = message.content[4:].strip()
 
         async with message.channel.typing():
-            intro_text, final_text, status = await self._run_arona_stream(
+            intro_text, final_text, status, jp_line = await self._run_arona_stream(
                 message.channel.id,
                 message.author.display_name,
                 user_input
@@ -367,6 +410,7 @@ class AronaChat(commands.Cog):
             await message.channel.send(intro_text[:1900], suppress_embeds=True)
 
         await self._send_with_status_image(message.channel, final_text, status)
+        self._trigger_voice(message.guild, jp_line)
 
 
 async def setup(bot):

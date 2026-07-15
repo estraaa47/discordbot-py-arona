@@ -12,3 +12,6 @@ venv/
 # 기타 OS 설정 파일
 .DS_Store
 Thumbs.db
+
+# 로컬 TTS 서버 (내 PC에서만 실행, GitHub에 올리지 않음)
+tts_server/
