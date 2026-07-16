@@ -174,7 +174,7 @@ class AronaChat(commands.Cog):
             }
         return cid, self.channel_memory[cid]
 
-    def _trim_memory(self, cid: str, limit: int = 10):
+    def _trim_memory(self, cid: str, limit: int = 30):
         if len(self.channel_memory[cid]["messages"]) > limit:
             sliced = self.channel_memory[cid]["messages"][-limit:]
             if sliced and sliced[0]["role"] == "assistant":
