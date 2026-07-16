@@ -120,9 +120,9 @@ class AronaChat(commands.Cog):
             }
         ]
 
-        # ✅ 웹서치 툴도 캐싱 적용
+        # ✅ 웹서치 툴도 캐싱 적용 (Sonnet 5 지원 동적 필터링 버전)
         self.web_search_tool = {
-            "type": "web_search_20250305",
+            "type": "web_search_20260209",
             "name": "web_search",
             "max_uses": 3,
             "cache_control": {"type": "ephemeral"},
@@ -195,7 +195,13 @@ class AronaChat(commands.Cog):
         for block in final_message.content:
             block_type = getattr(block, "type", None)
 
-            if block_type in ("tool_use", "server_tool_use", "web_search_tool_result"):
+            if block_type in (
+                "tool_use",
+                "server_tool_use",
+                "web_search_tool_result",
+                "bash_code_execution_tool_result",  # web_search_20260209 동적 필터링이 내부적으로 생성
+                "text_editor_code_execution_tool_result",
+            ):
                 seen_tool = True
                 continue
 
@@ -286,8 +292,10 @@ class AronaChat(commands.Cog):
 
         try:
             async with self.client.messages.stream(
-                model="claude-sonnet-4-5",
-                max_tokens=1024,
+                model="claude-sonnet-5",
+                max_tokens=2048,
+                thinking={"type": "adaptive"},
+                output_config={"effort": "low"},  # 짧은 대화 위주라 저비용·저지연으로 제한
                 system=self.cached_system,  # ✅ 캐싱된 시스템 프롬프트 사용
                 tools=[self.web_search_tool],
                 messages=memory["messages"],
@@ -307,7 +315,13 @@ class AronaChat(commands.Cog):
                         block = getattr(event, "content_block", None)
                         block_type = getattr(block, "type", None)
 
-                        if block_type in ("tool_use", "server_tool_use", "web_search_tool_result"):
+                        if block_type in (
+                            "tool_use",
+                            "server_tool_use",
+                            "web_search_tool_result",
+                            "bash_code_execution_tool_result",
+                            "text_editor_code_execution_tool_result",
+                        ):
                             seen_tool_block = True
 
                 final_message = await stream.get_final_message()
