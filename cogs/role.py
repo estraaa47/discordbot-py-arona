@@ -37,10 +37,10 @@ class LevelSelect(discord.ui.Select):
         self.selection = selection
         options = [
             discord.SelectOption(
-                label=f"{index} - {label}",
+                label=label,
                 value=str(role_id),
             )
-            for index, (role_id, label) in enumerate(selection["roles"])
+            for role_id, label in selection["roles"]
         ]
         super().__init__(
             placeholder=selection["placeholder"],
