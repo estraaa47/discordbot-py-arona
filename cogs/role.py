@@ -8,7 +8,7 @@ ROLE_CHANNEL_ID = 1528787386153304105
 ROLE_SELECTIONS = (
     {
         "key": "nationality",
-        "heading": "## 당신의 국적을 선택해주세요 / あなたの国籍を選択してください",
+        "heading": "## 🌏 당신의 국적을 선택해주세요 / あなたの国籍を選択してください",
         "subheading": None,
         "legacy_headings": (
             "## 🌏 국적을 선택해주세요 / 国籍を選択してください",
@@ -22,7 +22,7 @@ ROLE_SELECTIONS = (
     },
     {
         "key": "korean",
-        "heading": "## あなたの韓国語レベルを選択してください",
+        "heading": "## 🇰🇷 あなたの韓国語レベルを選択してください",
         "subheading": "당신의 한국어 레벨을 선택해주세요",
         "legacy_headings": (
             "## 🇰🇷 韓国語レベルを選択してください",
@@ -40,7 +40,7 @@ ROLE_SELECTIONS = (
     },
     {
         "key": "japanese",
-        "heading": "## 당신의 일본어 레벨을 선택해주세요",
+        "heading": "## 🇯🇵 당신의 일본어 레벨을 선택해주세요",
         "subheading": "あなたの日本語レベルを選択してください",
         "legacy_headings": (
             "## 🇯🇵 일본어 레벨을 선택해주세요",
