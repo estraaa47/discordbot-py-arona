@@ -4,6 +4,8 @@ from discord import app_commands
 import os
 import random
 
+from bot_i18n import get_ui_language, localized
+
 COLLECTION_URL = "https://port-0-discordbot-py-arona-6g2llfjm6s1m.sel3.cloudtype.app/"
 
 class Gacha(commands.Cog):
@@ -16,8 +18,17 @@ class Gacha(commands.Cog):
 
     @app_commands.command(name="gacha", description="120P를 소모하여 가챠를 뽑습니다!")
     async def pull_gacha(self, interaction: discord.Interaction):
+        language = get_ui_language(interaction)
         if interaction.channel.id != self.ALLOWED_CHANNEL_ID:
-            return await interaction.response.send_message(f"❌ 가챠는 <#{self.ALLOWED_CHANNEL_ID}>에서만 가능합니다.", ephemeral=True)
+            return await interaction.response.send_message(
+                localized(
+                    language,
+                    f"❌ 가챠는 <#{self.ALLOWED_CHANNEL_ID}>에서만 가능합니다.",
+                    f"❌ ガチャは <#{self.ALLOWED_CHANNEL_ID}> でのみ利用できます。",
+                    f"❌ Gacha is only available in <#{self.ALLOWED_CHANNEL_ID}>.",
+                ),
+                ephemeral=True,
+            )
 
         user_id = interaction.user.id
         cost = 120
@@ -29,7 +40,15 @@ class Gacha(commands.Cog):
                 await cur.execute("SELECT points FROM users WHERE user_id = %s", (user_id,))
                 res = await cur.fetchone()
                 if not res or res[0] < cost:
-                    return await interaction.response.send_message("포인트가 부족해요! (120P 필요)", ephemeral=True)
+                    return await interaction.response.send_message(
+                        localized(
+                            language,
+                            "포인트가 부족해요! (120P 필요)",
+                            "ポイントが足りません！（120P必要）",
+                            "You don't have enough points! (120P required)",
+                        ),
+                        ephemeral=True,
+                    )
 
                 # 2. 카드 뽑기 로직
                 rarity = random.choices(self.rarities, weights=self.weights, k=1)[0]
@@ -37,12 +56,28 @@ class Gacha(commands.Cog):
                 path = f"{self.image_base_path}/{folder_name}"
 
                 if not os.path.exists(path):
-                    return await interaction.response.send_message(f"❌ {rarity} 폴더를 찾을 수 없어요.", ephemeral=True)
+                    return await interaction.response.send_message(
+                        localized(
+                            language,
+                            f"❌ {rarity} 폴더를 찾을 수 없어요.",
+                            f"❌ {rarity} フォルダーが見つかりません。",
+                            f"❌ The {rarity} folder could not be found.",
+                        ),
+                        ephemeral=True,
+                    )
 
                 files = [f for f in os.listdir(path) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')) and f != 'hidden.jpg']
                 
                 if not files:
-                    return await interaction.response.send_message(f"❌ {rarity} 등급에 뽑을 수 있는 카드가 없어요!", ephemeral=True)
+                    return await interaction.response.send_message(
+                        localized(
+                            language,
+                            f"❌ {rarity} 등급에 뽑을 수 있는 카드가 없어요!",
+                            f"❌ {rarity} ランクで排出できるカードがありません！",
+                            f"❌ There are no available {rarity} cards!",
+                        ),
+                        ephemeral=True,
+                    )
 
                 selected_file = random.choice(files)
                 card_name = os.path.splitext(selected_file)[0]
@@ -68,9 +103,17 @@ class Gacha(commands.Cog):
                 file = discord.File(f"{path}/{selected_file}", filename=selected_file)
                 
                 if is_duplicate:
-                    embed = discord.Embed(title="🎴 중복 획득", description=f"**[{rarity}]** {card_name}", color=discord.Color.light_gray())
+                    embed = discord.Embed(
+                        title=localized(language, "🎴 중복 획득", "🎴 重複獲得", "🎴 Duplicate"),
+                        description=f"**[{rarity}]** {card_name}",
+                        color=discord.Color.light_gray(),
+                    )
                 else:
-                    embed = discord.Embed(title="✨ 🌟 신규 🌟 ✨", description=f"**[{rarity}]** {card_name}!", color=self.get_color(rarity))
+                    embed = discord.Embed(
+                        title=localized(language, "✨ 🌟 신규 🌟 ✨", "✨ 🌟 新規 🌟 ✨", "✨ 🌟 New 🌟 ✨"),
+                        description=f"**[{rarity}]** {card_name}!",
+                        color=self.get_color(rarity),
+                    )
 
                 
                 embed.set_image(url=f"attachment://{selected_file}")
@@ -82,6 +125,7 @@ class Gacha(commands.Cog):
 
     @app_commands.command(name="collection", description="등급별 수집 현황을 확인합니다.")
     async def collection(self, interaction: discord.Interaction):
+        language = get_ui_language(interaction)
         user_id = interaction.user.id
         pool = self.bot.get_cog('Point').pool
         
@@ -115,10 +159,17 @@ class Gacha(commands.Cog):
         rate = (total_owned / total_all * 100) if total_all > 0 else 0
         
         embed = discord.Embed(
-            title=f"🗃️ {interaction.user.display_name}님의 수집 현황",
-            description=(
-                f"**전체 수집률: {rate:.1f}% ({total_owned}/{total_all})**\n\n"
-                f"🌐 [웹에서 상세 도감 보기]({COLLECTION_URL})"
+            title=localized(
+                language,
+                f"🗃️ {interaction.user.display_name}님의 수집 현황",
+                f"🗃️ {interaction.user.display_name}さんのコレクション状況",
+                f"🗃️ {interaction.user.display_name}'s collection",
+            ),
+            description=localized(
+                language,
+                f"**전체 수집률: {rate:.1f}% ({total_owned}/{total_all})**\n\n🌐 [웹에서 상세 도감 보기]({COLLECTION_URL})",
+                f"**全体収集率: {rate:.1f}% ({total_owned}/{total_all})**\n\n🌐 [ウェブで詳細を見る]({COLLECTION_URL})",
+                f"**Total collection: {rate:.1f}% ({total_owned}/{total_all})**\n\n🌐 [View details on the web]({COLLECTION_URL})",
             ),
             color=discord.Color.blue()
         )

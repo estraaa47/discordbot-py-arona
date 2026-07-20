@@ -6,6 +6,8 @@ import os
 import random
 import datetime # 로그 시간 표시용
 
+from bot_i18n import interaction_text
+
 class Point(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -86,7 +88,12 @@ class Point(commands.Cog):
                 points = result[0] if result else 0
                 
                 await interaction.response.send_message(
-                    f"💰 {interaction.user.mention}선생님의 현재 포인트는 **{points}P**에요!"
+                    interaction_text(
+                        interaction,
+                        f"💰 {interaction.user.mention} 선생님의 현재 포인트는 **{points}P**예요!",
+                        f"💰 {interaction.user.mention} 先生の現在のポイントは **{points}P**です！",
+                        f"💰 {interaction.user.mention}, you currently have **{points}P**!",
+                    )
                 )
 
 async def setup(bot):

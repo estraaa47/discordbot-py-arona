@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 import threading  
 from web_app import run_flask  
+from bot_i18n import AronaTranslator
 
 load_dotenv()
 
@@ -13,6 +14,7 @@ class AronaBot(commands.Bot):
         super().__init__(command_prefix="!", intents=intents)
 
     async def setup_hook(self):
+        await self.tree.set_translator(AronaTranslator())
         for filename in os.listdir('./cogs'):
             if filename.endswith('.py'):
                 try:

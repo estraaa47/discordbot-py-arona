@@ -7,6 +7,8 @@ import os
 import re
 from pathlib import Path
 
+from bot_i18n import get_ui_language, localized
+
 
 class AronaChat(commands.Cog):
     def __init__(self, bot):
@@ -272,7 +274,13 @@ class AronaChat(commands.Cog):
                 suppress_embeds=True,
             )
 
-    async def _run_arona_stream(self, channel_id: int, nickname: str, text: str):
+    async def _run_arona_stream(
+        self,
+        channel_id: int,
+        nickname: str,
+        text: str,
+        response_language: str = "ko",
+    ):
         """
         반환:
             intro_text: 검색 전에 나온 짧은 1차 문구(없을 수 있음)
@@ -289,6 +297,28 @@ class AronaChat(commands.Cog):
 
         intro_buffer = ""
         seen_tool_block = False
+        language_instruction = localized(
+            response_language,
+            "이번 요청의 채팅 본문은 한국어로 작성하세요.",
+            "このリクエストのチャット本文は日本語で作成してください。",
+            "Write the chat response body in English for this request.",
+        )
+        turn_system = [
+            *self.cached_system,
+            {"type": "text", "text": language_instruction},
+        ]
+        refusal_text = localized(
+            response_language,
+            "선생님! 그 주제는 아로나가 대답하기 조금 곤란해요! ☆",
+            "先生！その話題にはアロナがお答えするのが少し難しいです！☆",
+            "Teacher! That's a little difficult for Arona to answer! ☆",
+        )
+        busy_text = localized(
+            response_language,
+            "지금은 아로나가 바빠요! 잠시 후에 다시 불러주세요, 선생님! ☆",
+            "今はアロナが忙しいです！少ししてからまた呼んでください、先生！☆",
+            "Arona is busy right now! Please call me again in a little while, Teacher! ☆",
+        )
 
         try:
             async with self.client.messages.stream(
@@ -296,7 +326,7 @@ class AronaChat(commands.Cog):
                 max_tokens=2048,
                 thinking={"type": "adaptive"},
                 output_config={"effort": "low"},  # 짧은 대화 위주라 저비용·저지연으로 제한
-                system=self.cached_system,  # ✅ 캐싱된 시스템 프롬프트 사용
+                system=turn_system,
                 tools=[self.web_search_tool],
                 messages=memory["messages"],
             ) as stream:
@@ -328,7 +358,7 @@ class AronaChat(commands.Cog):
 
             stop_reason = getattr(final_message, "stop_reason", None)
             if stop_reason not in ("end_turn", "max_tokens"):
-                return "", "선생님! 그 주제는 아로나가 대답하기 조금 곤란해요! ☆", None, None
+                return "", refusal_text, None, None
 
             before_tool_text, after_tool_text, used_tool = self._extract_texts_from_final_message(final_message)
 
@@ -351,13 +381,13 @@ class AronaChat(commands.Cog):
                 ).strip()
 
             if not final_text:
-                return intro_text, "선생님! 그 주제는 아로나가 대답하기 조금 곤란해요! ☆", None, None
+                return intro_text, refusal_text, None, None
 
             # status/jp 태그를 위치 무관하게 추출·제거 (채팅 본문/메모리에는 남기지 않음)
             clean_final_text, status, jp_line = self._parse_tags(final_text)
 
             if not clean_final_text:
-                clean_final_text = "선생님! 그 주제는 아로나가 대답하기 조금 곤란해요! ☆"
+                clean_final_text = refusal_text
 
             # 메모리에는 status/jp 제거된 본문만 저장
             memory["messages"].append({"role": "assistant", "content": clean_final_text})
@@ -368,10 +398,10 @@ class AronaChat(commands.Cog):
 
         except anthropic.APIStatusError as e:
             print(f"Anthropic API Error [{e.status_code}]: {e.message}")
-            return "", "지금은 아로나가 바빠요! 잠시 후에 다시 불러주세요, 선생님! ☆", None, None
+            return "", busy_text, None, None
         except Exception as e:
             print(f"Unexpected Error: {e}")
-            return "", "지금은 아로나가 바빠요! 잠시 후에 다시 불러주세요, 선생님! ☆", None, None
+            return "", busy_text, None, None
 
     def _trigger_voice(self, guild, member, jp_line):
         """호출자가 봇과 '같은 음성 채널'에 있을 때만 일본어 대사를 백그라운드 재생.
@@ -390,13 +420,16 @@ class AronaChat(commands.Cog):
         self.bot.loop.create_task(voice_cog.speak(guild.id, jp_line))
 
     @app_commands.command(name="arona", description="Chat with Arona")
+    @app_commands.describe(message="아로나에게 보낼 메시지")
     async def arona_slash(self, interaction: discord.Interaction, message: str):
         await interaction.response.defer(thinking=True)
+        response_language = get_ui_language(interaction)
 
         intro_text, final_text, status, jp_line = await self._run_arona_stream(
             interaction.channel.id,
             interaction.user.display_name,
-            message
+            message,
+            response_language,
         )
 
         if intro_text:

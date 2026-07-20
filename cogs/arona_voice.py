@@ -9,6 +9,8 @@ from pathlib import Path
 import httpx
 import tts_registry
 
+from bot_i18n import interaction_text
+
 
 class OggOpusAudio(discord.AudioSource):
     """미리 인코딩된 Ogg-Opus 파일을 읽어 read() 호출마다 Opus 패킷 1개를 반환한다.
@@ -86,7 +88,13 @@ class AronaVoice(commands.Cog):
         user = interaction.user
         if not isinstance(user, discord.Member) or user.voice is None or user.voice.channel is None:
             await interaction.response.send_message(
-                "선생님, 먼저 음성 채널에 들어가 주세요!", ephemeral=True
+                interaction_text(
+                    interaction,
+                    "선생님, 먼저 음성 채널에 들어가 주세요!",
+                    "先生、先にボイスチャンネルに入ってください！",
+                    "Please join a voice channel first!",
+                ),
+                ephemeral=True,
             )
             return
 
@@ -101,12 +109,23 @@ class AronaVoice(commands.Cog):
                 vc = await channel.connect()
             self.active[guild_id] = vc
             await interaction.response.send_message(
-                f"음성 채널 **{channel.name}** 에 들어왔어요, 선생님! ☆"
+                interaction_text(
+                    interaction,
+                    f"음성 채널 **{channel.name}**에 들어왔어요, 선생님! ☆",
+                    f"ボイスチャンネル **{channel.name}** に入りました、先生！☆",
+                    f"I joined **{channel.name}**! ☆",
+                )
             )
         except Exception as e:
             print(f"[voice] join error: {e}")
             await interaction.response.send_message(
-                "음성 채널 접속에 실패했어요, 선생님...", ephemeral=True
+                interaction_text(
+                    interaction,
+                    "음성 채널 접속에 실패했어요, 선생님...",
+                    "ボイスチャンネルへの接続に失敗しました、先生…",
+                    "I couldn't connect to the voice channel...",
+                ),
+                ephemeral=True,
             )
 
     @app_commands.command(name="leave", description="아로나를 음성 채널에서 내보냅니다")
@@ -117,7 +136,13 @@ class AronaVoice(commands.Cog):
         if not (vc and vc.is_connected()):
             self.active.pop(guild_id, None)
             await interaction.response.send_message(
-                "저 지금 음성 채널에 없는데요, 선생님?", ephemeral=True
+                interaction_text(
+                    interaction,
+                    "저 지금 음성 채널에 없는데요, 선생님?",
+                    "私は今ボイスチャンネルにいませんよ、先生？",
+                    "I'm not in a voice channel right now.",
+                ),
+                ephemeral=True,
             )
             return
 
@@ -125,14 +150,25 @@ class AronaVoice(commands.Cog):
         vs = getattr(interaction.user, "voice", None)
         if vs is None or vs.channel is None or vs.channel.id != vc.channel.id:
             await interaction.response.send_message(
-                "같은 음성 채널에 있는 선생님만 저를 내보낼 수 있어요!", ephemeral=True
+                interaction_text(
+                    interaction,
+                    "같은 음성 채널에 있는 선생님만 저를 내보낼 수 있어요!",
+                    "同じボイスチャンネルにいる先生だけが私を退出させられます！",
+                    "Only someone in the same voice channel can disconnect me!",
+                ),
+                ephemeral=True,
             )
             return
 
         await vc.disconnect(force=True)
         self.active.pop(guild_id, None)
         await interaction.response.send_message(
-            "음성 채널에서 나왔어요, 선생님! 다음에 또 불러주세요~"
+            interaction_text(
+                interaction,
+                "음성 채널에서 나왔어요, 선생님! 다음에 또 불러주세요~",
+                "ボイスチャンネルから退出しました、先生！また呼んでくださいね～",
+                "I left the voice channel. Call me again anytime!",
+            )
         )
 
     # ==========================================================
@@ -223,31 +259,6 @@ class AronaVoice(commands.Cog):
                     os.remove(tmp_path)
                 except OSError:
                     pass
-
-    # ==========================================================
-    # [임시] 선검증용: 번들된 Opus 샘플 재생
-    # (Cloudtype 음성 UDP + Opus 릴레이 경로가 동작하는지 로컬 서버 없이 확인)
-    # ==========================================================
-    @app_commands.command(name="voicetest", description="[테스트] 번들된 Opus 샘플을 재생합니다")
-    async def voicetest(self, interaction: discord.Interaction):
-        guild_id = interaction.guild_id
-        if not self.is_active(guild_id):
-            await interaction.response.send_message(
-                "먼저 /join 으로 음성 채널에 불러주세요!", ephemeral=True
-            )
-            return
-
-        test_ogg = self.assets_dir / "voice_test.ogg"
-        if not test_ogg.exists():
-            await interaction.response.send_message(
-                "`arona_assets/voice_test.ogg` 가 없어요. 테스트용 Opus 파일을 넣어주세요.",
-                ephemeral=True,
-            )
-            return
-
-        await interaction.response.send_message("테스트 음성을 재생할게요, 선생님!")
-        await self._play_file(guild_id, str(test_ogg), cleanup=False)
-
 
 async def setup(bot):
     await bot.add_cog(AronaVoice(bot))
