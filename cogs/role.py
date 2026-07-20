@@ -7,6 +7,15 @@ from discord.ext import commands
 ROLE_CHANNEL_ID = 1528787386153304105
 ROLE_SELECTIONS = (
     {
+        "key": "nationality",
+        "heading": "## 🌏 국적을 선택해주세요 / 国籍を選択してください",
+        "placeholder": "국적 선택 / 国籍を選択",
+        "roles": (
+            (927148258885783582, "한국"),
+            (888820786041880666, "日本"),
+        ),
+    },
+    {
         "key": "japanese",
         "heading": "## 🇯🇵 일본어 레벨을 선택해주세요",
         "placeholder": "일본어 레벨 선택",
@@ -26,15 +35,6 @@ ROLE_SELECTIONS = (
             (1528789614989545542, "初級"),
             (1528790289999859822, "中級"),
             (1528790367644811264, "上級"),
-        ),
-    },
-    {
-        "key": "nationality",
-        "heading": "## 🌏 국적을 선택해주세요 / 国籍を選択してください",
-        "placeholder": "국적 선택 / 国籍を選択",
-        "roles": (
-            (927148258885783582, "한국"),
-            (888820786041880666, "日本"),
         ),
     },
 )
@@ -102,6 +102,7 @@ class ReactionRole(commands.Cog):
             for selection in ROLE_SELECTIONS
         }
         existing_messages = {}
+        found_messages = []
 
         try:
             async for message in channel.history(limit=200):
@@ -111,7 +112,22 @@ class ReactionRole(commands.Cog):
                 for heading, selection in headings.items():
                     if message.content.startswith(heading):
                         existing_messages[selection["key"]] = message
+                        found_messages.append((selection["key"], message))
                         break
+
+
+            current_order = [
+                key
+                for key, _ in reversed(found_messages)
+            ]
+            desired_order = [
+                selection["key"]
+                for selection in ROLE_SELECTIONS
+            ]
+            if current_order != desired_order:
+                for _, message in found_messages:
+                    await message.delete()
+                existing_messages.clear()
 
             for selection in ROLE_SELECTIONS:
                 content = self._build_role_message(selection)
