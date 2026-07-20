@@ -8,6 +8,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from bot_i18n import get_ui_language, localized
+from cogs.role import LANGUAGE_LEVEL_ROLE_IDS
 
 
 GAME_CHANNEL_ID = 1528787386153304105
@@ -391,6 +392,14 @@ class GameSearch(commands.Cog):
                 )
                 return [row[0] for row in await cur.fetchall()]
 
+    def member_meets_language_level(self, member, language, required_level):
+        eligible_role_ids = {
+            role_id
+            for role_level, role_id in LANGUAGE_LEVEL_ROLE_IDS[language].items()
+            if role_level >= required_level
+        }
+        return any(role.id in eligible_role_ids for role in member.roles)
+
     @app_commands.command(
         name="recruit",
         description="같은 게임을 등록한 사용자에게 모집 알림을 보냅니다.",
@@ -472,14 +481,15 @@ class GameSearch(commands.Cog):
             for user_id in user_ids
             if (member := interaction.guild.get_member(user_id)) is not None
             and not member.bot
+            and self.member_meets_language_level(member, language, level)
         ]
         if not members:
             await interaction.edit_original_response(
                 content=localized(
                     ui_language,
-                    "현재 이 게임을 등록한 다른 서버 구성원이 없습니다.",
-                    "現在、このゲームを登録している他のサーバーメンバーはいません。",
-                    "No other server members have registered this game yet.",
+                    "현재 이 게임을 등록하고 해당 언어 수준을 충족하는 다른 서버 구성원이 없습니다.",
+                    "現在、このゲームを登録し、指定された言語レベルを満たす他のサーバーメンバーはいません。",
+                    "No other server members registered for this game meet the required language level.",
                 )
             )
             return

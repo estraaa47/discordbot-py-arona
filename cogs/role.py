@@ -57,6 +57,20 @@ ROLE_SELECTIONS = (
     },
 )
 
+LANGUAGE_LEVEL_ROLE_IDS = {
+    language: {
+        level: role_id
+        for level, (role_id, _, _) in enumerate(
+            next(
+                selection["roles"]
+                for selection in ROLE_SELECTIONS
+                if selection["key"] == selection_key
+            )
+        )
+    }
+    for language, selection_key in (("ko", "korean"), ("ja", "japanese"))
+}
+
 
 class LevelSelect(discord.ui.Select):
     def __init__(self, cog, selection):
