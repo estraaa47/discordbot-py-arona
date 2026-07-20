@@ -70,7 +70,7 @@ class Point(commands.Cog):
                     if not member.bot and not (member.voice.self_deaf and member.voice.self_mute):
                         await self.add_points(member.id, reward_amount)
                         # 콘솔 로그에만 기록 (채팅 도배 X)
-                        print(f"[{datetime.datetime.now()}] 🎙️ VC 보상 완료: {member.display_name} (+{reward_amount}P)")
+                        print(f"[{datetime.datetime.now()}] VC 보상 완료: {member.display_name} (+{reward_amount}P)")
 
     @vc_reward_loop.before_loop
     async def before_vc_reward_loop(self):
@@ -90,9 +90,9 @@ class Point(commands.Cog):
                 await interaction.response.send_message(
                     interaction_text(
                         interaction,
-                        f"💰 {interaction.user.mention} 선생님의 현재 포인트는 **{points}P**예요!",
-                        f"💰 {interaction.user.mention} 先生の現在のポイントは **{points}P**です！",
-                        f"💰 {interaction.user.mention}, you currently have **{points}P**!",
+                        f"{interaction.user.mention} 선생님의 현재 포인트는 **{points}P**예요!",
+                        f"{interaction.user.mention} 先生の現在のポイントは **{points}P**です！",
+                        f"{interaction.user.mention}, you currently have **{points}P**!",
                     )
                 )
 

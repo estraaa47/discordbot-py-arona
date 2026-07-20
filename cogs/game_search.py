@@ -12,7 +12,7 @@ from bot_i18n import get_ui_language, localized
 
 GAME_CHANNEL_ID = 1528787386153304105
 GAME_MESSAGE_HEADING = (
-    "## 🎮 관심 있는 게임을 골라주세요 / "
+    "## 관심 있는 게임을 골라주세요 / "
     "気になるゲームを選んでください"
 )
 RAWG_GAMES_URL = "https://api.rawg.io/api/games"
@@ -459,7 +459,7 @@ class GameSearch(commands.Cog):
             discord.utils.escape_markdown(note or "")
         )[:800]
         lines = [
-            f"## 🎮 {game_name}",
+            f"## {game_name}",
             localized(
                 ui_language,
                 f"**모집 언어:** {language_labels[language]}",
@@ -595,9 +595,9 @@ class GameSearch(commands.Cog):
 
         title = localized(
             language,
-            "## 🎮 내가 등록한 게임",
-            "## 🎮 登録したゲーム",
-            "## 🎮 My registered games",
+            "## 내가 등록한 게임",
+            "## 登録したゲーム",
+            "## My registered games",
         )
         game_lines = [
             f"• {discord.utils.escape_markdown(game_name)}"

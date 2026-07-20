@@ -23,9 +23,9 @@ class Gacha(commands.Cog):
             return await interaction.response.send_message(
                 localized(
                     language,
-                    f"❌ 가챠는 <#{self.ALLOWED_CHANNEL_ID}>에서만 가능합니다.",
-                    f"❌ ガチャは <#{self.ALLOWED_CHANNEL_ID}> でのみ利用できます。",
-                    f"❌ Gacha is only available in <#{self.ALLOWED_CHANNEL_ID}>.",
+                    f"가챠는 <#{self.ALLOWED_CHANNEL_ID}>에서만 가능합니다.",
+                    f"ガチャは <#{self.ALLOWED_CHANNEL_ID}> でのみ利用できます。",
+                    f"Gacha is only available in <#{self.ALLOWED_CHANNEL_ID}>.",
                 ),
                 ephemeral=True,
             )
@@ -59,9 +59,9 @@ class Gacha(commands.Cog):
                     return await interaction.response.send_message(
                         localized(
                             language,
-                            f"❌ {rarity} 폴더를 찾을 수 없어요.",
-                            f"❌ {rarity} フォルダーが見つかりません。",
-                            f"❌ The {rarity} folder could not be found.",
+                            f"{rarity} 폴더를 찾을 수 없어요.",
+                            f"{rarity} フォルダーが見つかりません。",
+                            f"The {rarity} folder could not be found.",
                         ),
                         ephemeral=True,
                     )
@@ -72,9 +72,9 @@ class Gacha(commands.Cog):
                     return await interaction.response.send_message(
                         localized(
                             language,
-                            f"❌ {rarity} 등급에 뽑을 수 있는 카드가 없어요!",
-                            f"❌ {rarity} ランクで排出できるカードがありません！",
-                            f"❌ There are no available {rarity} cards!",
+                            f"{rarity} 등급에 뽑을 수 있는 카드가 없어요!",
+                            f"{rarity} ランクで排出できるカードがありません！",
+                            f"There are no available {rarity} cards!",
                         ),
                         ephemeral=True,
                     )
@@ -82,7 +82,7 @@ class Gacha(commands.Cog):
                 selected_file = random.choice(files)
                 card_name = os.path.splitext(selected_file)[0]
 
-                # 3. 💡 [핵심 변경] 도감(collection) 테이블에서 중복 여부 확인
+                # 3. 도감(collection) 테이블에서 중복 여부 확인
                 await cur.execute("SELECT 1 FROM collection WHERE user_id = %s AND item_name = %s", (user_id, selected_file))
                 is_duplicate = await cur.fetchone()
 
@@ -92,11 +92,11 @@ class Gacha(commands.Cog):
                 # 4.5 기존 NEW 마크 초기화
                 await cur.execute("UPDATE inventory SET is_new = 0 WHERE user_id = %s AND is_new = 1", (user_id,))
                 
-                # 5. 💡 도감에 없는 신규 카드라면 collection 테이블에 등록 (도감작)
+                # 5. 도감에 없는 신규 카드라면 collection 테이블에 등록 (도감작)
                 if not is_duplicate:
                     await cur.execute("INSERT INTO collection (user_id, item_name, rarity) VALUES (%s, %s, %s)", (user_id, selected_file, rarity))
 
-                # 6. 💡 중복이든 신규든 실물 카드는 무조건 inventory 테이블에 추가 (강화/합성 재료용)
+                # 6. 중복이든 신규든 실물 카드는 무조건 inventory 테이블에 추가 (강화/합성 재료용)
                 await cur.execute("INSERT INTO inventory (user_id, item_name, rarity, is_new) VALUES (%s, %s, %s, 1)", (user_id, selected_file, rarity))
                 
                 # 7. UI 메시지 분기 처리 (신규 vs 중복)
@@ -104,13 +104,13 @@ class Gacha(commands.Cog):
                 
                 if is_duplicate:
                     embed = discord.Embed(
-                        title=localized(language, "🎴 중복 획득", "🎴 重複獲得", "🎴 Duplicate"),
+                        title=localized(language, "중복 획득", "重複獲得", "Duplicate"),
                         description=f"**[{rarity}]** {card_name}",
                         color=discord.Color.light_gray(),
                     )
                 else:
                     embed = discord.Embed(
-                        title=localized(language, "✨ 🌟 신규 🌟 ✨", "✨ 🌟 新規 🌟 ✨", "✨ 🌟 New 🌟 ✨"),
+                        title=localized(language, "신규 획득", "新規獲得", "New"),
                         description=f"**[{rarity}]** {card_name}!",
                         color=self.get_color(rarity),
                     )
@@ -145,7 +145,7 @@ class Gacha(commands.Cog):
             
             async with pool.acquire() as conn:
                 async with conn.cursor() as cur:
-                    # 💡 [핵심 변경] 이제 도감 달성률은 inventory가 아닌 collection 테이블을 참조합니다!
+                    # 이제 도감 달성률은 inventory가 아닌 collection 테이블을 참조합니다.
                     # collection 테이블에는 고유 카드만 1장씩 들어가므로 COUNT(*)로 세어도 됩니다.
                     sql = "SELECT COUNT(*) FROM collection WHERE user_id = %s AND rarity = %s"
                     await cur.execute(sql, (user_id, rarity))
@@ -161,22 +161,22 @@ class Gacha(commands.Cog):
         embed = discord.Embed(
             title=localized(
                 language,
-                f"🗃️ {interaction.user.display_name}님의 수집 현황",
-                f"🗃️ {interaction.user.display_name}さんのコレクション状況",
-                f"🗃️ {interaction.user.display_name}'s collection",
+                f"{interaction.user.display_name}님의 수집 현황",
+                f"{interaction.user.display_name}さんのコレクション状況",
+                f"{interaction.user.display_name}'s collection",
             ),
             description=localized(
                 language,
-                f"**전체 수집률: {rate:.1f}% ({total_owned}/{total_all})**\n\n🌐 [웹에서 상세 도감 보기]({COLLECTION_URL})",
-                f"**全体収集率: {rate:.1f}% ({total_owned}/{total_all})**\n\n🌐 [ウェブで詳細を見る]({COLLECTION_URL})",
-                f"**Total collection: {rate:.1f}% ({total_owned}/{total_all})**\n\n🌐 [View details on the web]({COLLECTION_URL})",
+                f"**전체 수집률: {rate:.1f}% ({total_owned}/{total_all})**\n\n[웹에서 상세 도감 보기]({COLLECTION_URL})",
+                f"**全体収集率: {rate:.1f}% ({total_owned}/{total_all})**\n\n[ウェブで詳細を見る]({COLLECTION_URL})",
+                f"**Total collection: {rate:.1f}% ({total_owned}/{total_all})**\n\n[View details on the web]({COLLECTION_URL})",
             ),
             color=discord.Color.blue()
         )
 
         for rarity, (owned, total) in rarity_stats.items():
             embed.add_field(
-                name=f"[{rarity}]", 
+                name=f"[{rarity}]",
                 value=f"**{owned} / {total}**", 
                 inline=True
             )
