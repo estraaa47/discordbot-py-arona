@@ -476,6 +476,9 @@ class GameSearch(commands.Cog):
             )
             return
 
+        game_name = discord.utils.escape_mentions(
+            discord.utils.escape_markdown(selected_game[1])
+        )
         members = [
             member
             for user_id in user_ids
@@ -487,9 +490,9 @@ class GameSearch(commands.Cog):
             await interaction.edit_original_response(
                 content=localized(
                     ui_language,
-                    "현재 이 게임을 등록하고 해당 언어 수준을 충족하는 다른 서버 구성원이 없습니다.",
-                    "現在、このゲームを登録し、指定された言語レベルを満たす他のサーバーメンバーはいません。",
-                    "No other server members registered for this game meet the required language level.",
+                    f'조건에 맞는 "{game_name}"을 등록한 구성원을 찾지 못했어요.',
+                    f'条件に合う「{game_name}」を登録したメンバーが見つかりませんでした。',
+                    f'Could not find any members who registered "{game_name}" and meet the conditions.',
                 )
             )
             return
@@ -504,7 +507,6 @@ class GameSearch(commands.Cog):
             2: localized(ui_language, "중급", "中級", "Intermediate"),
             3: localized(ui_language, "상급", "上級", "Advanced"),
         }
-        game_name = discord.utils.escape_markdown(selected_game[1])
         safe_note = discord.utils.escape_mentions(
             discord.utils.escape_markdown(note or "")
         )[:800]
