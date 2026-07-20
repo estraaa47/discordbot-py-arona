@@ -200,6 +200,9 @@ class GameSearch(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         async with self._message_setup_lock:
+            role_cog = self.bot.get_cog("ReactionRole")
+            if role_cog is not None:
+                await role_cog.ensure_role_messages()
             await self._ensure_search_message()
 
     async def _ensure_search_message(self):
@@ -213,14 +216,26 @@ class GameSearch(commands.Cog):
 
         content = GAME_MESSAGE_HEADING
         search_message = None
+        latest_role_message_id = 0
 
         try:
             async for message in channel.history(limit=200):
-                has_search_button = any(
-                    getattr(component, "custom_id", None) == "rawg_game:search"
+                component_ids = {
+                    getattr(component, "custom_id", None)
                     for row in message.components
                     for component in getattr(row, "children", [])
+                }
+                has_search_button = "rawg_game:search" in component_ids
+                has_role_select = any(
+                    custom_id is not None
+                    and custom_id.startswith("language_level:")
+                    for custom_id in component_ids
                 )
+                if message.author.id == self.bot.user.id and has_role_select:
+                    latest_role_message_id = max(
+                        latest_role_message_id,
+                        message.id,
+                    )
                 if (
                     message.author.id == self.bot.user.id
                     and (
@@ -228,10 +243,13 @@ class GameSearch(commands.Cog):
                         or has_search_button
                     )
                 ):
-                    search_message = message
-                    break
+                    if search_message is None:
+                        search_message = message
 
             if search_message is None:
+                await channel.send(content, view=self.view)
+            elif search_message.id <= latest_role_message_id:
+                await search_message.delete()
                 await channel.send(content, view=self.view)
             else:
                 await search_message.edit(content=content, view=self.view)
