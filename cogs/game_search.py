@@ -15,6 +15,8 @@ GAME_MESSAGE_HEADING = (
     "## 관심 있는 게임을 골라주세요 / "
     "気になるゲームを選んでください"
 )
+GAME_SEARCH_BUTTON_LABEL = "게임 검색 / ゲームを検索"
+GAME_SEARCH_BUTTON_CUSTOM_ID = "rawg_game:search"
 RAWG_GAMES_URL = "https://api.rawg.io/api/games"
 
 
@@ -180,9 +182,9 @@ class GameSearchView(discord.ui.View):
         self.cog = cog
 
     @discord.ui.button(
-        label="게임 검색 / ゲームを検索",
+        label=GAME_SEARCH_BUTTON_LABEL,
         style=discord.ButtonStyle.primary,
-        custom_id="rawg_game:search",
+        custom_id=GAME_SEARCH_BUTTON_CUSTOM_ID,
     )
     async def search_button(self, interaction, button):
         language = self.cog.get_ui_language(interaction)
@@ -205,6 +207,21 @@ class GameSearch(commands.Cog):
                 await role_cog.ensure_role_messages()
             await self._ensure_search_message()
 
+    def _has_current_search_button(self, message):
+        for row in message.components:
+            for component in getattr(row, "children", []):
+                if (
+                    getattr(component, "custom_id", None)
+                    == GAME_SEARCH_BUTTON_CUSTOM_ID
+                ):
+                    return (
+                        getattr(component, "label", None)
+                        == GAME_SEARCH_BUTTON_LABEL
+                        and getattr(component, "style", None)
+                        == discord.ButtonStyle.primary
+                    )
+        return False
+
     async def _ensure_search_message(self):
         channel = self.bot.get_channel(GAME_CHANNEL_ID)
         if channel is None:
@@ -225,7 +242,9 @@ class GameSearch(commands.Cog):
                     for row in message.components
                     for component in getattr(row, "children", [])
                 }
-                has_search_button = "rawg_game:search" in component_ids
+                has_search_button = (
+                    GAME_SEARCH_BUTTON_CUSTOM_ID in component_ids
+                )
                 has_role_select = any(
                     custom_id is not None
                     and custom_id.startswith("language_level:")
@@ -248,11 +267,14 @@ class GameSearch(commands.Cog):
 
             if search_message is None:
                 await channel.send(content, view=self.view)
-            elif search_message.id <= latest_role_message_id:
+            elif (
+                search_message.id <= latest_role_message_id
+                or search_message.content != content
+                or not self._has_current_search_button(search_message)
+                or search_message.edited_at is not None
+            ):
                 await search_message.delete()
                 await channel.send(content, view=self.view)
-            else:
-                await search_message.edit(content=content, view=self.view)
         except discord.HTTPException as error:
             print(f"[ERROR] 게임 검색 메시지를 준비하지 못했습니다: {error}")
 

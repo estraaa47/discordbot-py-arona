@@ -109,6 +109,32 @@ class ReactionRole(commands.Cog):
         async with self._message_setup_lock:
             await self._ensure_role_messages()
 
+    def _has_current_select(self, message, selection):
+        expected_custom_id = f"language_level:{selection['key']}"
+        expected_options = [
+            (f"{label} / {description}", str(role_id))
+            for role_id, label, description in selection["roles"]
+        ]
+
+        for row in message.components:
+            for component in getattr(row, "children", []):
+                if getattr(component, "custom_id", None) != expected_custom_id:
+                    continue
+
+                actual_options = [
+                    (option.label, option.value)
+                    for option in getattr(component, "options", [])
+                ]
+                return (
+                    getattr(component, "placeholder", None)
+                    == selection["placeholder"]
+                    and getattr(component, "min_values", None) == 1
+                    and getattr(component, "max_values", None) == 1
+                    and actual_options == expected_options
+                )
+
+        return False
+
     async def _ensure_role_messages(self):
         channel = self.bot.get_channel(ROLE_CHANNEL_ID)
         if channel is None:
@@ -146,7 +172,18 @@ class ReactionRole(commands.Cog):
                 selection["key"]
                 for selection in ROLE_SELECTIONS
             ]
-            if current_order != desired_order:
+            needs_rebuild = (
+                current_order != desired_order
+                or len(existing_messages) != len(ROLE_SELECTIONS)
+                or any(
+                    message.content != self._build_role_message(selection)
+                    or not self._has_current_select(message, selection)
+                    or message.edited_at is not None
+                    for selection in ROLE_SELECTIONS
+                    if (message := existing_messages.get(selection["key"]))
+                )
+            )
+            if needs_rebuild:
                 for _, message in found_messages:
                     await message.delete()
                 existing_messages.clear()
@@ -158,22 +195,20 @@ class ReactionRole(commands.Cog):
 
                 if role_message is None:
                     role_message = await channel.send(content, view=view)
-                else:
-                    await role_message.edit(content=content, view=view)
-                    if role_message.reactions:
-                        try:
-                            await role_message.clear_reactions()
-                        except discord.HTTPException:
-                            for reaction in role_message.reactions:
-                                if not reaction.me:
-                                    continue
-                                try:
-                                    await role_message.remove_reaction(
-                                        reaction.emoji,
-                                        self.bot.user,
-                                    )
-                                except discord.HTTPException:
-                                    pass
+                elif role_message.reactions:
+                    try:
+                        await role_message.clear_reactions()
+                    except discord.HTTPException:
+                        for reaction in role_message.reactions:
+                            if not reaction.me:
+                                continue
+                            try:
+                                await role_message.remove_reaction(
+                                    reaction.emoji,
+                                    self.bot.user,
+                                )
+                            except discord.HTTPException:
+                                pass
         except discord.HTTPException as error:
             print(f"[ERROR] 레벨 선택 안내 메시지를 준비하지 못했습니다: {error}")
 
