@@ -9,8 +9,8 @@ from discord.ext import commands
 
 GAME_CHANNEL_ID = 1528787386153304105
 GAME_MESSAGE_HEADING = (
-    "## 🎮 관심 있는 게임을 골라주세요. 추후 알림이 전송됩니다. / "
-    "気になるゲームを選んでください。今後、お知らせが届きます。"
+    "## 🎮 관심 있는 게임을 골라주세요 / "
+    "気になるゲームを選んでください"
 )
 RAWG_GAMES_URL = "https://api.rawg.io/api/games"
 KOREAN_NATIONALITY_ROLE_ID = 927148258885783582
@@ -92,9 +92,9 @@ class GameResultSelect(discord.ui.Select):
         await interaction.edit_original_response(
             content=localized(
                 self.language,
-                f"✅ **{game['name']}** 저장 완료",
-                f"✅ **{game['name']}** を保存しました",
-                f"✅ **{game['name']}** saved",
+                "추후 같은 게임을 하는 사람이 인원을 모집할 때 알려드릴게요.",
+                "今後、同じゲームをプレイする人がメンバーを募集した際にお知らせします。",
+                "We'll notify you when someone who plays the same game is recruiting players.",
             ),
             view=None,
         )
@@ -125,6 +125,16 @@ class GameSearchModal(discord.ui.Modal):
             max_length=100,
         )
         self.add_item(self.game_query)
+        self.add_item(
+            discord.ui.TextDisplay(
+                localized(
+                    language,
+                    "[게임 정보 제공: RAWG](https://rawg.io/)",
+                    "[ゲーム情報提供: RAWG](https://rawg.io/)",
+                    "[Game data: RAWG](https://rawg.io/)",
+                )
+            )
+        )
 
     async def on_submit(self, interaction):
         await interaction.response.defer(ephemeral=True, thinking=True)
@@ -177,7 +187,7 @@ class GameSearchView(discord.ui.View):
         self.cog = cog
 
     @discord.ui.button(
-        label="게임 검색 / ゲームを検索 / Search games",
+        label="게임 검색 / ゲームを検索",
         style=discord.ButtonStyle.primary,
         custom_id="rawg_game:search",
     )
@@ -208,12 +218,7 @@ class GameSearch(commands.Cog):
                 print(f"[ERROR] 게임 검색 채널을 불러오지 못했습니다: {error}")
                 return
 
-        content = "\n".join(
-            (
-                GAME_MESSAGE_HEADING,
-                "-# [게임 정보 제공 / ゲーム情報提供 / Game data: RAWG](https://rawg.io/)",
-            )
-        )
+        content = GAME_MESSAGE_HEADING
         search_message = None
 
         try:
