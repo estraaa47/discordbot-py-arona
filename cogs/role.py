@@ -28,6 +28,15 @@ ROLE_SELECTIONS = (
             (1528790367644811264, "上級"),
         ),
     },
+    {
+        "key": "nationality",
+        "heading": "## 🌏 국적을 선택해주세요 / 国籍を選択してください",
+        "placeholder": "국적 선택 / 国籍を選択",
+        "roles": (
+            (927148258885783582, "한국"),
+            (888820786041880666, "日本"),
+        ),
+    },
 )
 
 
@@ -52,7 +61,7 @@ class LevelSelect(discord.ui.Select):
 
     async def callback(self, interaction):
         await interaction.response.defer()
-        await self.cog.apply_level_role(
+        await self.cog.apply_role_selection(
             interaction,
             self.selection,
             int(self.values[0]),
@@ -133,7 +142,7 @@ class ReactionRole(commands.Cog):
     def _build_role_message(self, selection):
         return selection["heading"]
 
-    async def apply_level_role(self, interaction, selection, selected_role_id):
+    async def apply_role_selection(self, interaction, selection, selected_role_id):
         guild = interaction.guild
         if guild is None:
             return
