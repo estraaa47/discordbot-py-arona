@@ -606,7 +606,7 @@ class GameSearch(commands.Cog):
         description="내가 등록한 관심 게임 목록을 확인합니다.",
     )
     async def my_games(self, interaction: discord.Interaction):
-        await interaction.response.defer(ephemeral=True, thinking=True)
+        await interaction.response.defer(thinking=True)
         language = self.get_ui_language(interaction)
 
         try:
@@ -633,11 +633,14 @@ class GameSearch(commands.Cog):
             )
             return
 
+        display_name = discord.utils.escape_markdown(
+            interaction.user.display_name
+        )
         title = localized(
             language,
-            "## 내가 등록한 게임",
-            "## 登録したゲーム",
-            "## My registered games",
+            f"## {display_name}님의 등록 게임",
+            f"## {display_name}さんの登録ゲーム",
+            f"## {display_name}'s registered games",
         )
         game_lines = [
             f"• {discord.utils.escape_markdown(game_name)}"
