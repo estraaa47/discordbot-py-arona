@@ -9,8 +9,6 @@ ROLE_SELECTIONS = (
     {
         "key": "japanese",
         "heading": "## 🇯🇵 일본어 레벨을 선택해주세요",
-        "description": "> 아래 드롭다운에서 자신의 일본어 수준을 선택해주세요.",
-        "section_heading": "### 레벨 안내",
         "placeholder": "일본어 레벨 선택",
         "roles": (
             (1528792331623596052, "불가"),
@@ -22,8 +20,6 @@ ROLE_SELECTIONS = (
     {
         "key": "korean",
         "heading": "## 🇰🇷 韓国語レベルを選択してください",
-        "description": "> 下のドロップダウンから、自分の韓国語レベルを選択してください。",
-        "section_heading": "### レベル一覧",
         "placeholder": "韓国語レベルを選択",
         "roles": (
             (1528791795582898286, "不可"),
@@ -121,25 +117,21 @@ class ReactionRole(commands.Cog):
                         try:
                             await role_message.clear_reactions()
                         except discord.HTTPException:
-                            pass
+                            for reaction in role_message.reactions:
+                                if not reaction.me:
+                                    continue
+                                try:
+                                    await role_message.remove_reaction(
+                                        reaction.emoji,
+                                        self.bot.user,
+                                    )
+                                except discord.HTTPException:
+                                    pass
         except discord.HTTPException as error:
             print(f"[ERROR] 레벨 선택 안내 메시지를 준비하지 못했습니다: {error}")
 
     def _build_role_message(self, selection):
-        role_lines = [
-            f"**{index} — {label}**"
-            for index, (_, label) in enumerate(selection["roles"])
-        ]
-        return "\n".join(
-            [
-                selection["heading"],
-                "",
-                selection["description"],
-                "",
-                selection["section_heading"],
-                *role_lines,
-            ]
-        )
+        return selection["heading"]
 
     async def apply_level_role(self, interaction, selection, selected_role_id):
         guild = interaction.guild
