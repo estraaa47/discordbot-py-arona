@@ -8,33 +8,50 @@ ROLE_CHANNEL_ID = 1528787386153304105
 ROLE_SELECTIONS = (
     {
         "key": "nationality",
-        "heading": "## 🌏 국적을 선택해주세요 / 国籍を選択してください",
-        "placeholder": "국적 선택 / 国籍を選択",
+        "heading": "## 🌏 당신의 국적을 선택해주세요 / あなたの国籍を選択してください",
+        "subheading": None,
+        "legacy_headings": (
+            "## 🌏 국적을 선택해주세요 / 国籍を選択してください",
+            "## 🌏 당신의 국적을 선택해주세요",
+        ),
+        "placeholder": "국적 선택",
         "roles": (
-            (927148258885783582, "한국"),
-            (888820786041880666, "日本"),
+            (927148258885783582, "한국", "韓国"),
+            (888820786041880666, "日本", "일본"),
         ),
     },
     {
         "key": "japanese",
-        "heading": "## 🇯🇵 일본어 레벨을 선택해주세요",
+        "heading": "## 🇯🇵 당신의 일본어 레벨을 선택해주세요",
+        "subheading": "あなたの日本語レベルを選択してください",
+        "legacy_headings": (
+            "## 🇯🇵 일본어 레벨을 선택해주세요",
+            "## 🇯🇵 あなたの日本語レベルを選択してください",
+            "## 🇯🇵 당신의 일본어 레벨을 선택해주세요 / あなたの日本語レベルを選択してください",
+        ),
         "placeholder": "일본어 레벨 선택",
         "roles": (
-            (1528792331623596052, "불가"),
-            (1528792010465480856, "초급"),
-            (1528792142997098626, "중급"),
-            (1528792261188391183, "상급"),
+            (1528792331623596052, "불가", "不可"),
+            (1528792010465480856, "초급", "初級"),
+            (1528792142997098626, "중급", "中級"),
+            (1528792261188391183, "상급", "上級"),
         ),
     },
     {
         "key": "korean",
-        "heading": "## 🇰🇷 韓国語レベルを選択してください",
+        "heading": "## 🇰🇷 あなたの韓国語レベルを選択してください",
+        "subheading": "당신의 한국어 레벨을 선택해주세요",
+        "legacy_headings": (
+            "## 🇰🇷 韓国語レベルを選択してください",
+            "## 🇰🇷 당신의 한국어 레벨을 선택해주세요",
+            "## 🇰🇷 당신의 한국어 레벨을 선택해주세요 / あなたの韓国語レベルを選択してください",
+        ),
         "placeholder": "韓国語レベルを選択",
         "roles": (
-            (1528791795582898286, "不可"),
-            (1528789614989545542, "初級"),
-            (1528790289999859822, "中級"),
-            (1528790367644811264, "上級"),
+            (1528791795582898286, "不可", "불가"),
+            (1528789614989545542, "初級", "초급"),
+            (1528790289999859822, "中級", "중급"),
+            (1528790367644811264, "上級", "상급"),
         ),
     },
 )
@@ -46,10 +63,10 @@ class LevelSelect(discord.ui.Select):
         self.selection = selection
         options = [
             discord.SelectOption(
-                label=label,
+                label=f"{label} / {description}",
                 value=str(role_id),
             )
-            for role_id, label in selection["roles"]
+            for role_id, label, description in selection["roles"]
         ]
         super().__init__(
             placeholder=selection["placeholder"],
@@ -97,10 +114,11 @@ class ReactionRole(commands.Cog):
                 print(f"[ERROR] 레벨 선택 채널을 불러오지 못했습니다: {error}")
                 return
 
-        headings = {
-            selection["heading"]: selection
-            for selection in ROLE_SELECTIONS
-        }
+        headings = {}
+        for selection in ROLE_SELECTIONS:
+            headings[selection["heading"]] = selection
+            for legacy_heading in selection.get("legacy_headings", ()):
+                headings[legacy_heading] = selection
         existing_messages = {}
         found_messages = []
 
@@ -156,6 +174,8 @@ class ReactionRole(commands.Cog):
             print(f"[ERROR] 레벨 선택 안내 메시지를 준비하지 못했습니다: {error}")
 
     def _build_role_message(self, selection):
+        if selection["subheading"]:
+            return f'{selection["heading"]}\n-# {selection["subheading"]}'
         return selection["heading"]
 
     async def apply_role_selection(self, interaction, selection, selected_role_id):
@@ -176,7 +196,7 @@ class ReactionRole(commands.Cog):
 
         level_role_ids = {
             role_id
-            for role_id, _ in selection["roles"]
+            for role_id, _, _ in selection["roles"]
         }
         other_level_roles = [
             role
