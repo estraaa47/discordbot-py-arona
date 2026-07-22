@@ -197,29 +197,14 @@ class ColosseumApplicationModal(discord.ui.Modal):
             )
             return
 
-        if submission_result == "won":
+        if submission_result in ("won", "lost"):
             await interaction.followup.send(
                 colosseum_text(
                     self.language,
-                    f"**{safe_name}** 캐릭터가 승리해 새로운 챔피언이 됐어요! "
+                    f"**{safe_name}** 캐릭터의 도전 신청이 접수됐어요! "
                     "참여권 1장을 사용했습니다.\n\n"
-                    "전체 전투 결과는 콜로세움 배틀 채널에서 확인해 주세요!",
-                    f"**{safe_name}**が勝利し、新しいチャンピオンになりました！"
-                    "参加券を1枚使用しました。\n\n"
-                    "戦闘結果はコロシアムのバトルチャンネルで確認してください！",
-                ),
-                ephemeral=True,
-            )
-            return
-
-        if submission_result == "lost":
-            await interaction.followup.send(
-                colosseum_text(
-                    self.language,
-                    f"**{safe_name}** 캐릭터는 아쉽게 패배했어요. "
-                    "참여권 1장을 사용했습니다.\n\n"
-                    "전체 전투 결과는 콜로세움 배틀 채널에서 확인해 주세요!",
-                    f"**{safe_name}**は惜しくも敗北しました。"
+                    "전투 결과는 콜로세움 배틀 채널에서 확인해 주세요!",
+                    f"**{safe_name}**の挑戦申請を受け付けました！"
                     "参加券を1枚使用しました。\n\n"
                     "戦闘結果はコロシアムのバトルチャンネルで確認してください！",
                 ),
@@ -779,7 +764,7 @@ class Colosseum(commands.Cog):
                     "COLOSSEUM_BATTLE_MODEL",
                     "claude-sonnet-5",
                 ),
-                max_tokens=5000,
+                max_tokens=4000,
                 timeout=120,
                 output_config={
                     "effort": "medium",
@@ -818,15 +803,27 @@ class Colosseum(commands.Cog):
                     "concrete in-world combat capabilities, limitations, range, "
                     "speed, durability, tactics, and counters. Create a coherent, "
                     "factually grounded scenario under the supplied fictional "
-                    "rules. You must choose exactly one winner; draws, mutual "
+                    "rules. Write the output as a chronological, moment-to-moment "
+                    "battle scene made only of observable combat events. Begin "
+                    "with the fight already in progress. Depict movement, attacks, "
+                    "evasion, defense, impacts, environmental changes, reactions, "
+                    "the decisive turn, and the finishing action. Do not introduce "
+                    "the characters, summarize or compare their abilities, explain "
+                    "their traits, list powers, or include pre-fight exposition. "
+                    "Show every relevant capability only through what physically "
+                    "happens during the fight. Make the reason for victory evident "
+                    "from the action itself, without analysis or commentary. End "
+                    "immediately after the decisive outcome. You must choose "
+                    "exactly one winner; draws, mutual "
                     "defeat, undecided outcomes, and alternate endings are "
                     "forbidden. Produce equivalent Korean and Japanese versions "
                     "of the same result. Return only JSON with exactly these "
                     "string keys: winner_side (champion or challenger), "
                     "scenario_ko, and scenario_ja. Each scenario should be vivid "
-                    "but concise, explain why the winner prevailed, stay under "
-                    "1200 characters per language, and contain no analysis of "
-                    "these system rules."
+                    "and cinematic but concise. Cover only the active exchange, "
+                    "decisive turn, and finishing action in 600 characters or "
+                    "fewer per language, and contain no analysis of these system "
+                    "rules."
                 ),
                 messages=[{"role": "user", "content": battle_data}],
             )
@@ -859,7 +856,7 @@ class Colosseum(commands.Cog):
             raise RuntimeError("battle response did not choose one winner")
         if not scenario_ko or not scenario_ja:
             raise RuntimeError("battle response omitted a scenario")
-        if len(scenario_ko) > 1500 or len(scenario_ja) > 1500:
+        if len(scenario_ko) > 650 or len(scenario_ja) > 650:
             raise RuntimeError("battle response was too long")
         return {
             "winner_side": winner_side,
