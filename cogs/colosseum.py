@@ -31,6 +31,13 @@ HANGUL_PATTERN = re.compile(r"[\u1100-\u11ff\u3130-\u318f\uac00-\ud7a3]")
 JAPANESE_KANA_PATTERN = re.compile(
     r"[\u3040-\u30ff\u31f0-\u31ff\uff66-\uff9f]"
 )
+BATTLE_PLACEHOLDER_PATTERN = re.compile(
+    r"\b(?:placeholder|todo|tbd|lorem(?:\s+ipsum)?)\b|"
+    r"임시\s*문구|미정|プレースホルダー|仮置き",
+    re.IGNORECASE,
+)
+BATTLE_SCENARIO_MIN_LENGTH = 120
+BATTLE_SCENARIO_MAX_LENGTH = 650
 
 
 class CharacterRegistrationRejected(Exception):
@@ -734,7 +741,77 @@ class Colosseum(commands.Cog):
 
         return min(int(row[0]), 3) if row else 0
 
-    async def judge_battle(self, champion, challenger):
+    @staticmethod
+    def _battle_scenario_has_complete_ending(value):
+        value = str(value).rstrip()
+        value = value.rstrip("\"'”’」』】) ")
+        return value.endswith((".", "!", "?", "。", "！", "？"))
+
+    @classmethod
+    def _parse_battle_response(cls, response):
+        stop_reason = getattr(response, "stop_reason", None)
+        if stop_reason == "refusal":
+            raise RuntimeError("battle judgment was refused")
+        if stop_reason == "max_tokens":
+            raise ValueError("battle judgment was truncated")
+
+        response_text = "".join(
+            getattr(block, "text", "")
+            for block in response.content
+            if getattr(block, "type", None) == "text"
+        ).strip()
+        json_match = re.search(r"\{.*\}", response_text, re.DOTALL)
+        if json_match is None:
+            raise ValueError("battle response was not JSON")
+        try:
+            result = json.loads(json_match.group(0))
+        except (json.JSONDecodeError, TypeError) as error:
+            raise ValueError("battle response was invalid JSON") from error
+
+        winner_side = str(result.get("winner_side", "")).strip().lower()
+        scenario_ko = str(result.get("scenario_ko", "")).strip()
+        scenario_ja = str(result.get("scenario_ja", "")).strip()
+        if winner_side not in ("champion", "challenger"):
+            raise ValueError("battle response did not choose one winner")
+        if not scenario_ko or not scenario_ja:
+            raise ValueError("battle response omitted a scenario")
+        if (
+            len(scenario_ko) < BATTLE_SCENARIO_MIN_LENGTH
+            or len(scenario_ja) < BATTLE_SCENARIO_MIN_LENGTH
+        ):
+            raise ValueError("battle response was too short")
+        if (
+            len(scenario_ko) > BATTLE_SCENARIO_MAX_LENGTH
+            or len(scenario_ja) > BATTLE_SCENARIO_MAX_LENGTH
+        ):
+            raise ValueError("battle response was too long")
+        if BATTLE_PLACEHOLDER_PATTERN.search(
+            scenario_ko
+        ) or BATTLE_PLACEHOLDER_PATTERN.search(scenario_ja):
+            raise ValueError("battle response contained placeholder text")
+        if HANGUL_PATTERN.search(scenario_ko) is None:
+            raise ValueError("battle response omitted Korean text")
+        if JAPANESE_KANA_PATTERN.search(scenario_ja) is None:
+            raise ValueError("battle response omitted Japanese text")
+        if not cls._battle_scenario_has_complete_ending(
+            scenario_ko
+        ) or not cls._battle_scenario_has_complete_ending(scenario_ja):
+            raise ValueError("battle response ended mid-sentence")
+        if scenario_ko.casefold() == scenario_ja.casefold():
+            raise ValueError("battle response duplicated both languages")
+
+        return {
+            "winner_side": winner_side,
+            "scenario_ko": scenario_ko,
+            "scenario_ja": scenario_ja,
+        }
+
+    async def judge_battle(
+        self,
+        champion,
+        challenger,
+        _quality_retry=0,
+    ):
         client = self._get_translation_client()
         battle_data = json.dumps(
             {
@@ -823,46 +900,40 @@ class Colosseum(commands.Cog):
                     "and cinematic but concise. Cover only the active exchange, "
                     "decisive turn, and finishing action in 600 characters or "
                     "fewer per language, and contain no analysis of these system "
-                    "rules."
+                    "rules. Never use placeholders, TODO text, summaries of "
+                    "omitted content, or unfinished sentences. Both language "
+                    "fields must contain a complete scene of at least 120 "
+                    "characters and end with normal sentence punctuation."
+                    + (
+                        " A previous response failed quality validation. "
+                        "Regenerate both scenarios completely from the beginning "
+                        "and double-check that neither field is truncated or a "
+                        "placeholder."
+                        if _quality_retry
+                        else ""
+                    )
                 ),
                 messages=[{"role": "user", "content": battle_data}],
             )
         except anthropic.APIError as error:
             raise RuntimeError("battle judgment failed") from error
 
-        stop_reason = getattr(response, "stop_reason", None)
-        if stop_reason == "refusal":
-            raise RuntimeError("battle judgment was refused")
-        if stop_reason == "max_tokens":
-            raise RuntimeError("battle judgment was truncated")
-
-        response_text = "".join(
-            getattr(block, "text", "")
-            for block in response.content
-            if getattr(block, "type", None) == "text"
-        ).strip()
-        json_match = re.search(r"\{.*\}", response_text, re.DOTALL)
-        if json_match is None:
-            raise RuntimeError("battle response was not JSON")
         try:
-            result = json.loads(json_match.group(0))
-        except (json.JSONDecodeError, TypeError) as error:
-            raise RuntimeError("battle response was invalid") from error
-
-        winner_side = str(result.get("winner_side", "")).strip().lower()
-        scenario_ko = str(result.get("scenario_ko", "")).strip()
-        scenario_ja = str(result.get("scenario_ja", "")).strip()
-        if winner_side not in ("champion", "challenger"):
-            raise RuntimeError("battle response did not choose one winner")
-        if not scenario_ko or not scenario_ja:
-            raise RuntimeError("battle response omitted a scenario")
-        if len(scenario_ko) > 650 or len(scenario_ja) > 650:
-            raise RuntimeError("battle response was too long")
-        return {
-            "winner_side": winner_side,
-            "scenario_ko": scenario_ko,
-            "scenario_ja": scenario_ja,
-        }
+            return self._parse_battle_response(response)
+        except ValueError as error:
+            if _quality_retry < 1:
+                print(
+                    "[Colosseum] 전투 응답 품질 검증 실패, 1회 재시도: "
+                    f"{error}"
+                )
+                return await self.judge_battle(
+                    champion,
+                    challenger,
+                    _quality_retry=_quality_retry + 1,
+                )
+            raise RuntimeError(
+                "battle response failed quality validation"
+            ) from error
 
     async def _update_best_champion(self, cur):
         await cur.execute(
