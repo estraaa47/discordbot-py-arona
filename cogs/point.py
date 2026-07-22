@@ -23,6 +23,7 @@ class Point(commands.Cog):
             user=os.getenv('DB_USER'),
             password=os.getenv('DB_PASS'),
             db=os.getenv('DB_NAME'),
+            charset='utf8mb4',
             autocommit=True
         )
 
