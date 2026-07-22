@@ -1816,61 +1816,63 @@ class Colosseum(commands.Cog):
     @classmethod
     def _build_hall_of_fame_embed(cls, stats):
         embed = discord.Embed(
-            title="🏛️ 콜로세움 명예의 전당",
+            title="🏛️ 콜로세움 명예의 전당 / コロシアム殿堂",
             description=(
-                "-# コロシアム殿堂\n\n"
                 "전투가 끝날 때마다 기록이 자동으로 갱신됩니다.\n"
                 "-# 戦闘終了後に記録が自動更新されます。"
             ),
             color=discord.Color.gold(),
         )
         embed.add_field(
-            name="👑 역대 최고 챔피언",
+            name="👑 역대 최고 챔피언 / 歴代最高チャンピオン",
             value=cls._format_hall_best_champion(stats["best_champion"]),
             inline=False,
         )
         embed.add_field(
-            name="⚔️ 최다 승리 유저",
+            name="⚔️ 최다 승리 유저 / 最多勝利ユーザー",
             value=cls._format_hall_user_records(
                 stats["most_wins"], "승", "勝"
             ),
             inline=False,
         )
         embed.add_field(
-            name="🔥 최고 연승 유저",
+            name="🔥 최고 연승 유저 / 最高連勝ユーザー",
             value=cls._format_hall_user_records(
                 stats["best_win_streak"], "연승", "連勝"
             ),
             inline=False,
         )
         embed.add_field(
-            name="💀 최장 연패 유저",
+            name="💀 최장 연패 유저 / 最長連敗ユーザー",
             value=cls._format_hall_user_records(
                 stats["worst_loss_streak"], "연패", "連敗"
             ),
             inline=False,
         )
         embed.add_field(
-            name="🤝 최고의 라이벌",
+            name="🤝 최고의 라이벌 / 最高のライバル",
             value=cls._format_hall_rivals(stats["best_rivals"]),
             inline=False,
         )
         embed.add_field(
-            name="🪞 자기 자신과 가장 많이 싸운 유저",
+            name=(
+                "🪞 자기 자신과 가장 많이 싸운 유저 / "
+                "自分自身と最も多く戦ったユーザー"
+            ),
             value=cls._format_hall_user_records(
                 stats["most_self_battles"], "회", "回"
             ),
             inline=False,
         )
         embed.add_field(
-            name="🎯 최다 도전 유저",
+            name="🎯 최다 도전 유저 / 最多挑戦ユーザー",
             value=cls._format_hall_user_records(
                 stats["most_challenges"], "회", "回"
             ),
             inline=False,
         )
         embed.add_field(
-            name="📝 최대 글자 수 차이 승리",
+            name="📝 최대 글자 수 차이 승리 / 最大文字数差での勝利",
             value=cls._format_hall_char_advantage(
                 stats["best_char_advantage"]
             ),
