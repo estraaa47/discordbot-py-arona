@@ -179,9 +179,11 @@ class ColosseumApplicationModal(discord.ui.Modal):
                 colosseum_text(
                     self.language,
                     "보유 참여권이 **0장**이에요. "
-                    "참여권은 매일 00시에 최대 3장까지 충전됩니다.",
+                    "일일 참여권은 매일 00시에 최대 3장까지 충전되며, "
+                    "지급받은 참여권은 별도로 누적됩니다.",
                     "所持している参加券は**0枚**です。"
-                    "参加券は毎日0時に最大3枚まで補充されます。",
+                    "デイリー参加券は毎日0時に最大3枚まで補充され、"
+                    "付与された参加券は別途累積されます。",
                 ),
                 ephemeral=True,
             )
@@ -267,9 +269,11 @@ class ColosseumApplicationView(discord.ui.View):
                 colosseum_text(
                     language,
                     "보유 참여권이 **0장**이에요. "
-                    "참여권은 매일 00시에 최대 3장까지 충전됩니다.",
+                    "일일 참여권은 매일 00시에 최대 3장까지 충전되며, "
+                    "지급받은 참여권은 별도로 누적됩니다.",
                     "所持している参加券は**0枚**です。"
-                    "参加券は毎日0時に最大3枚まで補充されます。",
+                    "デイリー参加券は毎日0時に最大3枚まで補充され、"
+                    "付与された参加券は別途累積されます。",
                 ),
                 ephemeral=True,
             )
@@ -350,11 +354,28 @@ class Colosseum(commands.Cog):
                         CREATE TABLE IF NOT EXISTS colosseum_tickets (
                             user_id BIGINT UNSIGNED NOT NULL PRIMARY KEY,
                             tickets TINYINT UNSIGNED NOT NULL DEFAULT 3,
+                            bonus_tickets INT UNSIGNED NOT NULL DEFAULT 0,
                             last_recharged_on DATE NOT NULL,
                             updated_at TIMESTAMP NOT NULL
                                 DEFAULT CURRENT_TIMESTAMP
                                 ON UPDATE CURRENT_TIMESTAMP
                         ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+                        """
+                    )
+                    await self._ensure_column(
+                        cur,
+                        "colosseum_tickets",
+                        "bonus_tickets",
+                        "INT UNSIGNED NOT NULL DEFAULT 0",
+                    )
+                    # 기존 tickets에 3장을 초과해 지급해 둔 수량은
+                    # 소실하지 않고 지급권으로 한 번만 이전한다.
+                    await cur.execute(
+                        """
+                        UPDATE colosseum_tickets
+                        SET bonus_tickets = bonus_tickets + (tickets - 3),
+                            tickets = 3
+                        WHERE tickets > 3
                         """
                     )
                     await cur.execute(
@@ -697,8 +718,8 @@ class Colosseum(commands.Cog):
         await cur.execute(
             """
             INSERT INTO colosseum_tickets (
-                user_id, tickets, last_recharged_on
-            ) VALUES (%s, 3, %s)
+                user_id, tickets, bonus_tickets, last_recharged_on
+            ) VALUES (%s, 3, 0, %s)
             ON DUPLICATE KEY UPDATE user_id = user_id
             """,
             (user_id, today),
@@ -711,15 +732,34 @@ class Colosseum(commands.Cog):
             """,
             (today, user_id, today),
         )
-        # 방어적으로 DB 값도 항상 최대 보유량인 3장 이하로 맞춘다.
+        # tickets는 일일 충전권(최대 3장), bonus_tickets는 지급권이다.
+        # 관리자가 기존 방식으로 tickets에 3장보다 많이 넣어도
+        # 초과분을 지급권으로 옮겨 소실되거나 자정에 덮어써지지 않게 한다.
         await cur.execute(
             """
             UPDATE colosseum_tickets
-            SET tickets = 3
+            SET bonus_tickets = bonus_tickets + (tickets - 3),
+                tickets = 3
             WHERE user_id = %s AND tickets > 3
             """,
             (user_id,),
         )
+
+    @staticmethod
+    async def _consume_ticket(cur, user_id):
+        await cur.execute(
+            """
+            UPDATE colosseum_tickets
+            SET bonus_tickets = bonus_tickets
+                    - CASE WHEN tickets = 0 THEN 1 ELSE 0 END,
+                tickets = tickets
+                    - CASE WHEN tickets > 0 THEN 1 ELSE 0 END
+            WHERE user_id = %s
+              AND (tickets > 0 OR bonus_tickets > 0)
+            """,
+            (user_id,),
+        )
+        return cur.rowcount == 1
 
     async def get_ticket_count(self, user_id):
         await self.ensure_database()
@@ -731,7 +771,7 @@ class Colosseum(commands.Cog):
                 await self._refresh_ticket(cur, user_id, today)
                 await cur.execute(
                     """
-                    SELECT tickets
+                    SELECT tickets, bonus_tickets
                     FROM colosseum_tickets
                     WHERE user_id = %s
                     """,
@@ -739,7 +779,7 @@ class Colosseum(commands.Cog):
                 )
                 row = await cur.fetchone()
 
-        return min(int(row[0]), 3) if row else 0
+        return int(row[0]) + int(row[1]) if row else 0
 
     @staticmethod
     def _battle_scenario_has_complete_ending(value):
@@ -1010,15 +1050,10 @@ class Colosseum(commands.Cog):
                         challenger["user_id"],
                         today,
                     )
-                    await cur.execute(
-                        """
-                        UPDATE colosseum_tickets
-                        SET tickets = tickets - 1
-                        WHERE user_id = %s AND tickets > 0
-                        """,
-                        (challenger["user_id"],),
-                    )
-                    if cur.rowcount != 1:
+                    if not await self._consume_ticket(
+                        cur,
+                        challenger["user_id"],
+                    ):
                         await conn.rollback()
                         return None
 
@@ -1110,15 +1145,10 @@ class Colosseum(commands.Cog):
                         challenger["user_id"],
                         today,
                     )
-                    await cur.execute(
-                        """
-                        UPDATE colosseum_tickets
-                        SET tickets = tickets - 1
-                        WHERE user_id = %s AND tickets > 0
-                        """,
-                        (challenger["user_id"],),
-                    )
-                    if cur.rowcount != 1:
+                    if not await self._consume_ticket(
+                        cur,
+                        challenger["user_id"],
+                    ):
                         await conn.rollback()
                         return None
 
@@ -2144,18 +2174,20 @@ class Colosseum(commands.Cog):
         embed = discord.Embed(
             title="⚔️ 콜로세움 도전자 모집 / コロシアム挑戦者募集",
             description=(
-                "**보유 참여권: 버튼을 눌러 확인 (최대 3장)**\n\n"
+                "**보유 참여권: 버튼을 눌러 확인**\n\n"
                 "선생님, 콜로세움의 왕좌를 지키는 강대한 챔피언이 "
                 "새로운 도전자를 기다리고 있어요!\n\n"
                 "선생님만의 캐릭터를 만들어, 챔피언에게 도전해 주세요.\n"
-                "도전권은 매일 00시에 3장으로 충전됩니다.\n\n\n"
+                "일일 도전권은 매일 00시에 최대 3장까지 충전되며, "
+                "지급받은 도전권은 별도로 누적됩니다.\n\n\n"
                 "아로나가 선생님의 승리를 끝까지 응원할게요!\n\n"
                 "──────────────\n\n"
-                "**所持参加券：ボタンを押して確認（最大3枚）**\n\n"
+                "**所持参加券：ボタンを押して確認**\n\n"
                 "先生、コロシアムの王座を守る強大なチャンピオンが、"
                 "新たな挑戦者を待っています！\n\n"
                 "先生だけのキャラクターを作って、チャンピオンに挑戦してください。\n"
-                "挑戦券は毎日0時に所持数が3枚まで補充されます。\n\n\n"
+                "デイリー挑戦券は毎日0時に最大3枚まで補充され、"
+                "付与された挑戦券は別途累積されます。\n\n\n"
                 "アロナが先生の勝利を最後まで応援します！"
             ),
             color=discord.Color.gold(),
