@@ -6,6 +6,7 @@ from discord.ext import commands
 
 ROLE_CHANNEL_ID = 1528787386153304105
 WELCOME_CHANNEL_ID = 1087554522378948609
+LEAVE_LOG_CHANNEL_ID = 1530659152643227749
 WELCOME_MESSAGES = {
     "ko": "{mention} 선생님, 반가워요! rule 채널을 확인해 주세요.",
     "ja": "{mention}先生、はじめまして！ruleチャンネルを確認してください。",
@@ -286,6 +287,15 @@ class ReactionRole(commands.Cog):
         await channel.send(
             messages[language].format(mention=member.mention)
         )
+
+    @commands.Cog.listener()
+    async def on_member_remove(self, member):
+        channel = self.bot.get_channel(LEAVE_LOG_CHANNEL_ID)
+        if channel is None:
+            return
+
+        name = member.display_name
+        await channel.send(f"↳ **{name}**님이 서버에서 떠났어요.")
 
 
 async def setup(bot):
