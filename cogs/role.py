@@ -5,6 +5,15 @@ from discord.ext import commands
 
 
 ROLE_CHANNEL_ID = 1528787386153304105
+WELCOME_CHANNEL_ID = 1087554522378948609
+WELCOME_MESSAGES = {
+    "ko": "{mention} 선생님, 반가워요! rule 채널을 확인해 주세요.",
+    "ja": "{mention}先生、はじめまして！ruleチャンネルを確認してください。",
+}
+BOT_JOIN_MESSAGES = {
+    "ko": "{mention} 새로운 봇이 들어왔어요!",
+    "ja": "{mention} 新しいBotが参加しました！",
+}
 ROLE_SELECTIONS = (
     {
         "key": "nationality",
@@ -267,12 +276,16 @@ class ReactionRole(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
-        channel = self.bot.get_channel(1087554522378948609)
-        if member.bot:
-            await member.add_roles(member.guild.get_role(888840043463053333))
-            await channel.send(f'{member.mention}님 Bot 역할 지급 완료!')
-        else:
-            await channel.send(f'{member.mention}님 반갑습니다! rule 채널을 확인해주세요.')
+        channel = self.bot.get_channel(WELCOME_CHANNEL_ID)
+        if channel is None:
+            return
+
+        locale = member.guild.preferred_locale
+        language = "ja" if locale is discord.Locale.japanese else "ko"
+        messages = BOT_JOIN_MESSAGES if member.bot else WELCOME_MESSAGES
+        await channel.send(
+            messages[language].format(mention=member.mention)
+        )
 
 
 async def setup(bot):
