@@ -246,6 +246,13 @@ class ReactionRole(commands.Cog):
         if guild is None:
             return
 
+        level_role_ids = {
+            role_id
+            for role_id, _, _ in selection["roles"]
+        }
+        if selected_role_id not in level_role_ids:
+            return
+
         member = interaction.user
         if not isinstance(member, discord.Member):
             try:
@@ -257,10 +264,6 @@ class ReactionRole(commands.Cog):
         if selected_role is None:
             return
 
-        level_role_ids = {
-            role_id
-            for role_id, _, _ in selection["roles"]
-        }
         other_level_roles = [
             role
             for role in member.roles

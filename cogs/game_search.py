@@ -234,10 +234,19 @@ class GameRoleSelect(discord.ui.Select):
             except (discord.NotFound, discord.HTTPException):
                 return
 
-        selected_role_ids = {int(value) for value in self.values}
         game_role_ids = {
             role_id for role_id, _, _, _ in GAME_ROLE_OPTIONS
         }
+        try:
+            selected_role_ids = {
+                int(value)
+                for value in self.values
+            }
+        except (TypeError, ValueError):
+            return
+        if not selected_role_ids.issubset(game_role_ids):
+            return
+
         current_game_roles = [
             role for role in member.roles if role.id in game_role_ids
         ]

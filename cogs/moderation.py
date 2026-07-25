@@ -92,8 +92,38 @@ class Moderation(commands.Cog):
                     
                     if target_channel:
                         timestamp = (message.created_at + timedelta(hours=9)).strftime("%Y-%m-%d %H:%M:%S KST")
-                        forward_text = f"[보낸 사람]: {message.author}\n[보낸 시간]: {timestamp}\n[메시지]:\n{text}\n{adrole.mention}, {sadrole.mention}"
-                        await target_channel.send(forward_text)
+                        manager_roles = [
+                            role for role in (adrole, sadrole)
+                            if role is not None
+                        ]
+                        manager_mentions = " ".join(
+                            role.mention for role in manager_roles
+                        )
+                        log_embed = discord.Embed(
+                            title="스팸 링크 감지",
+                            description=text,
+                            color=discord.Color.red(),
+                        )
+                        log_embed.add_field(
+                            name="보낸 사람",
+                            value=f"{message.author} (`{message.author.id}`)",
+                            inline=False,
+                        )
+                        log_embed.add_field(
+                            name="보낸 시간",
+                            value=timestamp,
+                            inline=False,
+                        )
+                        await target_channel.send(
+                            content=manager_mentions or None,
+                            embed=log_embed,
+                            allowed_mentions=discord.AllowedMentions(
+                                everyone=False,
+                                users=False,
+                                roles=manager_roles,
+                                replied_user=False,
+                            ),
+                        )
 
                     # 역할 부여
                     role = message.guild.get_role(1087892271703261316)
