@@ -129,6 +129,8 @@ class ReactionRole(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self._message_setup_lock = asyncio.Lock()
+        self._nationality_backfill_lock = asyncio.Lock()
+        self._nationality_backfill_complete = False
         self.views = {
             selection["key"]: LevelRoleView(self, selection)
             for selection in ROLE_SELECTIONS
@@ -136,6 +138,10 @@ class ReactionRole(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
+        try:
+            await self._backfill_existing_nationality_roles()
+        except (aiomysql.MySQLError, RuntimeError) as error:
+            print(f"[ERROR] 기존 국적 역할 DB 등록 실패: {error}")
         await self.ensure_role_messages()
 
     async def ensure_role_messages(self):
@@ -314,6 +320,62 @@ class ReactionRole(commands.Cog):
         if pool is None:
             raise RuntimeError("MariaDB connection pool is not ready")
         return pool
+
+    async def _backfill_existing_nationality_roles(self):
+        """기능 도입 전에 국적 역할을 받은 구성원을 인사 없이 최초 1회 등록."""
+        async with self._nationality_backfill_lock:
+            if self._nationality_backfill_complete:
+                return
+
+            nationality_role_ids = (
+                KOREAN_NATIONALITY_ROLE_ID,
+                JAPANESE_NATIONALITY_ROLE_ID,
+            )
+            records = []
+            for guild in self.bot.guilds:
+                for member in guild.members:
+                    if member.bot:
+                        continue
+
+                    member_role_ids = {
+                        role.id
+                        for role in member.roles
+                    }
+                    selected_role_id = next(
+                        (
+                            role_id
+                            for role_id in nationality_role_ids
+                            if role_id in member_role_ids
+                        ),
+                        None,
+                    )
+                    if selected_role_id is not None:
+                        records.append(
+                            (guild.id, member.id, selected_role_id)
+                        )
+
+            if records:
+                pool = self._get_pool()
+                async with pool.acquire() as conn:
+                    async with conn.cursor() as cur:
+                        await cur.executemany(
+                            f"""
+                            INSERT IGNORE INTO `{NATIONALITY_WELCOME_TABLE}` (
+                                guild_id,
+                                user_id,
+                                selected_role_id
+                            )
+                            VALUES (%s, %s, %s)
+                            """,
+                            records,
+                        )
+                        inserted_count = max(cur.rowcount, 0)
+                print(
+                    "[Role] 기존 국적 역할 DB 등록 완료: "
+                    f"{inserted_count}/{len(records)}명 신규 등록"
+                )
+
+            self._nationality_backfill_complete = True
 
     async def _record_nationality_welcome(
         self,
