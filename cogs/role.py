@@ -17,11 +17,11 @@ NATIONALITY_WELCOME_TABLE = "arona_nationality_welcomes"
 NATIONALITY_WELCOME_MESSAGES = {
     KOREAN_NATIONALITY_ROLE_ID: (
         "{mention} 선생님, 반가워요! 환영합니다!\n"
-        "-# 韓国の方です。"
+        "-# 韓国からいらした先生です！これからみんなで楽しく過ごしましょう～！"
     ),
     JAPANESE_NATIONALITY_ROLE_ID: (
         "{mention}先生、はじめまして！ようこそ！\n"
-        "-# 일본 분이에요."
+        "-# 일본에서 오신 선생님이에요! 앞으로 다 같이 즐겁게 지내봐요~!"
     ),
 }
 ROLE_SELECTIONS = (
