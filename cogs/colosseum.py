@@ -1592,6 +1592,14 @@ class Colosseum(commands.Cog):
         embed.set_footer(text=COLOSSEUM_CHAMPION_MESSAGE_FOOTER)
         return embed
 
+    @staticmethod
+    def _message_matches_embed(message, embed):
+        return (
+            not message.content
+            and len(message.embeds) == 1
+            and message.embeds[0].to_dict() == embed.to_dict()
+        )
+
     async def ensure_champion_message(self):
         async with self._champion_message_lock:
             channel = self.bot.get_channel(COLOSSEUM_BATTLE_CHANNEL_ID)
@@ -1620,6 +1628,11 @@ class Colosseum(commands.Cog):
                     embed=embed,
                     allowed_mentions=discord.AllowedMentions.none(),
                 )
+            elif self._message_matches_embed(
+                self._champion_message,
+                embed,
+            ):
+                return
             else:
                 try:
                     await self._champion_message.edit(
@@ -2012,6 +2025,11 @@ class Colosseum(commands.Cog):
                     embed=embed,
                     allowed_mentions=discord.AllowedMentions.none(),
                 )
+            elif self._message_matches_embed(
+                self._hall_of_fame_message,
+                embed,
+            ):
+                return
             else:
                 try:
                     await self._hall_of_fame_message.edit(
@@ -2140,9 +2158,9 @@ class Colosseum(commands.Cog):
                     COLOSSEUM_BATTLE_CHANNEL_ID
                 )
 
-            messages_to_delete = []
+            battle_messages = []
             if self._battle_message is not None:
-                messages_to_delete.append(self._battle_message)
+                battle_messages.append(self._battle_message)
             async for message in channel.history(limit=200):
                 if message.author.id != self.bot.user.id:
                     continue
@@ -2152,17 +2170,37 @@ class Colosseum(commands.Cog):
                     if embed.footer is not None
                 ) and all(
                     existing.id != message.id
-                    for existing in messages_to_delete
+                    for existing in battle_messages
                 ):
-                    messages_to_delete.append(message)
+                    battle_messages.append(message)
 
+            embed = self._build_battle_embed(battle)
+            current_message = next(
+                (
+                    message
+                    for message in battle_messages
+                    if self._message_matches_embed(message, embed)
+                ),
+                None,
+            )
+            if current_message is not None:
+                self._battle_message = current_message
+                self._battle_message_is_ready = True
+
+            messages_to_delete = [
+                message
+                for message in battle_messages
+                if current_message is None or message.id != current_message.id
+            ]
             for message in messages_to_delete:
                 try:
                     await message.delete()
                 except discord.NotFound:
                     pass
 
-            embed = self._build_battle_embed(battle)
+            if current_message is not None:
+                return
+
             self._battle_message = await channel.send(
                 embed=embed,
                 allowed_mentions=discord.AllowedMentions.none(),
@@ -2196,12 +2234,21 @@ class Colosseum(commands.Cog):
         return embed
 
     @staticmethod
-    def _has_application_button(message):
-        return any(
-            getattr(component, "custom_id", None)
-            == COLOSSEUM_BUTTON_CUSTOM_ID
+    def _has_current_application_button(message):
+        components = [
+            component
             for row in message.components
             for component in getattr(row, "children", [])
+        ]
+        return (
+            len(components) == 1
+            and getattr(components[0], "custom_id", None)
+            == COLOSSEUM_BUTTON_CUSTOM_ID
+            and getattr(components[0], "label", None)
+            == "⚔️ 도전 신청 / 挑戦申請"
+            and getattr(components[0], "style", None)
+            == discord.ButtonStyle.primary
+            and not getattr(components[0], "disabled", False)
         )
 
     async def ensure_recruitment_message(self):
@@ -2221,7 +2268,7 @@ class Colosseum(commands.Cog):
                 if (
                     message.author.id == self.bot.user.id
                     and (
-                        self._has_application_button(message)
+                        self._has_current_application_button(message)
                         or any(
                             embed.footer.text == COLOSSEUM_MESSAGE_FOOTER
                             for embed in message.embeds
@@ -2235,7 +2282,12 @@ class Colosseum(commands.Cog):
             embed = self._build_recruitment_embed()
             if recruitment_message is None:
                 await channel.send(embed=embed, view=self.application_view)
-            else:
+            elif not (
+                self._message_matches_embed(recruitment_message, embed)
+                and self._has_current_application_button(
+                    recruitment_message
+                )
+            ):
                 await recruitment_message.edit(
                     content=None,
                     embed=embed,
