@@ -322,7 +322,7 @@ class ReactionRole(commands.Cog):
         return pool
 
     async def _backfill_existing_nationality_roles(self):
-        """기능 도입 전에 국적 역할을 받은 구성원을 인사 없이 최초 1회 등록."""
+        """현재 구성원과 국적 인사 DB를 동기화하고 기존 역할 보유자를 등록."""
         async with self._nationality_backfill_lock:
             if self._nationality_backfill_complete:
                 return
@@ -331,12 +331,31 @@ class ReactionRole(commands.Cog):
                 KOREAN_NATIONALITY_ROLE_ID,
                 JAPANESE_NATIONALITY_ROLE_ID,
             )
+            guilds = tuple(self.bot.guilds)
+            current_member_keys = set()
             records = []
-            for guild in self.bot.guilds:
+            for guild in guilds:
+                if guild.unavailable:
+                    raise RuntimeError(
+                        f"Guild member list is unavailable: {guild.id}"
+                    )
+                if not guild.chunked:
+                    try:
+                        await guild.chunk(cache=True)
+                    except (
+                        asyncio.TimeoutError,
+                        discord.ClientException,
+                        discord.HTTPException,
+                    ) as error:
+                        raise RuntimeError(
+                            f"Could not load all guild members: {guild.id}"
+                        ) from error
+
                 for member in guild.members:
                     if member.bot:
                         continue
 
+                    current_member_keys.add((guild.id, member.id))
                     member_role_ids = {
                         role.id
                         for role in member.roles
@@ -354,13 +373,13 @@ class ReactionRole(commands.Cog):
                             (guild.id, member.id, selected_role_id)
                         )
 
-            if records:
+            if guilds:
                 pool = self._get_pool()
                 async with pool.acquire() as conn:
                     async with conn.cursor() as cur:
                         guild_ids = tuple(sorted({
-                            guild_id
-                            for guild_id, _, _ in records
+                            guild.id
+                            for guild in guilds
                         }))
                         placeholders = ", ".join(
                             "%s"
@@ -378,6 +397,18 @@ class ReactionRole(commands.Cog):
                             (int(guild_id), int(user_id))
                             for guild_id, user_id in await cur.fetchall()
                         }
+                        stale_keys = sorted(
+                            existing_keys - current_member_keys
+                        )
+                        if stale_keys:
+                            await cur.executemany(
+                                f"""
+                                DELETE FROM `{NATIONALITY_WELCOME_TABLE}`
+                                WHERE guild_id = %s AND user_id = %s
+                                """,
+                                stale_keys,
+                            )
+
                         new_records = [
                             record
                             for record in records
@@ -401,10 +432,16 @@ class ReactionRole(commands.Cog):
                             inserted_count = max(cur.rowcount, 0)
                         else:
                             inserted_count = 0
-                print(
-                    "[Role] 기존 국적 역할 DB 등록 완료: "
-                    f"{inserted_count}/{len(records)}명 신규 등록"
-                )
+                if stale_keys:
+                    print(
+                        "[Role] 오프라인 중 퇴장한 구성원의 국적 인사 기록 "
+                        f"{len(stale_keys)}건 삭제"
+                    )
+                if inserted_count:
+                    print(
+                        "[Role] 기존 국적 역할 DB 등록 완료: "
+                        f"{inserted_count}/{len(records)}명 신규 등록"
+                    )
 
             self._nationality_backfill_complete = True
 
@@ -443,8 +480,29 @@ class ReactionRole(commands.Cog):
 
         await channel.send(message.format(mention=member.mention))
 
+    async def _delete_nationality_welcome(self, guild_id, user_id):
+        pool = self._get_pool()
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(
+                    f"""
+                    DELETE FROM `{NATIONALITY_WELCOME_TABLE}`
+                    WHERE guild_id = %s AND user_id = %s
+                    """,
+                    (guild_id, user_id),
+                )
+
     @commands.Cog.listener()
     async def on_member_remove(self, member):
+        if not member.bot:
+            try:
+                await self._delete_nationality_welcome(
+                    member.guild.id,
+                    member.id,
+                )
+            except (aiomysql.MySQLError, RuntimeError) as error:
+                print(f"[ERROR] 퇴장 구성원 국적 인사 기록 삭제 실패: {error}")
+
         channel = self.bot.get_channel(LEAVE_LOG_CHANNEL_ID)
         if channel is None:
             return
