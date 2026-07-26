@@ -3,17 +3,24 @@ import asyncio
 import discord
 from discord.ext import commands
 
+from bot_i18n import (
+    JAPANESE_NATIONALITY_ROLE_ID,
+    KOREAN_NATIONALITY_ROLE_ID,
+)
+
 
 ROLE_CHANNEL_ID = 1528787386153304105
-WELCOME_CHANNEL_ID = 1087554522378948609
+NATIONALITY_WELCOME_CHANNEL_ID = 1530655522821243034
 LEAVE_LOG_CHANNEL_ID = 1530659152643227749
-WELCOME_MESSAGES = {
-    "ko": "{mention} 선생님, 반가워요! rule 채널을 확인해 주세요.",
-    "ja": "{mention}先生、はじめまして！ruleチャンネルを確認してください。",
-}
-BOT_JOIN_MESSAGES = {
-    "ko": "{mention} 새로운 봇이 들어왔어요!",
-    "ja": "{mention} 新しいBotが参加しました！",
+NATIONALITY_WELCOME_MESSAGES = {
+    KOREAN_NATIONALITY_ROLE_ID: (
+        "{mention} 선생님, 반가워요! 환영합니다!\n"
+        "-# 韓国の方です。"
+    ),
+    JAPANESE_NATIONALITY_ROLE_ID: (
+        "{mention}先生、はじめまして！ようこそ！\n"
+        "-# 일본 분이에요."
+    ),
 }
 ROLE_SELECTIONS = (
     {
@@ -26,8 +33,8 @@ ROLE_SELECTIONS = (
         ),
         "placeholder": "국적 선택 / 国籍を選択",
         "roles": (
-            (927148258885783582, "한국", "韓国"),
-            (888820786041880666, "日本", "일본"),
+            (KOREAN_NATIONALITY_ROLE_ID, "한국", "韓国"),
+            (JAPANESE_NATIONALITY_ROLE_ID, "日本", "일본"),
         ),
     },
     {
@@ -269,6 +276,10 @@ class ReactionRole(commands.Cog):
             for role in member.roles
             if role.id in level_role_ids and role.id != selected_role_id
         ]
+        should_send_welcome = (
+            selection["key"] == "nationality"
+            and not any(role.id in level_role_ids for role in member.roles)
+        )
 
         try:
             if selected_role not in member.roles:
@@ -276,20 +287,21 @@ class ReactionRole(commands.Cog):
             if other_level_roles:
                 await member.remove_roles(*other_level_roles)
         except discord.HTTPException:
-            pass
+            return
 
-    @commands.Cog.listener()
-    async def on_member_join(self, member):
-        channel = self.bot.get_channel(WELCOME_CHANNEL_ID)
+        if should_send_welcome:
+            await self._send_nationality_welcome(member, selected_role_id)
+
+    async def _send_nationality_welcome(self, member, selected_role_id):
+        message = NATIONALITY_WELCOME_MESSAGES.get(selected_role_id)
+        if message is None:
+            return
+
+        channel = self.bot.get_channel(NATIONALITY_WELCOME_CHANNEL_ID)
         if channel is None:
             return
 
-        locale = member.guild.preferred_locale
-        language = "ja" if locale is discord.Locale.japanese else "ko"
-        messages = BOT_JOIN_MESSAGES if member.bot else WELCOME_MESSAGES
-        await channel.send(
-            messages[language].format(mention=member.mention)
-        )
+        await channel.send(message.format(mention=member.mention))
 
     @commands.Cog.listener()
     async def on_member_remove(self, member):
