@@ -358,18 +358,49 @@ class ReactionRole(commands.Cog):
                 pool = self._get_pool()
                 async with pool.acquire() as conn:
                     async with conn.cursor() as cur:
-                        await cur.executemany(
-                            f"""
-                            INSERT IGNORE INTO `{NATIONALITY_WELCOME_TABLE}` (
-                                guild_id,
-                                user_id,
-                                selected_role_id
-                            )
-                            VALUES (%s, %s, %s)
-                            """,
-                            records,
+                        guild_ids = tuple(sorted({
+                            guild_id
+                            for guild_id, _, _ in records
+                        }))
+                        placeholders = ", ".join(
+                            "%s"
+                            for _ in guild_ids
                         )
-                        inserted_count = max(cur.rowcount, 0)
+                        await cur.execute(
+                            f"""
+                            SELECT guild_id, user_id
+                            FROM `{NATIONALITY_WELCOME_TABLE}`
+                            WHERE guild_id IN ({placeholders})
+                            """,
+                            guild_ids,
+                        )
+                        existing_keys = {
+                            (int(guild_id), int(user_id))
+                            for guild_id, user_id in await cur.fetchall()
+                        }
+                        new_records = [
+                            record
+                            for record in records
+                            if (record[0], record[1]) not in existing_keys
+                        ]
+
+                        if new_records:
+                            await cur.executemany(
+                                f"""
+                                INSERT INTO `{NATIONALITY_WELCOME_TABLE}` (
+                                    guild_id,
+                                    user_id,
+                                    selected_role_id
+                                )
+                                VALUES (%s, %s, %s)
+                                ON DUPLICATE KEY UPDATE
+                                    user_id = VALUES(user_id)
+                                """,
+                                new_records,
+                            )
+                            inserted_count = max(cur.rowcount, 0)
+                        else:
+                            inserted_count = 0
                 print(
                     "[Role] 기존 국적 역할 DB 등록 완료: "
                     f"{inserted_count}/{len(records)}명 신규 등록"
@@ -388,12 +419,14 @@ class ReactionRole(commands.Cog):
             async with conn.cursor() as cur:
                 await cur.execute(
                     f"""
-                    INSERT IGNORE INTO `{NATIONALITY_WELCOME_TABLE}` (
+                    INSERT INTO `{NATIONALITY_WELCOME_TABLE}` (
                         guild_id,
                         user_id,
                         selected_role_id
                     )
                     VALUES (%s, %s, %s)
+                    ON DUPLICATE KEY UPDATE
+                        user_id = VALUES(user_id)
                     """,
                     (guild_id, user_id, selected_role_id),
                 )
