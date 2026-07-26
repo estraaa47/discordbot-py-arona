@@ -1,5 +1,6 @@
 import asyncio
 
+import aiomysql
 import discord
 from discord.ext import commands
 
@@ -12,6 +13,7 @@ from bot_i18n import (
 ROLE_CHANNEL_ID = 1528787386153304105
 NATIONALITY_WELCOME_CHANNEL_ID = 1530655522821243034
 LEAVE_LOG_CHANNEL_ID = 1530659152643227749
+NATIONALITY_WELCOME_TABLE = "arona_nationality_welcomes"
 NATIONALITY_WELCOME_MESSAGES = {
     KOREAN_NATIONALITY_ROLE_ID: (
         "{mention} 선생님, 반가워요! 환영합니다!\n"
@@ -276,7 +278,7 @@ class ReactionRole(commands.Cog):
             for role in member.roles
             if role.id in level_role_ids and role.id != selected_role_id
         ]
-        should_send_welcome = (
+        is_first_nationality_selection = (
             selection["key"] == "nationality"
             and not any(role.id in level_role_ids for role in member.roles)
         )
@@ -289,8 +291,51 @@ class ReactionRole(commands.Cog):
         except discord.HTTPException:
             return
 
-        if should_send_welcome:
-            await self._send_nationality_welcome(member, selected_role_id)
+        if selection["key"] == "nationality":
+            try:
+                is_new_welcome = await self._record_nationality_welcome(
+                    guild.id,
+                    member.id,
+                    selected_role_id,
+                )
+            except (aiomysql.MySQLError, RuntimeError) as error:
+                print(f"[ERROR] 국적 역할 환영 기록 실패: {error}")
+                return
+
+            if is_first_nationality_selection and is_new_welcome:
+                await self._send_nationality_welcome(
+                    member,
+                    selected_role_id,
+                )
+
+    def _get_pool(self):
+        point_cog = self.bot.get_cog("Point")
+        pool = getattr(point_cog, "pool", None)
+        if pool is None:
+            raise RuntimeError("MariaDB connection pool is not ready")
+        return pool
+
+    async def _record_nationality_welcome(
+        self,
+        guild_id,
+        user_id,
+        selected_role_id,
+    ):
+        pool = self._get_pool()
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(
+                    f"""
+                    INSERT IGNORE INTO `{NATIONALITY_WELCOME_TABLE}` (
+                        guild_id,
+                        user_id,
+                        selected_role_id
+                    )
+                    VALUES (%s, %s, %s)
+                    """,
+                    (guild_id, user_id, selected_role_id),
+                )
+                return cur.rowcount == 1
 
     async def _send_nationality_welcome(self, member, selected_role_id):
         message = NATIONALITY_WELCOME_MESSAGES.get(selected_role_id)

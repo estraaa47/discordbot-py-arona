@@ -70,6 +70,10 @@ class AronaVoice(commands.Cog):
         vc = self.active.get(guild_id)
         return vc is not None and vc.is_connected()
 
+    def has_tts_server(self) -> bool:
+        """현재 사용할 수 있는 TTS 서버 주소가 등록 또는 설정되어 있는지."""
+        return bool(tts_registry.get_url() or self.local_tts_url)
+
     def is_member_in_channel(self, guild_id: int, member) -> bool:
         """호출자(member)가 봇과 '같은' 음성 채널에 있는지."""
         vc = self.active.get(guild_id)
@@ -79,6 +83,14 @@ class AronaVoice(commands.Cog):
         if voice_state is None or voice_state.channel is None:
             return False
         return voice_state.channel.id == vc.channel.id
+
+    def can_speak_for(self, guild_id: int, member) -> bool:
+        """일본어 보이스라인을 실제로 생성·재생할 수 있는 상태인지."""
+        return (
+            self.has_tts_server()
+            and self.is_active(guild_id)
+            and self.is_member_in_channel(guild_id, member)
+        )
 
     # ==========================================================
     # 음성 채널 접속 / 해제
